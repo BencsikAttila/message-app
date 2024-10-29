@@ -1,0 +1,117 @@
+/*#region Body & Html */
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    margin: 0px;
+    flex-direction: column;
+}
+
+/*#endregion*/
+
+/*#region Top bar */
+
+.top-bar {
+    display: flex;
+    flex: 0 0 40px;
+    background-color: #eee;
+    z-index: 1;
+    box-shadow: 0px 0px 8px #0008;
+    align-items: center;
+}
+
+.top-bar-left {
+    flex: 1 1;
+}
+
+.top-bar-center {
+    flex: 1 1 100%;
+    text-align: center;
+}
+
+.top-bar-right {
+    flex: 1 1;
+}
+
+/*#endregion*/
+
+/*#region Main container */
+
+.main-container {
+    display: flex;
+    flex: 1 1;
+}
+
+.main {
+    display: flex;
+    flex: 1 1;
+    flex-direction: column;
+}
+
+/*#endregion*/
+
+/*#region Side bars */
+
+.left-side-bar {
+    flex: 0 0 160px;
+    box-shadow: 0px 0px 8px #0008;
+}
+
+.right-side-bar {
+    flex: 0 0 160px;
+    box-shadow: 0px 0px 8px #0008;
+}
+
+#button-toggle-left-side-bar,
+#button-toggle-right-side-bar {
+    display: none;
+}
+
+@media screen and (max-width: 600px) {
+    #button-toggle-left-side-bar,
+    #button-toggle-right-side-bar {
+        display: unset;
+    }
+
+    .left-side-bar:not(.side-bar-shown) {
+        display: none;
+    }
+    
+    .right-side-bar:not(.side-bar-shown) {
+        display: none;
+    }
+}
+
+/*#endregion*/
+
+/*#region Chat input */
+
+.chat-messages-container {
+    flex: 1 1 100%;
+}
+
+.chat-input-container {
+    display: flex;
+    flex: 0 0 40px;
+    border-top: 2px solid #aaa;
+}
+
+#chat-input {
+    flex: 1 1 100%;
+    margin: 8px;
+}
+
+#chat-input {
+    flex: 1 1 100%;
+    margin: 8px;
+}
+
+#chat-send {
+    flex: 0 0;
+    margin: 8px;
+}
+
+/*#endregion*/

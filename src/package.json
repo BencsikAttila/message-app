@@ -1,0 +1,8 @@
+{
+  "name": "message-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mime-types": "^2.1.35"
+  }
+}

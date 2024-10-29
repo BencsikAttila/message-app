@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "moduleResolution": "Classic",
+        "target": "ESNext",
+        "checkJs": true
+    }
+}
