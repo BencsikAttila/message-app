@@ -6,7 +6,7 @@ const mysql = require('mysql2')
 const bcrypt = require('bcrypt')
 
 const app = express()
-const WSServer = new WebSocketServer({ port: 8080 })
+
 const db = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
@@ -17,8 +17,16 @@ const db = mysql.createConnection({
 
 app.use(router)
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`)
+})
+
+const WSServer = new WebSocketServer({ noServer: true })
+
+server.on("upgrade", (req, socket, head) => {
+    WSServer.handleUpgrade(req, socket, head, (webSocket) => {
+        WSServer.emit("connection", webSocket, req)
+    })
 })
 
 db.connect((err) => {

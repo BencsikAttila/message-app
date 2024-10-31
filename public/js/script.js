@@ -24,7 +24,7 @@ document.getElement('chat-send', 'button').addEventListener('click', () => {
     WsClient.send(`SendMsg;${localStorage['name']};${localStorage['pass']};idk;${Msg}`)
 })
 
-let WsClient = new WebSocket('ws://localhost:8080')
+let WsClient = new WebSocket(`ws://${window.location.host}/`)
 
 WsClient.onmessage = (ev) => {
     // handle incoming msg from server(eg. notify or display)
