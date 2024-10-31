@@ -23,6 +23,8 @@ module.exports = [
             '@stylistic/js/no-multiple-empty-lines': ['warn', { max: 1 }],
             '@stylistic/js/no-trailing-spaces': ['warn'],
             '@stylistic/js/quotes': ['warn', 'single'],
+            'prefer-promise-reject-errors': 'off',
+            'no-warning-comments': 'warn',
             'dot-notation': 'off',
             'camelcase': 'error',
             'func-names': 'off',
@@ -34,6 +36,7 @@ module.exports = [
             'strict': 'off',
             'no-magic-numbers': 'off',
             'new-cap': 'off',
+            'func-style': ['error', 'declaration'],
             'semi': ['error', 'never']
         }
     }
