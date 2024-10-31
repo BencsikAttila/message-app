@@ -18,6 +18,8 @@ document.getElement('button-toggle-right-side-bar', 'button')
 localStorage['name'] = window.prompt('name:')
 localStorage['pass'] = window.prompt('pass:')
 
+// TODO: reconnect if disconnected
+
 const wsClient = new WebSocket(`ws://${window.location.host}/`)
 
 document.getElement('chat-send', 'button').addEventListener('click', () => {
