@@ -21,13 +21,14 @@ wsServer.on('connection', (ws) => {
     ws.on('error', console.error)
 
     /**
-     * Sends an event to the current client.
+     * Sends an event to the specified client.
      * I made this function so we can use the vscode auto completion for
      * the event types.
+     * @param {import('ws').WebSocket} client
      * @param {import('./websocket-events').ServerToClient} message
      */
-    const respond = function (message) {
-        ws.send(JSON.stringify(message))
+    const send = function (client, message) {
+        client.send(JSON.stringify(message))
     }
 
     ws.on('message', (raw, isBinary) => {
@@ -55,27 +56,28 @@ wsServer.on('connection', (ws) => {
             dbModel.insertMessage(databaseConnection.connection, newMessage)
                 .then((result) => {
                     // For debugging only we send back the sql result.
-                    respond({
+                    send(ws, {
                         type: 'sql_result',
                         result: result.results,
                     })
-                    // TODO: broadcast it to every client
-                    respond({
-                        type: 'message_created',
-                        content: newMessage.content,
-                        createdUtc: newMessage.createdUtc,
-                    })
+                    for (const client of wsServer.clients) {
+                        send(client, {
+                            type: 'message_created',
+                            content: newMessage.content,
+                            createdUtc: newMessage.createdUtc,
+                        })
+                    }
                 })
                 .catch((error) => {
                     // TODO: better error handling
                     if ('sql' in error) {
-                        respond({
+                        send(ws, {
                             type: 'error',
                             source: 'sql',
                             error: error,
                         })
                     } else {
-                        respond({
+                        send(ws, {
                             type: 'error',
                             source: null,
                             error: error,
