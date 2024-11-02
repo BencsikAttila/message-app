@@ -1,0 +1,7 @@
+yay -S mariadb
+mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+sudo systemctl start mariadb.service
+sudo mariadb-admin password
+$password
+mariadb -u root -p
+$password

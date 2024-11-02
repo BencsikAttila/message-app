@@ -10,4 +10,11 @@ interface Document {
         <TagName extends keyof HTMLElementTagNameMap>
         (id: string, tagName?: TagName):
         HTMLElementTagNameMap[TagName]
+
+    /**
+     * Creates an HTML element from the specified HTML source string.
+     * **Note that you can only create one element at the moment!**
+     * @param html The HTML string
+     */
+    fromHTML(html: string): HTMLElement
 }

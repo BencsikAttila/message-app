@@ -43,6 +43,7 @@ body {
 .main-container {
     display: flex;
     flex: 1 1;
+    overflow: hidden;
 }
 
 .main {
@@ -91,6 +92,7 @@ body {
 
 .chat-messages-container {
     flex: 1 1 100%;
+    overflow-y: auto;
 }
 
 .chat-input-container {
@@ -112,6 +114,25 @@ body {
 #chat-send {
     flex: 0 0;
     margin: 8px;
+}
+
+/*#endregion*/
+
+/*#region Message */
+
+.message {
+    margin: 16px;
+    border: 1px solid #aaa;
+    padding: 8px;
+}
+
+.message-header {
+    border-bottom: 1px solid #aaa;
+}
+
+.message-time {
+    font-size: 0.5em;
+    color: #555;
 }
 
 /*#endregion*/
