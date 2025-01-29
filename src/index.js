@@ -10,7 +10,10 @@ const dbModel = require('./db-model')
 databaseConnection.connect()
 
 const app = express()
+
+app.use(express.json())
 app.use(router)
+
 const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 })

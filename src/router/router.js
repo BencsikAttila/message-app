@@ -1,3 +1,5 @@
+const database = require('../db-connection')
+
 const express = require('express')
 const path = require('path')
 const dbModel = require('../db-model')
@@ -24,6 +26,27 @@ router.get('/api/messages', (req, res) => {
             res.end()
         })
 })
+
+router.post('/api/msg_endpoint', async (req, res) => {
+    const { type, content } = req.body
+    
+    switch (type) {
+        case "send_message":
+            msgToDb(content);
+            break;
+    
+        default:
+            break;
+    }
+})
+
+// TODO: error handling
+const msgToDb = async (content) => {
+    const result = await dbModel.insertMessage(database.connection, {
+        content: content,
+        createdUtc: Date.now()
+    })
+}
 
 // Serve static files from the "public" directory
 router.use(express.static(path.join(__dirname, '..', '..', 'public')))

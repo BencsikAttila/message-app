@@ -62,10 +62,18 @@ function wsSend(event) {
  */
 function sendMessage() {
     const messageContent = document.getElement('chat-input', 'input').value
-    wsSend({
-        type: 'send_message',
-        content: messageContent,
-    })
+
+    fetch("/api/msg_endpoint", {
+        method: "POST",
+        body: JSON.stringify({
+            type: "send_message",
+            content: messageContent
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    });
+
     document.getElement('chat-input', 'input').value = ''
 }
 
@@ -133,4 +141,3 @@ fetch('/api/messages', { method: 'GET' })
         }
     })
     .catch(console.error)
-
