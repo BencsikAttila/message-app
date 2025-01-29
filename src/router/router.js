@@ -27,6 +27,24 @@ router.get('/api/messages', (req, res) => {
         })
 })
 
+router.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'login', 'login.html'))
+})
+
+router.post('/login', (req, res) => {
+    const { Username, Password, RememberMe } = req.body;
+    console.log(Username, Password, RememberMe);
+})
+
+router.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'register', 'register.html'))
+})
+
+router.post('/register', (req, res) => {
+    const { Username, Password, PasswordAgain } = req.body;
+    console.log(Username, Password, PasswordAgain);
+})
+
 router.post('/api/msg_endpoint', async (req, res) => {
     const { type, content } = req.body
     
