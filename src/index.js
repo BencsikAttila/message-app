@@ -48,13 +48,14 @@ wsServer.on('connection', (ws) => {
         } catch (error) {
             return
         }
-
+/*
         if (message.type === 'send_message') {
             const newMessage = {
                 content: message.content,
                 // The 'new Date().getTime()' returns milliseconds
                 // but the SQL int type can't store a number that big.
-                createdUtc: Math.floor(new Date().getTime() / 1000),
+                // Now it can, I changed it to bigint int the db.
+                createdUtc: new Date().getTime(),
             }
             dbModel.insertMessage(databaseConnection.connection, newMessage)
                 .then((result) => {
@@ -87,6 +88,6 @@ wsServer.on('connection', (ws) => {
                         })
                     }
                 })
-        }
+        }*/
     })
 })

@@ -51,6 +51,7 @@ router.post('/api/msg_endpoint', async (req, res) => {
     switch (type) {
         case "send_message":
             msgToDb(content);
+            
             break;
     
         default:
@@ -60,10 +61,12 @@ router.post('/api/msg_endpoint', async (req, res) => {
 
 // TODO: error handling
 const msgToDb = async (content) => {
-    const result = await dbModel.insertMessage(database.connection, {
+    const newMsg = {
         content: content,
-        createdUtc: Date.now()
-    })
+        createdUtc: new Date().getTime()
+    }
+
+    const result = await dbModel.insertMessage(database.connection, newMsg)
 }
 
 // Serve static files from the "public" directory
