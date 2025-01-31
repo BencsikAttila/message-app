@@ -1,5 +1,7 @@
-/src/node_modules
-/node_modules
+node_modules
+bin
+obj
 
-examples/cli/bin
-examples/cli/obj
+package-lock.json
+
+*.sln
