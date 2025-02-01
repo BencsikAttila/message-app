@@ -1,28 +1,28 @@
-// Disable 'no-undef' because eslint aint recognize this type reference stuff
-/* eslint-disable no-undef */
+/**
+ * This handles the Handlebars templates and provides the function `getTemplate` on
+ * the `window` which returns the cached template or downloads and compiles it.
+ */
 
 /// <reference types="../../src/node_modules/handlebars" />
 
-// Ignore because the 'templates' is a read-only property
-// @ts-ignore
-window['templates'] = {}
+// Wrapping in a function otherwise `templates` can be accessed globally
+(() => {
+    /**
+     * @type {Record<string, Promise<HandlebarsTemplateDelegate<any>>>}
+     */
+    const templates = {}
 
-// TODO: Maybe fetch the list of templates from the server
-// so we dont have to add them there.
-
-window['templates']['message'] = new Promise((resolve, reject) => {
-    fetch('/hbs/message.hbs')
-        .then(res => res.text())
-        .then(res => {
-            // Parse the HBS file into a template
-            const template = Handlebars.compile(res)
-            // Set the pending promise into a resolved one,
-            // so if someone needs this template it returns it immediately
-            window['templates']['message'] = Promise.resolve(template)
-            // Resolve the current promise, so if someone
-            // requested this template but not loaded yet,
-            // it now can continue
-            resolve(template)
+    window['getTemplate'] = (/** @type {string} */ templateName) => {
+        // Returns the template from `templates` otherwise download and compile it
+        return templates[templateName] ?? new Promise((resolve, reject) => {
+            fetch(`/hbs/${templateName}.hbs`)
+                .then(res => res.text())
+                .then(res => {
+                    const template = Handlebars.compile(res)
+                    templates[templateName] = Promise.resolve(template) // This will save it to `templates`
+                    resolve(template)
+                })
+                .catch(reject)
         })
-        .catch(reject)
-})
+    }
+})()

@@ -1,9 +1,9 @@
 declare global {
     interface Window {
         /**
-         * Contains all the Handlebars templates.
+         * Returns the compiled template from the `/public/hbs/` folder
          */
-        readonly templates: Record<string, Promise<(context: any) => string>>
+        readonly getTemplate(templateName: string): Promise<(context: object) => string>
     }
 }
 

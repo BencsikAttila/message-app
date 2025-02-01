@@ -28,7 +28,7 @@ async function appendMessage(message) {
     // TODO: Append/insert the messages in order
 
     // Fetch the template (or load from cache)
-    const template = await window.templates['message']
+    const template = await window.getTemplate('message')
     // Compile the template into HTML source
     const html = template({
         content: message.content,
