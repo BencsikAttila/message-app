@@ -12,17 +12,31 @@
      */
     const templates = {}
 
+    // Returns the template from `templates` otherwise download and compile it
     window['getTemplate'] = (/** @type {string} */ templateName) => {
-        // Returns the template from `templates` otherwise download and compile it
-        return templates[templateName] ?? new Promise((resolve, reject) => {
+        if (templateName in templates) { // The template already loaded or is currently loading ...
+            return templates[templateName]
+        }
+
+        // We have to save the "downloading" template or else it will send the request multiple times
+        templates[templateName] = new Promise((resolve, reject) => {
             fetch(`/hbs/${templateName}.hbs`)
-                .then(res => res.text())
+                .then(res => {
+                    if (res.status >= 300) {
+                        reject(new Error(res.statusText))
+                    } else {
+                        return res.text()
+                    }
+                })
                 .then(res => {
                     const template = Handlebars.compile(res)
-                    templates[templateName] = Promise.resolve(template) // This will save it to `templates`
+                    templates[templateName] = Promise.resolve(template) // This will save it as a downloaded and compiled template
                     resolve(template)
                 })
                 .catch(reject)
         })
+
+        // This contains the "downloading" template
+        return templates[templateName]
     }
 })()
