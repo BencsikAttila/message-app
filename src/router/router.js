@@ -1,9 +1,10 @@
-const database = require('../db-connection')
-
 const express = require('express')
 const path = require('path')
+
+const database = require('../db-connection')
 const dbModel = require('../db-model')
 const databaseConnection = require('../db-connection')
+const jsonUtils = require('../json-utils')
 
 const router = express.Router(({ mergeParams: true }))
 
@@ -22,7 +23,7 @@ router.get('/api/messages', (req, res) => {
             res.setHeader('Content-Type', 'application/json')
             res.statusCode = 500
             res.flushHeaders()
-            res.write(JSON.stringify(error))
+            res.write(JSON.stringify(error, jsonUtils.replacer))
             res.end()
         })
 })
