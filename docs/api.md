@@ -83,10 +83,7 @@ Creates a message
 #### Request:
 ```ts
 {
-    id: string
-    senderId: string
     content: string
-    createdAt: bigint
 }
 ```
 

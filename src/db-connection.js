@@ -13,7 +13,7 @@ const database = {
             // TODO: environment variables
             host: '127.0.0.1',
             user: 'root',
-            password: 'root',
+            password: '',
             database: 'message_app',
             port: 3306,
         })

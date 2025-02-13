@@ -5,6 +5,7 @@ const database = require('../db-connection')
 const dbModel = require('../db-model')
 const databaseConnection = require('../db-connection')
 const jsonUtils = require('../json-utils')
+const wsServer = require('../websocket-server')
 
 const router = express.Router(({ mergeParams: true }))
 
@@ -28,46 +29,37 @@ router.get('/api/messages', (req, res) => {
         })
 })
 
-router.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'login', 'login.html'))
-})
-
 router.post('/login', (req, res) => {
-    const { Username, Password, RememberMe } = req.body;
-    console.log(Username, Password, RememberMe);
-})
-
-router.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'register', 'register.html'))
+    const { Username, Password, RememberMe } = req.body
+    console.log(Username, Password, RememberMe)
 })
 
 router.post('/register', (req, res) => {
-    const { Username, Password, PasswordAgain } = req.body;
-    console.log(Username, Password, PasswordAgain);
+    const { Username, Password, PasswordAgain } = req.body
+    console.log(Username, Password, PasswordAgain)
 })
 
 router.post('/api/msg_endpoint', async (req, res) => {
-    const { type, content } = req.body
-    
-    switch (type) {
-        case "send_message":
-            msgToDb(content);
-            
-            break;
-    
-        default:
-            break;
-    }
+    const { content } = req.body
+    msgToDb(content)
 })
 
 // TODO: error handling
 const msgToDb = async (content) => {
-    const newMsg = {
+    const newMessage = {
         content: content,
-        createdUtc: new Date().getTime()
+        createdUtc: Math.floor(new Date().getTime() / 1000)
     }
 
-    const result = await dbModel.insertMessage(database.connection, newMsg)
+    const result = await dbModel.insertMessage(database.connection, newMessage)
+
+    for (const client of wsServer.Singleton.clients) {
+        client.send(JSON.stringify({
+            type: 'message_created',
+            content: newMessage.content,
+            createdUtc: newMessage.createdUtc,
+        }))
+    }
 }
 
 // Serve static files from the "public" directory
