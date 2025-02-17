@@ -12,6 +12,7 @@ databaseConnection.connect()
 const app = express()
 
 app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 app.use(router)
 
 const server = app.listen(port, () => {

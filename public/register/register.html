@@ -13,7 +13,7 @@
             <div class="m-2 p-3">
                 <h1 class="text-center">Message App</h1>
             </div>
-            <form method="post" action="/registereq" style="width: 30vh;">
+            <form method="post" action="/register" style="width: 30vh;">
                 <div class="form-group mb-4">
                     <label for="username" class="form-label fw-medium">
                         <span>username</span>
@@ -29,11 +29,19 @@
                     <input type="password" name="password" id="password" class="form-control" placeholder="Password">
                 </div>
                 <div class="form-group mb-3">
-                    <label for="PasswordAgain" class="form-label fw-medium">
+                    <label for="passwordAgain" class="form-label fw-medium">
                         <span>Password again</span>
                         <span class="text-danger">*</span>
                     </label>
-                    <input type="password" name="PasswordAgain" id="PasswordAgain" class="form-control" placeholder="Password Again">
+                    <input type="password" id="passwordAgain" class="form-control" placeholder="Password Again" oninput="
+                        const password = document.getElementById('password')
+                        const passwordAgain = document.getElementById('passwordAgain')
+                        if (password.value !== passwordAgain.value) {
+                            passwordAgain.setCustomValidity('The passwords mismatch')
+                        } else {
+                            passwordAgain.setCustomValidity('')
+                        }
+                    ">
                 </div>
                 <hr>
                 <div class="d-flex justify-content-center">
@@ -42,6 +50,5 @@
             </form>
         </div>
     </div>
-
 </body>
 </html>

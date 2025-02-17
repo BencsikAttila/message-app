@@ -17,8 +17,8 @@ router.post('/login', (req, res) => {
 })
 
 router.post('/register', (req, res) => {
-    const { username, password, PasswordAgain } = req.body
-    console.log(username, password, PasswordAgain)
+    const { username, password } = req.body
+    console.log(username, password)
 })
 
 //#endregion
