@@ -63,7 +63,7 @@ function wsSend(event) {
 function sendMessage() {
     const messageContent = document.getElement('chat-input', 'input').value
 
-    fetch("/api/msg_endpoint", {
+    fetch("/api/messages", {
         method: "POST",
         body: JSON.stringify({
             type: "send_message",

@@ -9,25 +9,7 @@ const wsServer = require('../websocket-server')
 
 const router = express.Router(({ mergeParams: true }))
 
-router.get('/api/messages', (req, res) => {
-    dbModel.queryMessages(databaseConnection.connection)
-        .then((result) => {
-            // TODO: learn how to do this properly
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 200
-            res.flushHeaders()
-            res.write(JSON.stringify(result))
-            res.end()
-        })
-        .catch((error) => {
-            // TODO: same as above
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
-        })
-})
+//#region Authentication
 
 router.post('/login', (req, res) => {
     const { Username, Password, RememberMe } = req.body
@@ -39,28 +21,55 @@ router.post('/register', (req, res) => {
     console.log(Username, Password, PasswordAgain)
 })
 
-router.post('/api/msg_endpoint', async (req, res) => {
-    const { content } = req.body
-    msgToDb(content)
+//#endregion
+
+//#region Messages
+
+router.get('/api/messages', async (req, res) => {
+    try {
+        const result = await dbModel.queryMessages(databaseConnection.connection)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify(result))
+        res.end()
+    } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
 })
 
-// TODO: error handling
-const msgToDb = async (content) => {
+router.post('/api/messages', async (req, res) => {
     const newMessage = {
-        content: content,
+        content: req.body.content,
         createdUtc: Math.floor(new Date().getTime() / 1000)
     }
 
-    const result = await dbModel.insertMessage(database.connection, newMessage)
+    try {
+        const result = await dbModel.insertMessage(database.connection, newMessage)
+        for (const client of wsServer.Singleton.clients) {
+            client.send(JSON.stringify({
+                type: 'message_created',
+                content: newMessage.content,
+                createdUtc: newMessage.createdUtc,
+            }))
+        }
 
-    for (const client of wsServer.Singleton.clients) {
-        client.send(JSON.stringify({
-            type: 'message_created',
-            content: newMessage.content,
-            createdUtc: newMessage.createdUtc,
-        }))
+        res.statusCode = 200
+        res.end()
+    } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
     }
-}
+})
+
+//#endregion
 
 // Serve static files from the "public" directory
 router.use(express.static(path.join(__dirname, '..', '..', 'public')))
