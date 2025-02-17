@@ -12,13 +12,13 @@ const router = express.Router(({ mergeParams: true }))
 //#region Authentication
 
 router.post('/login', (req, res) => {
-    const { Username, Password, RememberMe } = req.body
-    console.log(Username, Password, RememberMe)
+    const { username, password, rememberMe } = req.body
+    console.log(username, password, rememberMe)
 })
 
 router.post('/register', (req, res) => {
-    const { Username, Password, PasswordAgain } = req.body
-    console.log(Username, Password, PasswordAgain)
+    const { username, password, PasswordAgain } = req.body
+    console.log(username, password, PasswordAgain)
 })
 
 //#endregion
