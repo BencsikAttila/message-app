@@ -1,13 +1,13 @@
 /*#region Body & Html */
 
-html, body {
-    height: 100%;
-}
-
 body {
     display: flex;
-    margin: 0px;
     flex-direction: column;
+}
+
+* {
+    font-family: "Nunito", serif;
+    font-optical-sizing: auto;
 }
 
 /*#endregion*/
@@ -17,10 +17,10 @@ body {
 .top-bar {
     display: flex;
     flex: 0 0 40px;
-    background-color: #eee;
+    background-color: var(--base3);
     z-index: 1;
-    box-shadow: 0px 0px 8px #0008;
     align-items: center;
+    font-weight: bold;
 }
 
 .top-bar-left {
@@ -58,12 +58,12 @@ body {
 
 .left-side-bar {
     flex: 0 0 160px;
-    box-shadow: 0px 0px 8px #0008;
+    background-color: var(--base2);
 }
 
 .right-side-bar {
     flex: 0 0 160px;
-    box-shadow: 0px 0px 8px #0008;
+    background-color: var(--base2);
 }
 
 #button-toggle-left-side-bar,
@@ -98,7 +98,6 @@ body {
 .chat-input-container {
     display: flex;
     flex: 0 0 40px;
-    border-top: 2px solid #aaa;
 }
 
 #chat-input {
@@ -109,11 +108,13 @@ body {
 #chat-input {
     flex: 1 1 100%;
     margin: 8px;
+    padding: 4px;
 }
 
 #chat-send {
     flex: 0 0;
     margin: 8px;
+    padding: 4px;
 }
 
 /*#endregion*/
@@ -122,17 +123,18 @@ body {
 
 .message {
     margin: 16px;
-    border: 1px solid #aaa;
+    border: 2px solid var(--base3);
     padding: 8px;
+    border-radius: var(--border-radius);
 }
 
 .message-header {
-    border-bottom: 1px solid #aaa;
+    border-bottom: 2px solid var(--base3);
 }
 
 .message-time {
     font-size: 0.5em;
-    color: #555;
+    color: var(--text-dark);
 }
 
 /*#endregion*/

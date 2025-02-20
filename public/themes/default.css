@@ -1,0 +1,60 @@
+@property --border-radius {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --base1 {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #fff;
+}
+
+@property --base2 {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #eee;
+}
+
+@property --base3 {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #ddd;
+}
+
+@property --text-dark {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #444;
+}
+
+@property --text {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #000;
+}
+
+@property --text-link {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #46a9eb;
+}
+
+@property --highlight {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #000;
+}
+
+@property --input-background {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: field;
+}
+
+@property --button-background {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: buttonface;
+}
+

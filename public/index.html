@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Message App</title>
+    <link rel="stylesheet" href="./themes/google.css" id="theme-link">
+    <script>document.getElementById("theme-link").href=`./themes/${(localStorage.getItem('theme') ?? 'google')}.css`</script>
+    <link rel="stylesheet" href="./base.css">
     <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -11,6 +14,22 @@
     <div class="top-bar">
         <div class="top-bar-left">
             <button id="button-toggle-left-side-bar">Channels</button>
+            <select id="select-theme">
+                <option value="default">Default</option>
+                <option value="google">Google Dark</option>
+                <option value="rosepine">Rosé Pine</option>
+            </select>
+            <script>
+                (() => {
+                    const selectThemeElement = document.getElementById('select-theme')
+                    selectThemeElement.value = localStorage.getItem('theme')
+                    selectThemeElement.addEventListener('input', () => {
+                        const theme = selectThemeElement.value
+                        localStorage.setItem('theme', theme)
+                        document.getElementById('theme-link').href = `./themes/${theme}.css`
+                    })
+                })()
+            </script>
         </div>
         <div class="top-bar-center">
             <span>

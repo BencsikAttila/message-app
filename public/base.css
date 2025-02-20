@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+/*#region Body & Html */
+
+html, body {
+    height: 100%;
+    background-color: var(--base1);
+    color: var(--text);
+}
+
+body {
+    margin: 0px;
+}
+
+* {
+    font-family: "Nunito", serif;
+    font-optical-sizing: auto;
+}
+
+/*#endregion*/
+
+/*#region Input */
+
+input {
+    border: 2px solid var(--base3);
+    background-color: var(--input-background);
+    color: var(--text);
+    border-radius: var(--border-radius);
+}
+
+:focus-visible {
+    outline: 2px solid var(--highlight);
+}
+
+button,
+input[type=submit],
+select {
+    border: 2px solid var(--base3);
+    background-color: var(--button-background);
+    color: var(--text);
+    border-radius: var(--border-radius);
+}
+
+a {
+    color: var(--text-link);
+}
+
+/*#endregion*/
