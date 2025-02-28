@@ -41,20 +41,41 @@ async function appendMessage(message) {
     document.getElement('chat-messages-container').scrollTo(0, document.getElement('chat-messages-container').scrollHeight)
 }
 
-// TODO: reconnect if disconnected
+const wsClient = new WebSocketClient()
+wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
+    // TODO: better message type routing,
+    switch (e.message.type) {
+        case 'error': {
+            switch (e.message.source) {
+                case 'sql':
+                case null: {
+                    console.error(e.message.error)
+                    break
+                }
+                default: {
+                    console.error('Unknown error')
+                    break
+                }
+            }
+            break
+        }
 
-const wsClient = new WebSocket(`ws://${window.location.host}/`)
+        case 'message_created': {
+            appendMessage(e.message)
+            break
+        }
 
-// TODO: better websocket event type handling
-
-/**
- * Sends an event to the websocket server.
- * I made this function so you get type suggestions for the events.
- * @param {import('../../src/websocket-events').ClientToServer} event
- */
-function wsSend(event) {
-    wsClient.send(JSON.stringify(event))
-}
+        default: {
+            break
+        }
+    }
+})
+wsClient.addEventListener('open', (e) => {
+    document.getElement('label-status', 'span').textContent = 'Connected'
+})
+wsClient.addEventListener('close', (e) => {
+    document.getElement('label-status', 'span').textContent = 'Disconnected'
+})
 
 /**
  * Sends a message. This will send a websocket event to the server
@@ -86,48 +107,6 @@ document.getElement('chat-send', 'button').addEventListener('click', () => {
 document.getElement('chat-input', 'input').addEventListener('keydown', event => {
     if (event.key === 'Enter') {
         sendMessage()
-    }
-})
-
-wsClient.addEventListener('message', event => {
-    // Parse the message to JSON object.
-    // This will always be a valid JSON string,
-    // but I wrapped it in a try-catch just in case.
-    /** @type {import('../../src/websocket-events').ServerToClient} */
-    let wsEvent
-    try {
-        wsEvent = JSON.parse(event.data)
-    } catch (error) {
-        console.error(error)
-        return
-    }
-
-    // TODO: better message type routing,
-    // maybe different functions for each type?
-    switch (wsEvent.type) {
-        case 'error': {
-            // This is for debugging only, so you
-            // don't have to switch to the server console
-            switch (wsEvent.source) {
-                case 'sql':
-                case null: {
-                    console.error(wsEvent.error)
-                    break
-                }
-                default: {
-                    console.error('Unknown error')
-                    break
-                }
-            }
-            break
-        }
-        case 'message_created': {
-            appendMessage(wsEvent)
-            break
-        }
-        default: {
-            break
-        }
     }
 })
 
