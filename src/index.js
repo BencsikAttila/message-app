@@ -1,13 +1,8 @@
 const express = require('express')
 const router = require('./router/router')
 const port = 6789
-const websocket = require('./websocket-server')
-const databaseConnection = require('./db-connection')
-const dbModel = require('./db-model')
-
-// The connection is stored in the databaseConnection.connection
-// so we can use it from other files
-databaseConnection.connect()
+const WebSocketManager = require('./websocket-server')
+require('./db') // the instance is created once in this file
 
 const app = express()
 
@@ -19,4 +14,4 @@ const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 })
 
-new websocket(server)
+new WebSocketManager(server)

@@ -1,9 +1,9 @@
 const express = require('express')
 const path = require('path')
 
-const database = require('../db-connection')
+const database = require('../db')
 const dbModel = require('../db-model')
-const databaseConnection = require('../db-connection')
+const databaseConnection = require('../db')
 const jsonUtils = require('../json-utils')
 const wsServer = require('../websocket-server')
 
@@ -27,7 +27,7 @@ router.post('/register', (req, res) => {
 
 router.get('/api/messages', async (req, res) => {
     try {
-        const result = await dbModel.queryMessages(databaseConnection.connection)
+        const result = await dbModel.queryMessages(databaseConnection)
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
         res.flushHeaders()
@@ -49,7 +49,7 @@ router.post('/api/messages', async (req, res) => {
     }
 
     try {
-        const result = await dbModel.insertMessage(database.connection, newMessage)
+        await dbModel.insertMessage(database, newMessage)
         for (const client of wsServer.Singleton.clients) {
             client.send(JSON.stringify({
                 type: 'message_created',
