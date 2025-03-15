@@ -1,7 +1,22 @@
-// This should be synced with the database
-
-export interface messages {
-    id: number
-    content: string
-    createdUtc: number
+type tables = {
+    messages: {
+        id?: number,
+        content: number,
+        createdUtc: number,
+        channelId: number,
+        senderId: number,
+    },
+    channels: {
+        id?: number,
+        name: string,
+        ownerId: number,
+    },
+    users: {
+        id?: number,
+        username: string,
+        nickname: string,
+        password: string,
+    },
 }
+
+export default tables

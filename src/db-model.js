@@ -1,20 +1,13 @@
 /**
  * @param {import('./db').DB} connection
- * @param {{
- *   content: string;
- *   createdUtc: number;
- * }} message
+ * @param {import('./db/model').default['messages']} message
  */
 function insertMessage(connection, message) {
-    return connection.insert('messages', {
-        'content': message.content,
-        'createdUtc': message.createdUtc,
-    })
+    return connection.insert('messages', message)
 }
 
 /**
  * @param {import('./db').DB} connection
- * @returns {Promise<ReadonlyArray<import('./db/model').messages>>}
 */
 function queryMessages(connection) {
     return connection.query('messages')

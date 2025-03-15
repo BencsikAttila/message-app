@@ -1,0 +1,40 @@
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .middle {
+        border: 1px solid #888;
+    }
+
+    .middle h1 {
+        text-align: center;
+    }
+
+    .middle form {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        margin: 16px;
+    }
+
+    .middle input, a {
+        margin: 4px;
+        display: block;
+    }
+</style>
+
+<div class="middle">
+    <h1>Message App</h1>
+    <form method="post" action="/login">
+        <input type="text" name="username" id="username" placeholder="Username" required>
+        <input type="password" name="password" id="password" placeholder="Password" required>
+        <span style="color: #c44242; font-weight: bold;">{{error}}</span>
+        <input type="submit" value="Login">
+        <a href="/register">
+            Don't have an account?
+        </a>
+    </form>
+</div>

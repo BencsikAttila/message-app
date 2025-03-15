@@ -1,0 +1,49 @@
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .middle {
+        border: 1px solid #888;
+    }
+
+    .middle h1 {
+        text-align: center;
+    }
+
+    .middle form {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        margin: 16px;
+    }
+
+    .middle input {
+        margin: 4px;
+        display: block;
+    }
+</style>
+
+<div class="middle">
+    <h1>Message App</h1>
+    <form method="post" action="/register">
+        <input type="text" name="username" id="username" placeholder="Username" required>
+        <input type="password" name="password" id="password" placeholder="Password" required>
+        <input type="password" id="password-again" placeholder="Password again" required oninput="
+            const password = document.getElementById('password')
+            const passwordAgain = document.getElementById('password-again')
+            if (password.value !== passwordAgain.value) {
+                passwordAgain.setCustomValidity('The passwords mismatch')
+            } else {
+                passwordAgain.setCustomValidity('')
+            }
+        ">
+        <span style="color: #c44242; font-weight: bold;">{{error}}</span>
+        <input type="submit" value="Register">
+        <a href="/login">
+            Already have an account?
+        </a>
+    </form>
+</div>

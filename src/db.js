@@ -3,8 +3,9 @@
 
 /**
  * @typedef {{
- *   query(table: string): Promise<ReadonlyArray<any>>
- *   insert(table: string, values: Record<string, any>): Promise<void>
+ *   query<Table extends keyof import('./db/model').default>(table: Table): Promise<ReadonlyArray<import('./db/model').default[Table]>>
+ *   queryRaw(query: string, params: any): Promise<ReadonlyArray<any>>
+ *   insert<Table extends keyof import('./db/model').default>(table: Table, values: import('./db/model').default[Table]): Promise<void>
  * }} DB
  */
 
@@ -40,6 +41,7 @@ function createMysqlDB() {
             return new Promise((resolve, reject) => {
                 db.query(`SELECT * FROM ${table};`, (error, rows) => {
                     if (error) reject(error)
+                    // @ts-ignore
                     else resolve(rows)
                 })
             })
@@ -69,17 +71,42 @@ function createSqliteDB() {
     // TODO: read setup sql from file
     db.serialize(() => {
         db.run(`CREATE TABLE messages (
-                    id INT AUTO_INCREMENT,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     content TEXT NOT NULL,
                     createdUtc BIGINT NOT NULL,
-                    PRIMARY KEY (id)
+                    channelId INTEGER NOT NULL,
+                    senderId INTEGER NOT NULL
                 );`)
+            .on('error', console.error)
+        db.run(`CREATE TABLE channels (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    ownerId INTEGER NOT NULL
+                );`)
+            .on('error', console.error)
+        db.run(`CREATE TABLE users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    nickname TEXT NOT NULL,
+                    password VARCHAR(64) NOT NULL
+                );`)
+            .on('error', console.error)
     })
     return {
         query(table) {
             return new Promise((resolve, reject) => {
                 db.prepare(`SELECT * FROM ${table};`)
                     .all((error, rows) => {
+                        if (error) reject(error)
+                        else resolve(rows)
+                    })
+                    .finalize()
+            })
+        },
+        queryRaw(query, params) {
+            return new Promise((resolve, reject) => {
+                db.prepare(query)
+                    .all(params, (error, rows) => {
                         if (error) reject(error)
                         else resolve(rows)
                     })

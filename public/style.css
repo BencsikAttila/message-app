@@ -25,6 +25,7 @@ body {
 
 .top-bar-left {
     flex: 1 1;
+    display: flex;
 }
 
 .top-bar-center {
@@ -34,6 +35,7 @@ body {
 
 .top-bar-right {
     flex: 1 1;
+    display: flex;
 }
 
 /*#endregion*/
@@ -135,6 +137,38 @@ body {
 .message-time {
     font-size: 0.5em;
     color: var(--text-dark);
+}
+
+/*#endregion*/
+
+/*#region*/
+
+.channel {
+    margin: 4px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+}
+
+.channel:active,
+.channel:hover {
+    background-color: var(--base3);
+    border: 2px solid var(--highlight);
+    color: var(--highlight);
+}
+
+.channel a {
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+}
+
+.channel.selected {
+    background-color: var(--base3);
+}
+
+.channel.selected a {
+    color: var(--highlight);
 }
 
 /*#endregion*/

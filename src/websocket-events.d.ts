@@ -19,8 +19,7 @@ export interface ErrorEvent extends GenericEvent<'error'> {
 }
 
 export interface MessageCreatedEvent extends GenericEvent<'message_created'> {
-    content: string
-    createdUtc: number
+    v: import('../src/db/model').default['messages']
 }
 
 export interface SqlResultEvent extends GenericEvent<'sql_result'> {
