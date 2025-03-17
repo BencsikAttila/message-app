@@ -33,22 +33,12 @@
 <div class="main-container">
     <div class="left-side-bar" id="left-side-bar">
         <div id="channels-container">
-            <div class="channel">
-                <div class="channel-name">
-                    <a href="/">
-                        Home
-                    </a>
-                </div>
-            </div>
+            <a class="channel" href="/">
+                Home
+            </a>
         </div>
         <div class="new-channel">
             <button id="new-channel-button">New Channel</button>
-            <style>
-                #new-channel-dialog ::backdrop {
-                    background-color: #000;
-                    opacity: 0.25;
-                }
-            </style>
             <dialog id="new-channel-dialog">
                 <button autofocus id="new-channel-button-x">Close</button>
                 <div>
