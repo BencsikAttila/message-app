@@ -1,6 +1,5 @@
 const express = require('express')
 const database = require('../db')
-const dbModel = require('../db-model')
 const databaseConnection = require('../db')
 const jsonUtils = require('../json-utils')
 const wsServer = require('../websocket-server')
@@ -34,7 +33,7 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
     }
 
     try {
-        await dbModel.insertMessage(database, newMessage)
+        await database.insert('messages', newMessage)
         for (const client of wsServer.Singleton.clients) {
             client.send(JSON.stringify({
                 type: 'message_created',

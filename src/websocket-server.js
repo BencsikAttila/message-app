@@ -48,47 +48,6 @@ module.exports = class _ {
                 } catch (error) {
                     return
                 }
-        /*
-                if (message.type === 'send_message') {
-                    const newMessage = {
-                        content: message.content,
-                        // The 'new Date().getTime()' returns milliseconds
-                        // but the SQL int type can't store a number that big.
-                        // Now it can, I changed it to bigint int the db.
-                        createdUtc: new Date().getTime(),
-                    }
-                    dbModel.insertMessage(databaseConnection.connection, newMessage)
-                        .then((result) => {
-                            // For debugging only we send back the sql result.
-                            send(ws, {
-                                type: 'sql_result',
-                                result: result.results,
-                            })
-                            for (const client of wsServer.clients) {
-                                send(client, {
-                                    type: 'message_created',
-                                    content: newMessage.content,
-                                    createdUtc: newMessage.createdUtc,
-                                })
-                            }
-                        })
-                        .catch((error) => {
-                            // TODO: better error handling
-                            if ('sql' in error) {
-                                send(ws, {
-                                    type: 'error',
-                                    source: 'sql',
-                                    error: error,
-                                })
-                            } else {
-                                send(ws, {
-                                    type: 'error',
-                                    source: null,
-                                    error: error,
-                                })
-                            }
-                        })
-                }*/
             })
         })
         
