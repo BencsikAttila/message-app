@@ -8,6 +8,7 @@ type tables = {
     },
     channels: {
         id?: number,
+        uuid: string,
         name: string,
         ownerId: number,
     },
@@ -16,6 +17,18 @@ type tables = {
         username: string,
         nickname: string,
         password: string,
+    },
+    userChannel: {
+        userId: number
+        channelId: number
+    },
+    invitations: {
+        id?: number
+        uuid: string,
+        userId: number
+        channelId: number
+        expiresAt: number
+        usages: number
     },
 }
 

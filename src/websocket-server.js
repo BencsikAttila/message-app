@@ -28,27 +28,11 @@ module.exports = class _ {
              * I made this function so we can use the vscode auto completion for
              * the event types.
              * @param {import('ws').WebSocket} client
-             * @param {import('./websocket-events').ServerToClient} message
+             * @param {import('./websocket-messages').WebSocketMessage} message
              */
             const send = function (client, message) {
                 client.send(JSON.stringify(message))
             }
-        
-            ws.on('message', (raw, isBinary) => {
-                // Idk what it is???
-                if (isBinary) { return }
-        
-                // This can be anything since the user can
-                // open the devtools and send anything
-                /** @type {import('./websocket-events').ClientToServer} */
-                let message
-        
-                try {
-                    message = JSON.parse(raw.toString('utf8'))
-                } catch (error) {
-                    return
-                }
-            })
         })
         
         _.Singleton = wsServer

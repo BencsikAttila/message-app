@@ -21,8 +21,8 @@
         // TODO: better message type routing,
         switch (e.message.type) {
             case 'message_created': {
-                if (e.message.v.channelId === window.ENV.channel.id) {
-                    appendMessage(e.message.v)
+                if (e.message.channel === window.ENV.channel.uuid) {
+                    appendMessage(e.message)
                 }
                 break
             }
@@ -39,7 +39,7 @@
     function sendMessage() {
         const messageContent = document.getElement('chat-input', 'input').value
 
-        fetch(`/api/channels/${window.ENV.channel.id}/messages`, {
+        fetch(`/api/channels/${window.ENV.channel.uuid}/messages`, {
             method: "POST",
             body: JSON.stringify({
                 type: "send_message",
@@ -67,7 +67,7 @@
 
     // TODO: Fetch the messages server-side and send the populated HTML
     // to the client
-    fetch(`/api/channels/${window.ENV.channel.id}/messages`, { method: 'GET' })
+    fetch(`/api/channels/${window.ENV.channel.uuid}/messages`, { method: 'GET' })
         .then(res => res.json())
         .then(res => {
             for (const message of res) {

@@ -1,8 +1,8 @@
 class WebSocketMessageEvent extends Event {
-    /** @readonly @type {import('../../src/websocket-events').ServerToClient} */ message
+    /** @readonly @type {import('../../src/websocket-messages').WebSocketMessage} */ message
 
     /**
-     * @param {import('../../src/websocket-events').ServerToClient} message
+     * @param {import('../../src/websocket-messages').WebSocketMessage} message
      */
     constructor(message) {
         super('message')
@@ -55,12 +55,5 @@ class WebSocketClient extends EventTarget {
                 console.error(error)
             }
         })
-    }
-
-    /**
-     * @param {import('../../src/websocket-events').ClientToServer} event
-     */
-    send(event) {
-        this.#websocket.send(JSON.stringify(event))
     }
 }

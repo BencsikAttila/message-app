@@ -5,7 +5,7 @@
  * @typedef {{
  *   query<Table extends keyof import('./db/model').default>(table: Table): Promise<ReadonlyArray<import('./db/model').default[Table]>>
  *   queryRaw(query: string, params: any): Promise<ReadonlyArray<any>>
- *   insert<Table extends keyof import('./db/model').default>(table: Table, values: import('./db/model').default[Table]): Promise<void>
+ *   insert<Table extends keyof import('./db/model').default>(table: Table, values: import('./db/model').default[Table]): Promise<Readonly<{ changes: number; lastID: number; }>>
  * }} DB
  */
 
@@ -46,12 +46,21 @@ function createMysqlDB() {
                 })
             })
         },
+        queryRaw(query, params) {
+            return new Promise((resolve, reject) => {
+                db.query(query, params, (error, rows) => {
+                    if (error) reject(error)
+                    // @ts-ignore
+                    else resolve(rows)
+                })
+            })
+        },
         insert(table, values) {
             return new Promise((resolve, reject) => {
                 const _keys = Object.keys(values)
                 const _values = _keys.map((v) => values[v])
 
-                db.execute(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`, _values, (error) => {
+                db.execute(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`, _values, (error, result, fields) => {
                     if (error) reject(error)
                     else resolve()
                 })
@@ -80,6 +89,7 @@ function createSqliteDB() {
             .on('error', console.error)
         db.run(`CREATE TABLE channels (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    uuid VARCHAR(36) NOT NULL,
                     name TEXT NOT NULL,
                     ownerId INTEGER NOT NULL
                 );`)
@@ -89,6 +99,20 @@ function createSqliteDB() {
                     username TEXT NOT NULL,
                     nickname TEXT NOT NULL,
                     password VARCHAR(64) NOT NULL
+                );`)
+            .on('error', console.error)
+        db.run(`CREATE TABLE userChannel (
+                    userId INT,
+                    channelId INT
+                );`)                
+            .on('error', console.error)
+        db.run(`CREATE TABLE invitations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    uuid VARCHAR(36) NOT NULL,
+                    userId INT NOT NULL,
+                    channelId INT NOT NULL,
+                    expiresAt BIGINT NOT NULL,
+                    usages INT NOT NULL
                 );`)
             .on('error', console.error)
     })
@@ -119,9 +143,9 @@ function createSqliteDB() {
                 const _values = _keys.map((v) => values[v])
 
                 db.prepare(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`)
-                    .run(_values, (error) => {
+                    .run(_values, function(error) {
                         if (error) reject(error)
-                        else resolve()
+                        else resolve(this)
                     })
             })
         },

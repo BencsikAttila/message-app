@@ -33,7 +33,7 @@
                 const template = await window.getTemplate('channel')
                 const html = template({
                     ...channel,
-                    isSelected: channel.id === window.ENV.channel?.id,
+                    isSelected: channel.uuid === window.ENV.channel?.uuid,
                 })
                 document.getElement('channels-container', 'div').appendChild(document.fromHTML(html))
             }

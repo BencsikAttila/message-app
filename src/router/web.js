@@ -67,7 +67,7 @@ router.get('/', auth.middleware, async (req, res) => {
 })
 
 router.get('/channels/:id', auth.middleware, async (req, res) => {
-    const channel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ?;', req.params.id)
+    const channel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.id)
     if (channel.length === 0) {
         res.status(404).end()
         return
@@ -78,9 +78,12 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
     res.render('channel', {
         user: {
             ...user,
-            'password': null,
+            'password': undefined,
         },
-        channel: channel[0],
+        channel: {
+            ...channel[0],
+            'id': undefined,
+        },
     })
 })
 
