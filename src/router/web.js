@@ -62,7 +62,7 @@ router.get('/', auth.middleware, async (req, res) => {
     res.render('home', {
         user: {
             ...user,
-            'password': null,
+            password: undefined,
         },
     })
 })
@@ -79,11 +79,11 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
     res.render('channel', {
         user: {
             ...user,
-            'password': undefined,
+            password: undefined,
         },
         channel: {
             ...channel[0],
-            'id': undefined,
+            id: undefined,
         },
     })
 })

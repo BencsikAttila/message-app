@@ -1,6 +1,16 @@
 const { createSecretKey } = require('crypto')
-const { SignJWT } = require('jose/jwt/sign')
-const { jwtVerify } = require('jose/jwt/verify')
+
+const cryptoAlt = require('crypto').webcrypto
+const cryptoKey = require('crypto').webcrypto.CryptoKey
+// @ts-ignore
+global.crypto = cryptoAlt
+global.CryptoKey = cryptoKey
+
+let SignJWT = null
+let jwtVerify = null
+
+import('jose/jwt/sign').then(v => SignJWT = v.SignJWT)
+import('jose/jwt/verify').then(v => jwtVerify = v.jwtVerify)
 
 const secretKey = createSecretKey(process.env.JWT_SECRET, 'utf-8')
 const { createHash } = require('crypto')
@@ -65,8 +75,7 @@ const auth = {
      */
     async verify(token) {
         try {
-            const { payload } = await jwtVerify(token, secretKey, {
-            })
+            const { payload } = await jwtVerify(token, secretKey, {})
             // @ts-ignore
             return payload
         } catch (e) {
