@@ -7,6 +7,47 @@ const auth = require('../auth')
 const uuid = require('uuid')
 const router = express.Router(({ mergeParams: true }))
 
+router.get('/api/user', auth.middleware, async (req, res) => {
+    try {
+        const sqlUser = await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1', req.credentials.id)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify({
+            ...sqlUser[0],
+            id: undefined,
+            password: undefined,
+        }))
+        res.end()
+    } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
+    try {
+        const sqlChannel = await database.queryRaw('SELECT id FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify({
+            ...sqlChannel,
+            id: undefined,
+        }))
+        res.end()
+    } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
 router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res) => {
     try {
         const sqlChannel = await database.queryRaw('SELECT id FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
@@ -61,13 +102,14 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
 
 router.get('/api/channels', auth.middleware, async (req, res) => {
     try {
-        const sqlChannels = await databaseConnection.queryRaw('SELECT * FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
+        const sqlChannels = await databaseConnection.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
         res.flushHeaders()
         res.write(JSON.stringify(sqlChannels.map(v => ({
             ...v,
             id: undefined,
+            ownerId: undefined,
         }))))
         res.end()
     } catch (error) {
@@ -110,7 +152,11 @@ router.get('/api/invitations', auth.middleware, async (req, res) => {
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
         res.flushHeaders()
-        res.write(JSON.stringify(result))
+        res.write(JSON.stringify(result.map(v => ({
+            ...v,
+            id: undefined,
+            userId: undefined,
+        }))))
         res.end()
     } catch (error) {
         res.setHeader('Content-Type', 'application/json')

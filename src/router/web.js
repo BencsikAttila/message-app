@@ -4,7 +4,6 @@ const database = require('../db')
 const auth = require('../auth')
 const router = express.Router(({ mergeParams: true }))
 
-/*
 router.get('/login', async (req, res) => {
     res.render('login')
 })
@@ -87,11 +86,11 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         },
     })
 })
-*/
 
-// router.use(express.static(path.join(__dirname, '..', '..', 'public')))
-// router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
-router.use(express.static(path.join(__dirname, '..', '..', 'client', 'build')))
-router.get('*', (req,res) =>{ res.sendFile(path.join(__dirname, '..', '..', 'client', 'build', 'index.html')) })
+router.use(express.static(path.join(__dirname, '..', '..', 'public')))
+router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
+
+// router.use(express.static(path.join(__dirname, '..', '..', 'client', 'build')))
+// router.get('*', (req,res) =>{ res.sendFile(path.join(__dirname, '..', '..', 'client', 'build', 'index.html')) })
 
 module.exports = router

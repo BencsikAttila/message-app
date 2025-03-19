@@ -1,5 +1,15 @@
 (() => {
-
+    if (false)
+    {
+        const regex = /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/
+        const uuid = regex.exec(location.pathname)?.[0]
+        // @ts-ignore
+        window.ENV ??= {}
+        fetch(`/api/channels/${uuid}`)
+            .then(v => v.json())
+            .then(v => window.ENV.channel = v)
+    }
+        
     const newChannelDialog = document.getElement("new-channel-dialog", 'dialog')
 
     document.getElement('new-channel-button', 'button').addEventListener('click', () => {

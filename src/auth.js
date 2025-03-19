@@ -1,4 +1,5 @@
 const { createSecretKey } = require('crypto')
+const database = require('./db')
 
 const cryptoAlt = require('crypto').webcrypto
 const cryptoKey = require('crypto').webcrypto.CryptoKey
@@ -69,10 +70,8 @@ const auth = {
 
         return await auth.authenticate(database, username, password)
     },
-    /**
-     * @param {string} token
-     * @returns {Promise<false | (import('jose').JWTPayload & { id: number })>}
-     */
+    // @ts-ignore
+    /** @param {string} token @returns {Promise<false | (import('jose').JWTPayload & { id: number })>} */
     async verify(token) {
         try {
             const { payload } = await jwtVerify(token, secretKey, {})
@@ -88,7 +87,7 @@ const auth = {
     async middleware(req, res, next) {
         const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
         const verifyRes = await auth.verify(token)
-        if (verifyRes) {
+        if (verifyRes && (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]) {
             req.credentials = verifyRes
             next()
             return
