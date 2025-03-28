@@ -40,7 +40,21 @@
                 passwordAgain.setCustomValidity('')
             }
         ">
-        <span style="color: #c44242; font-weight: bold;">{{error}}</span>
+        <input type="hidden" name="redirect" id="redirect" value="{{redirect}}">
+        <span style="color: #c44242; font-weight: bold;" id="label-error">{{error}}</span>
+        <script>
+            {
+                const params = new URLSearchParams(window.location.search)
+                const error = params.get('error')
+                if (error) {
+                    document.getElementById('label-error').textContent = error
+                }
+                const redirect = params.get('redirect')
+                if (redirect) {
+                    document.getElementById('redirect').value = redirect
+                }
+            }
+        </script>
         <input type="submit" value="Register">
         <a href="/login">
             Already have an account?

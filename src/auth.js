@@ -121,10 +121,9 @@ const auth = {
                 .end()
         } else {
             res
-                .status(401)
-                .render('login', {
-                    error: token ? 'Invalid token' : undefined
-                })
+                .status(303)
+                .header('Location', `/login?error=${encodeURIComponent('Invalid token' ?? '')}&redirect=${encodeURIComponent(req.url)}`)
+                .end()
         }
     },
 }

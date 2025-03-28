@@ -13,7 +13,7 @@ router.get('/register', async (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body
+    const { username, password, redirect } = req.body
 
     const authResult = await auth.authenticate(database, username, password)
 
@@ -21,7 +21,8 @@ router.post('/login', async (req, res) => {
         res
             .status(401)
             .render('login', {
-                error: authResult.error
+                error: authResult.error,
+                redirect: redirect,
             })
         return
     }
@@ -29,12 +30,12 @@ router.post('/login', async (req, res) => {
     res
         .cookie('token', authResult.token, { path: '/', maxAge: 1000 * 60 * 30 })
         .status(303)
-        .header('Location', '/')
+        .header('Location', redirect ?? '/')
         .end()
 })
 
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body
+    const { username, password, redirect } = req.body
 
     const authRes = await auth.create(database, username, password)
 
@@ -43,6 +44,7 @@ router.post('/register', async (req, res) => {
             .status(401)
             .json({
                 error: authRes.error,
+                redirect: redirect,
             })
             .end()
         return
@@ -50,7 +52,7 @@ router.post('/register', async (req, res) => {
 
     res
         .cookie('token', authRes.token, { path: '/', maxAge: 1000 * 60 })
-        .header('Location', '/')
+        .header('Location', redirect ?? '/')
         .status(303)
         .end()
 })
