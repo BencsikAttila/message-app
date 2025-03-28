@@ -148,7 +148,13 @@ router.post('/api/channels', auth.middleware, async (req, res) => {
 
 router.get('/api/invitations', auth.middleware, async (req, res) => {
     try {
-        const result = await databaseConnection.queryRaw('SELECT * FROM invitations WHERE invitations.userId = ?', req.credentials.id)
+        const result = await (() => {
+            if (req.query['channel']) {
+                return databaseConnection.queryRaw('SELECT * FROM invitations WHERE invitations.userId = ? AND invitations.channelId = ?', [ req.credentials.id, req.query['channel'] + '' ])
+            } else {
+                return databaseConnection.queryRaw('SELECT * FROM invitations WHERE invitations.userId = ?', req.credentials.id)
+            }
+        })()
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
         res.flushHeaders()

@@ -1,9 +1,16 @@
 (() => {
-
     const newChannelDialog = document.getElement("new-invitation-dialog", 'dialog')
 
     document.getElement('new-invitation-button', 'button').addEventListener('click', () => {
         newChannelDialog.showModal()
+        fetch(`/api/invitations?channel=${encodeURIComponent(window.ENV.channel.uuid)}`)
+            .then(v => v.json())
+            .then(v => {
+                const container = document.getElement('invitations-container', 'div')
+                for (const invitation of v) {
+                    console.log(invitation)
+                }
+            })
     })
 
     document.getElement('new-invitation-button-x', 'button').addEventListener('click', () => {

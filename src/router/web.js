@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
     res
         .cookie('token', authResult.token, { path: '/', maxAge: 1000 * 60 * 30 })
         .status(303)
-        .header('Location', redirect ?? '/')
+        .header('Location', '/')
         .end()
 })
 
@@ -52,7 +52,7 @@ router.post('/register', async (req, res) => {
 
     res
         .cookie('token', authRes.token, { path: '/', maxAge: 1000 * 60 })
-        .header('Location', redirect ?? '/')
+        .header('Location', '/')
         .status(303)
         .end()
 })
