@@ -7,7 +7,11 @@ const cryptoKey = require('crypto').webcrypto.CryptoKey
 global.crypto = cryptoAlt
 global.CryptoKey = cryptoKey
 
+// @ts-ignore
+/** @type {import('jose/jwt/sign')['SignJWT']} */
 let SignJWT = null
+// @ts-ignore
+/** @type {import('jose/jwt/verify')['jwtVerify']} */
 let jwtVerify = null
 
 import('jose/jwt/sign').then(v => SignJWT = v.SignJWT)
@@ -17,6 +21,11 @@ const secretKey = createSecretKey(process.env.JWT_SECRET, 'utf-8')
 const { createHash } = require('crypto')
 
 const auth = {
+    /**
+     * @private @readonly
+     * @type {Set<string>}
+     */
+    tokenBlacklist: new Set(),
     /**
      * @param {import('./db').DB} database
      * @param {string} username
@@ -73,6 +82,9 @@ const auth = {
     // @ts-ignore
     /** @param {string} token @returns {Promise<false | (import('jose').JWTPayload & { id: number })>} */
     async verify(token) {
+        if (this.tokenBlacklist.has(token)) {
+            return false
+        }
         try {
             const { payload } = await jwtVerify(token, secretKey, {})
             // @ts-ignore
@@ -82,10 +94,17 @@ const auth = {
         }
     },
     /**
+     * @param {string} token
+     */
+    async logout(token) {
+        this.tokenBlacklist.add(token)
+    },
+    /**
      * @type {import('express').Handler}
      */
     async middleware(req, res, next) {
         const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
+        req.token = token
         const verifyRes = await auth.verify(token)
         if (verifyRes && (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]) {
             req.credentials = verifyRes

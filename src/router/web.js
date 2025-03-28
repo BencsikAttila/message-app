@@ -55,6 +55,15 @@ router.post('/register', async (req, res) => {
         .end()
 })
 
+router.get('/logout', auth.middleware, async (req, res) => {
+    await auth.logout(req.token)
+    res
+        .clearCookie('token')
+        .status(303)
+        .header('Location', '/')
+        .end()
+})
+
 router.get('/', auth.middleware, async (req, res) => {
     const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', req.credentials.id))[0]
 
