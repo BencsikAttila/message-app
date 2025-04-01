@@ -179,11 +179,12 @@ dialog ::backdrop {
     opacity: 0.40;
 }
 
-.new-channel {
+.new-channel,
+.new-invitation {
     display: flex;
 }
 
-#new-channel-button {
+.fake-channel-button {
     margin: 4px;
     border: 2px solid var(--base3);
     padding: 4px 8px;
@@ -192,12 +193,21 @@ dialog ::backdrop {
     flex: 1 1 100%;
     cursor: pointer;
     background-color: var(--button-background);
-    margin-bottom: 16px;
 }
 
-#new-channel-button:hover,
-#new-channel-button:active {
+.fake-channel-button:hover,
+.fake-channel-button:active {
     background-color: var(--base3);
     border: 2px solid var(--highlight);
     color: var(--highlight);
+}
+
+.invitation-item {
+    margin: 4px 0px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    flex: 1 1 100%;
+    background-color: var(--button-background);
 }

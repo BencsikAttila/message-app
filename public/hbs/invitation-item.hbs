@@ -1,0 +1,8 @@
+<div class="invitation-item">
+    <div>Expires at {{expiresAt}}</div>
+    <div>Used {{usages}} times</div>
+    <button onclick="navigator.clipboard.writeText(`${window.location.origin}/invitations/{{uuid}}/use`)">Copy to Clipboard</button>
+    <button onclick="window.deleteInvitation('{{uuid}}')">
+        Delete
+    </button>
+</div>

@@ -24,6 +24,7 @@
     </div>
     <div class="top-bar-center">
         <span>{{channel.name}}</span>
+        <button onclick="window.leaveChannel()">Leave Channel</button>
     </div>
     <div class="top-bar-right">
         <span id="label-status"></span>
@@ -38,8 +39,8 @@
                 Home
             </a>
         </div>
-        <div class="new-channel">
-            <button id="new-channel-button">New Channel</button>
+        <div class="new-channel" class="fake-channel-button-container">
+            <button id="new-channel-button" class="fake-channel-button">New Channel</button>
             <dialog id="new-channel-dialog">
                 <button autofocus id="new-channel-button-x">Close</button>
                 <div>
@@ -48,8 +49,8 @@
                 </div>
             </dialog>
         </div>
-        <div class="new-invitation">
-            <button id="new-invitation-button">Invite</button>
+        <div class="new-invitation" class="fake-channel-button-container">
+            <button id="new-invitation-button" class="fake-channel-button">Invite</button>
             <dialog id="new-invitation-dialog">
                 <button autofocus id="new-invitation-button-x">Close</button>
                 <div>

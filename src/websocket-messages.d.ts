@@ -18,6 +18,9 @@ export interface MessageCreatedEvent extends GenericEvent<'message_created'> {
     content: number
     createdUtc: number
     channel: string
+    user: {
+        nickname: string
+    }
 }
 
 export interface SqlResultEvent extends GenericEvent<'sql_result'> {

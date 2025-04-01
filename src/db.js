@@ -76,10 +76,10 @@ function createSqliteDB() {
     const sqlite = require('sqlite3')
     const path = require('path')
 
-    const db = new sqlite.Database(':memory:')
+    const db = new sqlite.Database(path.join(__dirname, 'db.sqlite'))
     // TODO: read setup sql from file
     db.serialize(() => {
-        db.run(`CREATE TABLE messages (
+        db.run(`CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     content TEXT NOT NULL,
                     createdUtc BIGINT NOT NULL,
@@ -87,26 +87,26 @@ function createSqliteDB() {
                     senderId INTEGER NOT NULL
                 );`)
             .on('error', console.error)
-        db.run(`CREATE TABLE channels (
+        db.run(`CREATE TABLE IF NOT EXISTS channels (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     uuid VARCHAR(36) NOT NULL,
                     name TEXT NOT NULL,
                     ownerId INTEGER NOT NULL
                 );`)
             .on('error', console.error)
-        db.run(`CREATE TABLE users (
+        db.run(`CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
                     nickname TEXT NOT NULL,
                     password VARCHAR(64) NOT NULL
                 );`)
             .on('error', console.error)
-        db.run(`CREATE TABLE userChannel (
+        db.run(`CREATE TABLE IF NOT EXISTS userChannel (
                     userId INT,
                     channelId INT
                 );`)                
             .on('error', console.error)
-        db.run(`CREATE TABLE invitations (
+        db.run(`CREATE TABLE IF NOT EXISTS invitations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     uuid VARCHAR(36) NOT NULL,
                     userId INT NOT NULL,

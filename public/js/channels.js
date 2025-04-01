@@ -49,4 +49,12 @@
             }
         })
         .catch(console.error)
+
+    window['leaveChannel'] = function() {
+        fetch(`/api/channels/${window.ENV.channel?.uuid}/leave`, { method: 'POST' })
+            .then(v => {
+                window.location.replace(`${window.location.origin}/`)
+            })
+            .catch(console.error)
+    }
 })()

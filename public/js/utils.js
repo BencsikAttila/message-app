@@ -37,3 +37,13 @@ document.fromHTML = function (html) {
 
     return /** @type {HTMLElement} */ (container.firstChild)
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    for (const dialog of document.getElementsByTagName('dialog')) {
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) {
+                dialog.close()
+            }
+        });
+    }
+})

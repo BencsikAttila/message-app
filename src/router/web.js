@@ -78,9 +78,15 @@ router.get('/', auth.middleware, async (req, res) => {
 })
 
 router.get('/channels/:id', auth.middleware, async (req, res) => {
-    const channel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.id)
-    if (channel.length === 0) {
+    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.id)
+    if (sqlChannel.length === 0) {
         res.status(404).end()
+        return
+    }
+
+    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
+    if (!sqlPermission.length) {
+        res.status(400).end()
         return
     }
 
@@ -92,10 +98,61 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
             password: undefined,
         },
         channel: {
-            ...channel[0],
+            ...sqlChannel[0],
             id: undefined,
         },
     })
+})
+
+router.get('/invitations/:uuid/use', auth.middleware, async (req, res) => {
+    try {
+        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.uuid = ? LIMIT 1', [ req.params['uuid'] ])
+        if (!sqlInvitations.length) {
+            res.status(404)
+            res.write('Invitation not found')
+            res.end()
+            return
+        }
+
+        /** @type {import('../db/model').default['invitations']} */
+        const sqlInvitation = sqlInvitations[0]
+
+        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', [ sqlInvitation.channelId ])
+        if (!sqlChannels.length) {
+            res.status(404)
+            res.write('Channel not found')
+            res.end()
+            return
+        }
+
+        /** @type {import('../db/model').default['channels']} */
+        const sqlChannel = sqlChannels[0]
+
+        const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel.id, req.credentials.id ])
+        if (sqlUserChannels.length) {
+            res.status(400)
+            res.write('You are already in this channel')
+            res.end()
+            return
+        }
+
+        await database.insert('userChannel', {
+            userId: req.credentials.id,
+            channelId: sqlChannel.id,
+        })
+
+        await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
+
+        res
+            .status(303)
+            .header('Location', '/channels/' + sqlChannel.uuid)
+            .end()
+    } catch (error) {
+        console.error(error)
+        res
+            .status(500)
+            .end()
+    }
 })
 
 router.use(express.static(path.join(__dirname, '..', '..', 'public')))

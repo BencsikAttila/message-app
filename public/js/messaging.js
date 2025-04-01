@@ -7,7 +7,7 @@
         const template = await window.getTemplate('message')
         // Compile the template into HTML source
         const html = template({
-            content: message.content,
+            ...message,
             createdAt: new Date(message.createdUtc * 1000).toLocaleTimeString(),
         })
         // Append the HTML to the container

@@ -106,10 +106,14 @@ const auth = {
         const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
         req.token = token
         const verifyRes = await auth.verify(token)
-        if (verifyRes && (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]) {
-            req.credentials = verifyRes
-            next()
-            return
+        if (verifyRes) {
+            const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]
+            if (user) {
+                req.credentials = verifyRes
+                req.user = user
+                next()
+                return
+            }
         }
 
         if (req.path.startsWith('/api')) {

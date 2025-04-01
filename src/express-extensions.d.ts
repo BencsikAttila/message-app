@@ -4,5 +4,6 @@ namespace Express {
         credentials: import('jose').JWTPayload & {
             id: number
         }
+        user: import('./db/model').default['users']
     }
 }

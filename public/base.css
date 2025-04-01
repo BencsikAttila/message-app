@@ -36,9 +36,21 @@ button,
 input[type=submit],
 select {
     border: 2px solid var(--base3);
-    background-color: var(--button-background);
-    color: var(--text);
     border-radius: var(--border-radius);
+    color: var(--text);
+    cursor: pointer;
+    background-color: var(--button-background);
+}
+
+button:hover,
+input[type=submit]:hover,
+select:hover,
+button:active,
+input[type=submit]:active,
+select:active {
+    background-color: var(--base3);
+    border: 2px solid var(--highlight);
+    color: var(--highlight);
 }
 
 a {

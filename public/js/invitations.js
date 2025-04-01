@@ -1,16 +1,24 @@
 (() => {
     const newChannelDialog = document.getElement("new-invitation-dialog", 'dialog')
 
-    document.getElement('new-invitation-button', 'button').addEventListener('click', () => {
-        newChannelDialog.showModal()
+    function refreshInvitations() {
         fetch(`/api/invitations?channel=${encodeURIComponent(window.ENV.channel.uuid)}`)
             .then(v => v.json())
-            .then(v => {
+            .then(async (/** @type {ReadonlyArray<import('../../src/db/model').default['invitations']>} */ v) => {
                 const container = document.getElement('invitations-container', 'div')
+                container.innerHTML = ''
                 for (const invitation of v) {
-                    console.log(invitation)
+                    container.appendChild(document.fromHTML((await window.getTemplate('invitation-item'))({
+                        ...invitation,
+                        expiresAt: new Date(invitation.expiresAt * 1000).toLocaleTimeString(),
+                    })))
                 }
             })
+    }
+
+    document.getElement('new-invitation-button', 'button').addEventListener('click', () => {
+        newChannelDialog.showModal()
+        refreshInvitations()
     })
 
     document.getElement('new-invitation-button-x', 'button').addEventListener('click', () => {
@@ -28,8 +36,18 @@
             }
         })
             .then(() => {
-                window.location.reload()
+                refreshInvitations()
             })
             .catch(console.error)
     })
+
+    window['deleteInvitation'] = function(uuid) {
+        fetch(`/api/invitations/${uuid}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                refreshInvitations()
+            })
+            .catch(console.error)
+    }
 })()
