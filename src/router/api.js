@@ -27,6 +27,31 @@ router.get('/api/user', auth.middleware, async (req, res) => {
     }
 })
 
+router.patch('/api/user', auth.middleware, async (req, res) => {
+    try {
+        if ('nickname' in req.body) {
+            
+        }
+        const sqlUser = await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1', req.credentials.id)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify({
+            ...sqlUser[0],
+            id: undefined,
+            password: undefined,
+        }))
+        res.end()
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
 router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
     try {
         const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
