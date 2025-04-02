@@ -211,3 +211,29 @@ dialog ::backdrop {
     flex: 1 1 100%;
     background-color: var(--button-background);
 }
+
+.user-item {
+    margin: 4px 0px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    flex: 1 1 100%;
+    background-color: var(--button-background);
+}
+
+.user-status {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    transform: translateY(0.1em);
+    border-radius: 50%;
+}
+
+.user-status-online {
+    background-color: var(--status-online);
+}
+
+.user-status-offline {
+    background-color: var(--status-offline);
+}

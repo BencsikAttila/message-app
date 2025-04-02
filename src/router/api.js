@@ -2,7 +2,6 @@ const express = require('express')
 const database = require('../db')
 const databaseConnection = require('../db')
 const jsonUtils = require('../json-utils')
-const wsServer = require('../websocket-server')
 const auth = require('../auth')
 const uuid = require('uuid')
 const router = express.Router(({ mergeParams: true }))
@@ -51,6 +50,39 @@ router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
         }))
         res.end()
     } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.get('/api/channels/:channelId/users', auth.middleware, async (req, res) => {
+    try {
+        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+
+        const sqlUsers = await databaseConnection.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', sqlChannel[0].id)
+
+        /** @type {Array<import('ws').WebSocket>} */
+        const wsClients = []
+        for (const wsClient of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
+            wsClients.push(wsClient)
+        }
+
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify(sqlUsers.map(v => ({
+            ...v,
+            id: undefined,
+            password: undefined,
+            // @ts-ignore
+            isOnline: wsClients.some(_v => _v.user?.id === v.id),
+        }))))
+        res.end()
+    } catch (error) {
+        console.error(error)
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 500
         res.flushHeaders()
@@ -110,7 +142,7 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
 
     try {
         await database.insert('messages', newMessage)
-        for (const client of wsServer.Singleton.clients) {
+        for (const client of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
             client.send(JSON.stringify(/** @type {import('../websocket-messages').MessageCreatedEvent} */ ({
                 type: 'message_created',
                 content: newMessage.content,

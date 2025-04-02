@@ -11,11 +11,13 @@ const path = require('path')
 
 const express = require('express')
 const port = 6789
-const WebSocketManager = require('./websocket-server')
 const expressHandlebars = require('express-handlebars')
+const expressWs = require('express-ws')
+
 require('./db') // the instance is created once in this file
 
 const app = express()
+global['wsInstance'] = expressWs(app)
 app.engine('handlebars', expressHandlebars.engine({
     helpers: {
        'JSON': function(obj) {
@@ -31,9 +33,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(require('./router/api'))
 app.use(require('./router/web'))
+app.use(require('./router/ws'))
 
-const server = app.listen(port, () => {
+global['server'] = app.listen(port, () => {
     console.log(`Listening on http://localhost:${port}`)
 })
-
-new WebSocketManager(server)

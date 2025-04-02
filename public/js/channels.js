@@ -50,6 +50,20 @@
         })
         .catch(console.error)
 
+    if (window.ENV.channel?.uuid) {
+        fetch(`/api/channels/${window.ENV.channel?.uuid}/users`)
+            .then(v => v.json())
+            .then(async v => {
+                for (const user of v) {
+                    const template = await window.getTemplate('user-item')
+                    const html = template({
+                        ...user,
+                    })
+                    document.getElement('users-container', 'div').appendChild(document.fromHTML(html))
+                }
+            })
+    }
+
     window['leaveChannel'] = function() {
         fetch(`/api/channels/${window.ENV.channel?.uuid}/leave`, { method: 'POST' })
             .then(v => {

@@ -58,3 +58,14 @@
     initial-value: buttonface;
 }
 
+@property --status-online {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #22bb43;
+}
+
+@property --status-offline {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #686868;
+}
