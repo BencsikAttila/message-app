@@ -104,7 +104,8 @@ function createSqliteDB() {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
                     nickname TEXT NOT NULL,
-                    password VARCHAR(64) NOT NULL
+                    password VARCHAR(64) NOT NULL,
+                    theme INT
                 );`)
             .on('error', console.error)
         db.run(`CREATE TABLE IF NOT EXISTS userChannel (

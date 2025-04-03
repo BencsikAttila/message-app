@@ -11,6 +11,7 @@
     document.getElement('update-nickname-button', 'button').addEventListener('click', () => {
         const nicknameInput = document.getElement('account-nickname-input', 'input')
         const avatarInput = document.getElement('account-avatar-input', 'input')
+        const themeInput = document.getElement('account-theme-input', 'select')
 
         const tasks = []
 
@@ -18,6 +19,7 @@
             method: 'PATCH',
             body: JSON.stringify({
                 nickname: nicknameInput.value,
+                theme: themeInput.value,
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"

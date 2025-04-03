@@ -24,6 +24,12 @@
             <div style="margin-bottom: 16px;">
                 <label for="nickname">Nickname:</label>
                 <input type="string" id="account-nickname-input" value="{{user.nickname}}">
+                <label for="theme">Theme:</label>
+                <select id="account-theme-input" value="{{user.theme}}">
+                    <option value="1" {{#eq user.theme 1}}selected{{/eq}}>Default White</option>
+                    <option value="2" {{#eq user.theme 2}}selected{{/eq}}>Dark Google</option>
+                    <option value="3" {{#eq user.theme 3}}selected{{/eq}}>Rosé Pine</option>
+                </select>
             </div>
             <div style="margin-bottom: 16px;">
                 <label for="nickname">Avatar:</label>

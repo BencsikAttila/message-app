@@ -5,13 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Message App</title>
-    <style>
-        body {
-            background-color: #000;
-        }
-    </style>
-    <link rel="stylesheet" href="/themes/google.css" id="theme-link">
-    <script>document.getElementById("theme-link").href = `/themes/${(localStorage.getItem('theme') ?? 'google')}.css`</script>
+    <link rel="stylesheet" href="/themes/{{#switch user.theme}}{{#case 1}}default{{/case}}{{#case 2}}google{{/case}}{{#case 3}}rosepine{{/case}}{{#default}}google{{/default}}{{/switch}}.css" id="theme-link">
     <link rel="stylesheet" href="/base.css">
     <link rel="stylesheet" href="/style.css">
     <script>

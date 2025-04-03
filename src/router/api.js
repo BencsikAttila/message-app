@@ -34,12 +34,12 @@ router.get('/api/user', auth.middleware, async (req, res) => {
 router.patch('/api/user', auth.middleware, async (req, res) => {
     try {
         if ('nickname' in req.body) {
-            await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [ req.body.nickname, req.credentials.id ])
-            res.status(200)
-            res.end()
-        } else {
-            res.status(400)
+            await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [ req.body['nickname'], req.credentials.id ])
         }
+        if ('theme' in req.body) {
+            await database.queryRaw('UPDATE users SET theme = ? WHERE users.id = ?', [ req.body['theme'], req.credentials.id ])
+        }
+        res.status(200)
         res.end()
     } catch (error) {
         console.error(error)
