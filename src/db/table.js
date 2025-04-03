@@ -8,9 +8,10 @@ const typeKeywords = {
 /**
  * @typedef {{
  *   setPrimary(): ColumnBuilder
- *   setNotNull(): ColumnBuilder
+ *   setNullable(): ColumnBuilder
  *   setUnique(): ColumnBuilder
  *   setAutoIncrement(): ColumnBuilder
+ *   referenceTo(tableName: string, columnName: string): ColumnBuilder
  * }} ColumnBuilder
  */
 
@@ -23,26 +24,73 @@ const typeKeywords = {
  * }}
  */
 module.exports = function(tableName) {
+    /** @type {Record<string, {
+     *   type: any
+     *   param: any
+     *   isPrimary: any
+     *   isNotNull: any
+     *   isUnique: any
+     *   isAutoIncrement: any
+     *   referenceTo: any
+     * }>} */
     const columns = {}
     const addColumn = (name, type, param) => {
         const column = {
             type,
             param,
             isPrimary: false,
-            isNotNull: false,
+            isNotNull: true,
             isUnique: false,
             isAutoIncrement: false,
+            referenceTo: null,
         }
         columns[name] = column
         const columnBuilder = {
             setPrimary() { column.isPrimary = true; return columnBuilder },
-            setNotNull() { column.isNotNull = true; return columnBuilder },
+            setNullable() { column.isNotNull = false; return columnBuilder },
             setUnique() { column.isUnique = true; return columnBuilder },
-            setAutoIncrement() { column.isAutoIncrement = true; return columnBuilder },
+            setAutoIncrement() { column.isAutoIncrement = true; column.isNotNull = false; return columnBuilder },
+            referenceTo(tableName, columnName) { column.referenceTo = { table: tableName, column: columnName }; return columnBuilder },
         }
         return columnBuilder
     }
-    const compile = (protocol) => `CREATE TABLE ${tableName} (${Object.keys(columns).map(columnName => `${columnName} ${typeKeywords[columns[columnName].type][protocol]}${columns[columnName].param ? `(${columns[columnName].param})` : ''}${columns[columnName].isPrimary ? ' PRIMARY KEY' : ''}${columns[columnName].isNotNull ? ' NOT NULL' : ''}${columns[columnName].isUnique ? ' UNIQUE' : ''}${columns[columnName].isAutoIncrement ? ' ' + { mysql: 'AUTO_INCREMENT', sqlite: 'AUTOINCREMENT' }[protocol] : ''}`).join(', ')})`
+    const compile = (protocol) => {
+        let builder = ''
+        builder += 'CREATE TABLE '
+        builder += 'IF NOT EXISTS '
+        builder += `${tableName} `
+        builder += '('
+        let isFirst = true
+        for (const columnName in columns) {
+            const column = columns[columnName]
+
+            if (!isFirst) builder += ', '
+            isFirst = false
+
+            builder += `${columnName} ${typeKeywords[column.type][protocol]}`
+            if (column.param) { builder += `(${column.param})` }
+            if (column.isPrimary) { builder += ` PRIMARY KEY` }
+            if (column.isNotNull) { builder += ` NOT NULL` }
+            if (column.isUnique) { builder += ` UNIQUE` }
+            if (column.isAutoIncrement) { builder += { mysql: ` AUTO_INCREMENT`, sqlite: ` AUTOINCREMENT` }[protocol] }
+        }
+        // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
+        for (const columnName in columns) {
+            const column = columns[columnName]
+            if (!column.referenceTo) continue
+
+            if (!isFirst) builder += ', '
+            isFirst = false
+
+            if (protocol === 'sqlite') {
+                builder += `FOREIGN KEY (${columnName}) REFERENCES ${column.referenceTo.table}(${column.referenceTo.column})`
+            } else {
+                builder += `FOREIGN KEY (${columnName}) REFERENCES ${column.referenceTo.table}(${column.referenceTo.column})`
+            }
+        }
+        builder += ')'
+        return builder
+    }
 
     return {
         addColumn,

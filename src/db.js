@@ -1,4 +1,5 @@
 const fs = require('fs')
+const table = require('./db/table')
 
 // Handles the different database providers
 // Supports MySQL and Sqlite
@@ -85,43 +86,42 @@ function createSqliteDB() {
     const db = new sqlite.Database(path.join(__dirname, '..', 'database', 'db.sqlite'))
     // TODO: read setup sql from file
     db.serialize(() => {
-        db.run(`CREATE TABLE IF NOT EXISTS messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    content TEXT NOT NULL,
-                    createdUtc BIGINT NOT NULL,
-                    channelId INTEGER NOT NULL,
-                    senderId INTEGER NOT NULL
-                );`)
-            .on('error', console.error)
-        db.run(`CREATE TABLE IF NOT EXISTS channels (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uuid VARCHAR(36) NOT NULL,
-                    name TEXT NOT NULL,
-                    ownerId INTEGER NOT NULL
-                );`)
-            .on('error', console.error)
-        db.run(`CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT NOT NULL,
-                    nickname TEXT NOT NULL,
-                    password VARCHAR(64) NOT NULL,
-                    theme INT
-                );`)
-            .on('error', console.error)
-        db.run(`CREATE TABLE IF NOT EXISTS userChannel (
-                    userId INT,
-                    channelId INT
-                );`)                
-            .on('error', console.error)
-        db.run(`CREATE TABLE IF NOT EXISTS invitations (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uuid VARCHAR(36) NOT NULL,
-                    userId INT NOT NULL,
-                    channelId INT NOT NULL,
-                    expiresAt BIGINT NOT NULL,
-                    usages INT NOT NULL
-                );`)
-            .on('error', console.error)
+        const users = table('users')
+        users.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        users.addColumn('username', 'TEXT')
+        users.addColumn('nickname', 'TEXT')
+        users.addColumn('password', 'VARCHAR', 64)
+        users.addColumn('theme', 'INT').setNullable()
+        db.run(users.compile('sqlite')).on('error', console.error)
+
+        const channels = table('channels')
+        channels.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        channels.addColumn('uuid', 'VARCHAR', 36)
+        channels.addColumn('name', 'TEXT')
+        channels.addColumn('ownerId', 'INT').referenceTo('users', 'id')
+        db.run(channels.compile('sqlite')).on('error', console.error)
+
+        const messages = table('messages')
+        messages.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        messages.addColumn('content', 'TEXT')
+        messages.addColumn('createdUtc', 'BIGINT')
+        messages.addColumn('channelId', 'INT').referenceTo('channels', 'id')
+        messages.addColumn('senderId', 'INT').referenceTo('users', 'id')
+        db.run(messages.compile('sqlite')).on('error', console.error)
+
+        const userChannel = table('userChannel')
+        userChannel.addColumn('userId', 'INT').referenceTo('users', 'id')
+        userChannel.addColumn('channelId', 'INT').referenceTo('channels', 'id')
+        db.run(userChannel.compile('sqlite')).on('error', console.error)
+
+        const invitations = table('invitations')
+        invitations.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        invitations.addColumn('uuid', 'VARCHAR', 36)
+        invitations.addColumn('userId', 'INT').referenceTo('users', 'id')
+        invitations.addColumn('channelId', 'INT').referenceTo('channels', 'id')
+        invitations.addColumn('expiresAt', 'BIGINT')
+        invitations.addColumn('usages', 'INT')
+        db.run(invitations.compile('sqlite')).on('error', console.error)
     })
     return {
         query(table) {
