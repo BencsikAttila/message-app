@@ -237,3 +237,15 @@ dialog ::backdrop {
 .user-status-offline {
     background-color: var(--status-offline);
 }
+
+.main section {
+    margin: 32px;
+    border: 2px solid var(--base3);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+}
+
+.main section h1 {
+    margin-top: 4px;
+}

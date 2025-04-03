@@ -30,17 +30,12 @@ router.get('/api/user', auth.middleware, async (req, res) => {
 router.patch('/api/user', auth.middleware, async (req, res) => {
     try {
         if ('nickname' in req.body) {
-            
+            await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [ req.body.nickname, req.credentials.id ])
+            res.status(200)
+            res.end()
+        } else {
+            res.status(400)
         }
-        const sqlUser = await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1', req.credentials.id)
-        res.setHeader('Content-Type', 'application/json')
-        res.statusCode = 200
-        res.flushHeaders()
-        res.write(JSON.stringify({
-            ...sqlUser[0],
-            id: undefined,
-            password: undefined,
-        }))
         res.end()
     } catch (error) {
         console.error(error)

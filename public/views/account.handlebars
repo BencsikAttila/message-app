@@ -1,35 +1,4 @@
-<div class="top-bar">
-    <div class="top-bar-left">
-        <button id="button-toggle-left-side-bar">Channels</button>
-        <select id="select-theme" aria-label="theme">
-            <option value="default">Default</option>
-            <option value="google">Google Dark</option>
-            <option value="rosepine">Rosé Pine</option>
-        </select>
-        <script>
-                (() => {
-                    const selectThemeElement = document.getElementById('select-theme')
-                    selectThemeElement.value = localStorage.getItem('theme')
-                    selectThemeElement.addEventListener('input', () => {
-                        const theme = selectThemeElement.value
-                        localStorage.setItem('theme', theme)
-                        document.getElementById('theme-link').href = `/themes/${theme}.css`
-                    })
-                })()
-        </script>
-        <span style="text-wrap-mode: nowrap; margin-left: 16px;">
-            Logged in as <b>{{user.username}}</b>
-            <a href="/logout">Logout</a>
-        </span>
-    </div>
-    <div class="top-bar-center">
-        <span>Home</span>
-    </div>
-    <div class="top-bar-right">
-        <span id="label-status"></span>
-        <button id="button-toggle-right-side-bar">Users</button>
-    </div>
-</div>
+{{> header title="Home"}}
 
 <div class="main-container">
     <div class="left-side-bar" id="left-side-bar">
@@ -50,16 +19,14 @@
         </div>
     </div>
     <div class="main">
-        <h1>Account</h1>
-        <div>
-            <label for="nickname">Nickname:</label>
-            <input type="string" id="nickname" value="{{user.nickname}}">
-            <button onclick="
-                
-            ">
-                Update nickname
-            </button>
-        </div>
+        <section>
+            <h1>Account</h1>
+            <div style="margin-bottom: 16px;">
+                <label for="nickname">Nickname:</label>
+                <input type="string" id="account-nickname-input" value="{{user.nickname}}">
+            </div>
+            <button id="update-nickname-button">Save</button>
+        </section>
     </div>
     <div class="right-side-bar" id="right-side-bar">
 
@@ -72,3 +39,4 @@
 <script src="/js/websocket-client.js"></script>
 <script src="/js/script.js"></script>
 <script src="/js/channels.js"></script>
+<script src="/js/account.js"></script>
