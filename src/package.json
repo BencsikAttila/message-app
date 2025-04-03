@@ -2,6 +2,7 @@
   "name": "message-app",
   "version": "1.0.0",
   "dependencies": {
+    "connect-busboy": "^1.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
@@ -11,6 +12,7 @@
     "jose": "^6.0.8",
     "mime-types": "^2.1.35",
     "mysql2": "^3.11.3",
+    "sharp": "^0.33.5",
     "sqlite3": "^5.1.7",
     "uuid": "^11.1.0",
     "ws": "^8.18.0"

@@ -25,6 +25,12 @@
                 <label for="nickname">Nickname:</label>
                 <input type="string" id="account-nickname-input" value="{{user.nickname}}">
             </div>
+            <div style="margin-bottom: 16px;">
+                <label for="nickname">Avatar:</label>
+                <img src="/users/{{user.id}}/avatar.webp" width=32 height=32 alt="Avatar">
+                <input type="file" id="account-avatar-input">
+                <button id="delete-avatar-button">Remove Avatar</button>
+            </div>
             <button id="update-nickname-button">Save</button>
         </section>
     </div>

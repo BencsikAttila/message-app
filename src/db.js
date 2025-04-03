@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 // Handles the different database providers
 // Supports MySQL and Sqlite
 
@@ -76,7 +78,11 @@ function createSqliteDB() {
     const sqlite = require('sqlite3')
     const path = require('path')
 
-    const db = new sqlite.Database(path.join(__dirname, 'db.sqlite'))
+    if (!fs.existsSync(path.join(__dirname, '..', 'database'))) {
+        fs.mkdirSync(path.join(__dirname, '..', 'database'), { recursive: true })
+    }
+
+    const db = new sqlite.Database(path.join(__dirname, '..', 'database', 'db.sqlite'))
     // TODO: read setup sql from file
     db.serialize(() => {
         db.run(`CREATE TABLE IF NOT EXISTS messages (

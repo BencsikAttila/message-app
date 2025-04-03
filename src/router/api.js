@@ -1,9 +1,13 @@
+const path = require('path')
 const express = require('express')
 const database = require('../db')
 const databaseConnection = require('../db')
 const jsonUtils = require('../json-utils')
 const auth = require('../auth')
 const uuid = require('uuid')
+const fs = require('fs')
+const sharp = require('sharp')
+
 const router = express.Router(({ mergeParams: true }))
 
 router.get('/api/user', auth.middleware, async (req, res) => {
@@ -37,6 +41,114 @@ router.patch('/api/user', auth.middleware, async (req, res) => {
             res.status(400)
         }
         res.end()
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.get('/users/:userId/avatar.webp', auth.middleware, async (req, res) => {
+    try {
+        const sqlUser = await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1', req.params.userId)
+        if (!sqlUser.length) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+        
+        const filePath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.params.userId}.webp`)
+        if (!fs.existsSync(filePath)) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+
+        res.status(200)
+        res.setHeader('Content-Type', 'image/webp')
+
+        const size = Number.parseInt(req.query['size'] + '')
+        if (req.query['size'] && !Number.isNaN(size)) {
+            sharp(fs.readFileSync(filePath))
+                .resize(size, size)
+                .webp()
+                .toBuffer()
+                .then(buffer => {
+                    res.write(buffer)
+                    res.end()
+                })
+        } else {
+            const fileStream = fs.createReadStream(filePath, {
+                autoClose: true,
+            })
+            
+            fileStream.pipe(res)
+        }
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.put('/api/user/avatar', auth.middleware, async (req, res) => {
+    try {
+        req.pipe(req.busboy)
+        req.busboy.on('file', (fieldname, file, filename) => {
+            if (!fs.existsSync(path.join(__dirname, '..', '..', 'database', 'images', 'avatars'))) {
+                fs.mkdirSync(path.join(__dirname, '..', '..', 'database', 'images', 'avatars'), { recursive: true })
+            }
+            const chunks = []
+            file.on('data', chunk => chunks.push(chunk))
+            file.on('end', () => {
+                const buffer = Buffer.concat(chunks)
+                sharp(buffer)
+                    .resize(128, 128)
+                    .toFile(path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.user.id}.webp`), (error, info) => {
+                        if (error) {
+                            console.error(error)
+                            res
+                                .status(500)
+                                .json({
+                                    error: error.message
+                                })
+                                .end()
+                        } else {
+                            res
+                                .status(201)
+                                .end()
+                        }
+                    })
+            })
+        })
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.delete('/api/user/avatar', auth.middleware, async (req, res) => {
+    try {
+        const filepath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.user.id}.webp`)
+        if (fs.existsSync(filepath)) {
+            fs.rmSync(filepath)
+        }
+
+        res
+            .status(200)
+            .end()
     } catch (error) {
         console.error(error)
         res.setHeader('Content-Type', 'application/json')
@@ -95,7 +207,6 @@ router.get('/api/channels/:channelId/users', auth.middleware, async (req, res) =
         res.flushHeaders()
         res.write(JSON.stringify(sqlUsers.map(v => ({
             ...v,
-            id: undefined,
             password: undefined,
             // @ts-ignore
             isOnline: wsClients.some(_v => _v.user?.id === v.id),
@@ -124,7 +235,7 @@ router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res
             return
         }
 
-        const sqlMessages = await database.queryRaw('SELECT * FROM messages WHERE messages.channelId = ?', sqlChannel[0].id)
+        const sqlMessages = await database.queryRaw('SELECT * FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
 
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
