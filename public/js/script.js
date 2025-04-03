@@ -40,8 +40,12 @@ wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) =>
     }
 })
 wsClient.addEventListener('open', (e) => {
-    document.getElement('label-status', 'span').textContent = 'Connected'
+    document.getElement('icon-status', 'span').title = 'Connected'
+    document.getElement('icon-status', 'span').classList.add('connected')
+    document.getElement('icon-status', 'span').classList.remove('loading')
 })
 wsClient.addEventListener('close', (e) => {
-    document.getElement('label-status', 'span').textContent = 'Disconnected'
+    document.getElement('icon-status', 'span').title = 'Disconnected'
+    document.getElement('icon-status', 'span').classList.remove('connected')
+    document.getElement('icon-status', 'span').classList.add('loading')
 })

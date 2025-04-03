@@ -36,7 +36,9 @@ class WebSocketClient extends EventTarget {
                 reason: e.reason,
                 wasClean: e.wasClean,
             }))
-            _self.connect()
+            setTimeout(() => {
+                _self.connect()
+            }, 1000)
         })
         this.#websocket.addEventListener('error', e => this.dispatchEvent(new Event(e.type, {
             bubbles: e.bubbles,

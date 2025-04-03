@@ -57,3 +57,15 @@
     inherits: false;
     initial-value: #303134;
 }
+
+@property --status-online {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #239962;
+}
+
+@property --status-offline {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #686868;
+}
