@@ -180,9 +180,9 @@ dialog ::backdrop {
     opacity: 0.40;
 }
 
-.new-channel,
-.new-invitation {
+.fake-channel-button-container {
     display: flex;
+    flex-direction: column;
 }
 
 .fake-channel-button {
@@ -289,4 +289,11 @@ dialog ::backdrop {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.new-bundle-channel-item {
+    margin: 6px;
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    color: var(--text);
 }

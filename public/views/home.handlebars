@@ -1,23 +1,7 @@
 {{> header title="Home"}}
 
 <div class="main-container">
-    <div class="left-side-bar" id="left-side-bar">
-        <div id="channels-container">
-            <a class="channel selected" href="/">
-                Home
-            </a>
-        </div>
-        <div class="new-channel" class="fake-channel-button-container">
-            <button id="new-channel-button" class="fake-channel-button">New Channel</button>
-            <dialog id="new-channel-dialog">
-                <button autofocus id="new-channel-button-x">Close</button>
-                <div>
-                    <input type="text" id="new-channel-button-name-input" placeholder="Channel Name">
-                    <button id="new-channel-button-create">Create</button>
-                </div>
-            </dialog>
-        </div>
-    </div>
+    {{> channellist }}
     <div class="main">
         <section>
             <a href="/account">Account settings</a>
@@ -34,3 +18,4 @@
 <script src="/js/websocket-client.js"></script>
 <script src="/js/script.js"></script>
 <script src="/js/channels.js"></script>
+<script src="/js/bundles.js"></script>

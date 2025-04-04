@@ -30,6 +30,19 @@ type tables = {
         expiresAt: number
         usages: number
     },
+    bundles: {
+        id?: number
+        uuid: string,
+        name: string
+    },
+    bundleChannel: {
+        channelId: number
+        bundleId: number
+    },
+    bundleUser: {
+        userId: number
+        bundleId: number
+    },
 }
 
 export default tables

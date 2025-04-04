@@ -122,6 +122,22 @@ function createSqliteDB() {
         invitations.addColumn('expiresAt', 'BIGINT')
         invitations.addColumn('usages', 'INT')
         db.run(invitations.compile('sqlite')).on('error', console.error)
+
+        const bundles = table('bundles')
+        bundles.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        bundles.addColumn('uuid', 'VARCHAR', 36)
+        bundles.addColumn('name', 'TEXT')
+        db.run(bundles.compile('sqlite')).on('error', console.error)
+
+        const bundleChannel = table('bundleChannel')
+        bundleChannel.addColumn('channelId', 'INT').referenceTo('channels', 'id')
+        bundleChannel.addColumn('bundleId', 'INT').referenceTo('bundles', 'id')
+        db.run(bundleChannel.compile('sqlite')).on('error', console.error)
+
+        const bundleUser = table('bundleUser')
+        bundleUser.addColumn('userId', 'INT').referenceTo('users', 'id')
+        bundleUser.addColumn('bundleId', 'INT').referenceTo('bundles', 'id')
+        db.run(bundleUser.compile('sqlite')).on('error', console.error)
     })
     return {
         query(table) {

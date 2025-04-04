@@ -361,6 +361,132 @@ router.post('/api/channels', auth.middleware, async (req, res) => {
     }
 })
 
+router.get('/api/bundles', auth.middleware, async (req, res) => {
+    try {
+        const sqlChannels = await databaseConnection.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ?', req.credentials.id)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify(sqlChannels.map(v => ({
+            ...v,
+            id: undefined,
+        }))))
+        res.end()
+    } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.post('/api/bundles', auth.middleware, async (req, res) => {
+    /** @type {import('../db/model').default['bundles']} */
+    const newBundle = {
+        uuid: uuid.v4(),
+        name: req.body.name,
+    }
+
+    try {
+        const sqlRes = await database.insert('bundles', newBundle)
+        await database.insert('bundleUser', {
+            userId: req.credentials.id,
+            bundleId: sqlRes.lastID,
+        })
+
+        for (const channel of req.body.channels) {
+            const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', channel)
+            if (!sqlChannels.length) continue
+
+            await database.insert('bundleChannel', {
+                bundleId: sqlRes.lastID,
+                channelId: sqlChannels[0].id,
+            })
+        }
+        res
+            .status(200)
+            .end()
+    } catch (error) {
+        res
+            .status(500)
+            .setHeader('Content-Type', 'application/json')
+            .flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.get('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) => {
+    try {
+        const sqlChannels = await databaseConnection.queryRaw(`
+            SELECT channels.*
+            FROM channels
+            JOIN bundleChannel ON channels.id = bundleChannel.channelId
+            JOIN bundleUser ON bundleChannel.bundleId = bundleUser.bundleId
+            WHERE bundleUser.userId = ?
+            AND channels.uuid = ?
+        `, [ req.credentials.id, req.params.bundleId ])
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 200
+        res.flushHeaders()
+        res.write(JSON.stringify(sqlChannels.map(v => ({
+            ...v,
+            id: undefined,
+        }))))
+        res.end()
+    } catch (error) {
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.post('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) => {
+    try {
+        const sqlBundles = await database.queryRaw(`
+            SELECT bundles.*
+            FROM bundles
+            JOIN bundleChannel ON bundles.id = bundleChannel.bundleId
+            JOIN bundleUser ON bundles.id = bundleUser.bundleId
+            WHERE bundleUser.userId = ?
+            AND channels.uuid = ?
+        `, [])
+        if (!sqlBundles.length) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+
+        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+        if (!sqlChannels.length) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+
+        await database.insert('bundleChannel', {
+            bundleId: sqlBundles[0].id,
+            channelId: sqlChannels[0].id,
+        })
+
+        res
+            .status(200)
+            .end()
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.json(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
 router.get('/api/invitations', auth.middleware, async (req, res) => {
     try {
         const result = await (() => {

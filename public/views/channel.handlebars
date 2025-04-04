@@ -1,35 +1,7 @@
 {{> header }}
 
 <div class="main-container">
-    <div class="left-side-bar" id="left-side-bar">
-        <div id="channels-container">
-            <a class="channel" href="/">
-                Home
-            </a>
-        </div>
-        <div class="new-channel" class="fake-channel-button-container">
-            <button id="new-channel-button" class="fake-channel-button">New Channel</button>
-            <dialog id="new-channel-dialog">
-                <button autofocus id="new-channel-button-x">Close</button>
-                <div>
-                    <input type="text" id="new-channel-button-name-input" placeholder="Channel Name">
-                    <button id="new-channel-button-create">Create</button>
-                </div>
-            </dialog>
-        </div>
-        <div class="new-invitation" class="fake-channel-button-container">
-            <button id="new-invitation-button" class="fake-channel-button">Invite</button>
-            <dialog id="new-invitation-dialog">
-                <button autofocus id="new-invitation-button-x">Close</button>
-                <div>
-                    <div id="invitations-container">
-
-                    </div>
-                    <button id="new-invitation-button-create">Create</button>
-                </div>
-            </dialog>
-        </div>
-    </div>
+    {{> channellist }}
     <div class="main">
         <div class="chat-messages-container" id="chat-messages-container">
         </div>
@@ -53,3 +25,4 @@
 <script src="/js/channels.js"></script>
 <script src="/js/messaging.js"></script>
 <script src="/js/invitations.js"></script>
+<script src="/js/bundles.js"></script>
