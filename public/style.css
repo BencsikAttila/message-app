@@ -152,6 +152,7 @@ body {
     color: var(--text);
     text-decoration: none;
     display: block;
+    background-color: var(--button-background);
 }
 
 .channel:active,
@@ -296,4 +297,31 @@ dialog ::backdrop {
     border: 2px solid var(--base3);
     border-radius: var(--border-radius);
     color: var(--text);
+}
+
+.bundle-item.collapsed > .bundle-channels {
+    display: none;
+}
+
+.bundle-item > span {
+    display: block;
+    margin: 4px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    flex: 1 1 100%;
+    cursor: pointer;
+    background-color: var(--button-background);
+}
+
+.bundle-item > span:hover,
+.bundle-item > span:active {
+    background-color: var(--base3);
+    border: 2px solid var(--highlight);
+    color: var(--highlight);
+}
+
+.bundle-item > .bundle-channels {
+    transition: all 200ms linear;
 }

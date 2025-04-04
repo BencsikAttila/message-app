@@ -363,11 +363,11 @@ router.post('/api/channels', auth.middleware, async (req, res) => {
 
 router.get('/api/bundles', auth.middleware, async (req, res) => {
     try {
-        const sqlChannels = await databaseConnection.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ?', req.credentials.id)
+        const sqlBundles = await databaseConnection.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ?', req.credentials.id)
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
         res.flushHeaders()
-        res.write(JSON.stringify(sqlChannels.map(v => ({
+        res.write(JSON.stringify(sqlBundles.map(v => ({
             ...v,
             id: undefined,
         }))))
@@ -419,17 +419,32 @@ router.post('/api/bundles', auth.middleware, async (req, res) => {
 
 router.get('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) => {
     try {
+        const sqlBundles = await databaseConnection.queryRaw(`
+            SELECT bundles.*
+            FROM bundles
+            JOIN bundleUser ON bundles.id = bundleUser.bundleId
+            WHERE bundleUser.userId = ?
+            AND bundles.uuid = ?
+        `, [ req.credentials.id, req.params.bundleId ])
+
+        if (!sqlBundles.length) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+
         const sqlChannels = await databaseConnection.queryRaw(`
             SELECT channels.*
             FROM channels
             JOIN bundleChannel ON channels.id = bundleChannel.channelId
-            JOIN bundleUser ON bundleChannel.bundleId = bundleUser.bundleId
-            WHERE bundleUser.userId = ?
-            AND channels.uuid = ?
-        `, [ req.credentials.id, req.params.bundleId ])
-        res.setHeader('Content-Type', 'application/json')
-        res.statusCode = 200
-        res.flushHeaders()
+            AND bundleChannel.bundleId = ?
+        `, [ sqlBundles[0].id ])
+
+        res
+            .status(200)
+            .setHeader('Content-Type', 'application/json')
+            .flushHeaders()
         res.write(JSON.stringify(sqlChannels.map(v => ({
             ...v,
             id: undefined,

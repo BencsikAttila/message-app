@@ -75,12 +75,19 @@
     fetch('/api/bundles')
         .then(v => v.json())
         .then(async v => {
-            const bundleElement = document.getElement('channels-container').appendChild(document.fromHTML(`
-                <div class="bundle-item">
-
-                </div>
-            `))
             for (const bundle of v) {
+                const bundleElement = document.getElement('channels-container').appendChild(document.fromHTML(Handlebars.compile(`
+                    <div class="bundle-item collapsed">
+                        <span>{{name}}</span>
+                        <div class="bundle-channels">
+    
+                        </div>
+                    </div>
+                `)(bundle)))
+                const channelsContainer = bundleElement.getElementsByClassName('bundle-channels').item(0)
+                bundleElement.querySelector('span').addEventListener('click', () => {
+                    bundleElement.classList.toggle('collapsed')
+                })
                 fetch(`/api/bundles/${bundle.uuid}/channels`)
                     .then(v => v.json())
                     .then(async v => {
@@ -90,7 +97,7 @@
                                 ...channel,
                                 isSelected: channel.uuid === window.ENV.channel?.uuid,
                             })
-                            bundleElement.appendChild(document.fromHTML(html))
+                            channelsContainer.appendChild(document.fromHTML(html))
                         }
                     })
             }
