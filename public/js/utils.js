@@ -41,9 +41,11 @@ document.fromHTML = function (html) {
 document.addEventListener('DOMContentLoaded', () => {
     for (const dialog of document.getElementsByTagName('dialog')) {
         dialog.addEventListener('click', (event) => {
-            if (event.target === dialog) {
-                dialog.close()
-            }
-        });
+            if (event.target !== dialog) return
+            const r = dialog.getBoundingClientRect()
+            if (event.clientX > r.left && event.clientX < r.right &&
+                event.clientY > r.top && event.clientY < r.bottom) return
+            dialog.close()
+        })
     }
 })

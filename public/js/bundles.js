@@ -6,6 +6,16 @@
     const newBundleAddCreateButton = document.getElement('new-bundle-button-create', 'button')
     const newBundleNameInput = document.getElement('new-bundle-name', 'input')
 
+    const newBundleDialog = document.getElement("new-bundle-dialog", 'dialog')
+
+    document.getElement('new-bundle-button', 'button').addEventListener('click', () => {
+        newBundleDialog.showModal()
+    })
+
+    document.getElement('new-bundle-button-x', 'button').addEventListener('click', () => {
+        newBundleDialog.close()
+    })
+
     /** @type {Set<string>} */
     const currentBundle = new Set()
 
@@ -51,10 +61,10 @@
     newBundleAddChannelButton.addEventListener('click', () => {
         if (!newBundleSelect.value) return
         currentBundle.add(newBundleSelect.value)
-        refreshList()
+        refreshCurrentChannelList()
     })
 
-    function refreshList() {
+    function refreshCurrentChannelList() {
         currentBundleChannelsContainer.innerHTML = ''
         for (const item of currentBundle) {
             const element = currentBundleChannelsContainer.appendChild(document.fromHTML(Handlebars.compile(`
@@ -67,39 +77,60 @@
             })))
             element.querySelector('button').addEventListener('click', () => {
                 currentBundle.delete(item)
-                refreshList()
+                refreshCurrentChannelList()
             })
         }
     }
 
-    fetch('/api/bundles')
-        .then(v => v.json())
-        .then(async v => {
-            for (const bundle of v) {
-                const bundleElement = document.getElement('channels-container').appendChild(document.fromHTML(Handlebars.compile(`
-                    <div class="bundle-item collapsed">
-                        <span>{{name}}</span>
-                        <div class="bundle-channels">
-    
+    function refreshList() {
+        for (const element of document.getElementsByClassName('bundle-item')) {
+            element.remove()
+        }
+
+        fetch('/api/bundles')
+            .then(v => v.json())
+            .then(async v => {
+                for (const bundle of v) {
+                    const bundleElement = document.getElement('channels-container').appendChild(document.fromHTML(Handlebars.compile(`
+                        <div class="bundle-item collapsed">
+                            <span>{{name}} <button class="x">X</button></span>
+                            <div class="bundle-channels">
+        
+                            </div>
                         </div>
-                    </div>
-                `)(bundle)))
-                const channelsContainer = bundleElement.getElementsByClassName('bundle-channels').item(0)
-                bundleElement.querySelector('span').addEventListener('click', () => {
-                    bundleElement.classList.toggle('collapsed')
-                })
-                fetch(`/api/bundles/${bundle.uuid}/channels`)
-                    .then(v => v.json())
-                    .then(async v => {
-                        for (const channel of v) {
-                            const template = await window.getTemplate('channel')
-                            const html = template({
-                                ...channel,
-                                isSelected: channel.uuid === window.ENV.channel?.uuid,
+                    `)(bundle)))
+
+                    const deleteButton = bundleElement.getElementsByTagName('button').item(0)
+                    const channelsContainer = bundleElement.getElementsByClassName('bundle-channels').item(0)
+
+                    deleteButton.addEventListener('click', () => {
+                        fetch(`/api/bundles/${bundle.uuid}`, {
+                            method: 'DELETE'
+                        })
+                            .then(v => {
+                                refreshList()
                             })
-                            channelsContainer.appendChild(document.fromHTML(html))
-                        }
                     })
-            }
-        })
+
+                    bundleElement.querySelector('span').addEventListener('click', () => {
+                        bundleElement.classList.toggle('collapsed')
+                    })
+
+                    fetch(`/api/bundles/${bundle.uuid}/channels`)
+                        .then(v => v.json())
+                        .then(async v => {
+                            for (const channel of v) {
+                                const template = await window.getTemplate('channel')
+                                const html = template({
+                                    ...channel,
+                                    isSelected: channel.uuid === window.ENV.channel?.uuid,
+                                })
+                                channelsContainer.appendChild(document.fromHTML(html))
+                            }
+                        })
+                }
+            })
+    }
+
+    refreshList()
 })()

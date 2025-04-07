@@ -9,7 +9,7 @@
             .then(v => v.json())
             .then(v => window.ENV.channel = v)
     }
-        
+
     const newChannelDialog = document.getElement("new-channel-dialog", 'dialog')
 
     document.getElement('new-channel-button', 'button').addEventListener('click', () => {

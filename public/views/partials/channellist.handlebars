@@ -14,6 +14,7 @@
             </div>
         </dialog>
     </div>
+    {{#if channel}}
     <div class="new-invitation fake-channel-button-container">
         <button id="new-invitation-button" class="fake-channel-button">Invite</button>
         <dialog id="new-invitation-dialog">
@@ -26,18 +27,22 @@
             </div>
         </dialog>
     </div>
+    {{/if}}
     <div class="new-bundle fake-channel-button-container">
         <button id="new-bundle-button" class="fake-channel-button">New Bundle</button>
-        <div>
-            <input id="new-bundle-name">
-            <select id="new-bundle-select">
+        <dialog id="new-bundle-dialog">
+            <button autofocus id="new-bundle-button-x">Close</button>
+            <div>
+                <input id="new-bundle-name">
+                <select id="new-bundle-select">
 
-            </select>
-            <button id="new-bundle-button-add-channel">Add</button>
-            <button id="new-bundle-button-create">Create</button>
-            <div id="current-bundle-channels">
+                </select>
+                <button id="new-bundle-button-add-channel">Add</button>
+                <button id="new-bundle-button-create">Create</button>
+                <div id="current-bundle-channels">
 
+                </div>
             </div>
-        </div>
+        </dialog>
     </div>
 </div>

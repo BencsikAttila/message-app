@@ -1,9 +1,9 @@
 <div class="user-item">
-    <img src="/users/{{id}}/avatar.webp?size=16" width=16 height=16 class="user-avatar" onerror="this.classList.add('empty-avatar')">
+    <div class="user-avatar-stack">
+        <img src="/users/{{id}}/avatar.webp?size=24" width=24 height=24 class="user-avatar" onerror="this.classList.add('empty-avatar')">
+        <span class="user-status {{#if isOnline}}user-status-online{{else}}user-status-offline{{/if}}"></span>
+    </div>
     <span>
         {{nickname}}
     </span>
-    {{#if isOnline}}
-    <span class="user-status {{#if isOnline}}user-status-online{{else}}user-status-offline{{/if}}"></span>
-    {{/if}}
 </div>

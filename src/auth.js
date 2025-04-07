@@ -51,7 +51,7 @@ const auth = {
         const token = await new SignJWT({ id: user.id })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
-            .setExpirationTime(process.env.JWT_EXPIRATION_TIME)
+            .setExpirationTime('1d')
             .sign(secretKey)
         return {
             token: token,

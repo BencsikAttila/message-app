@@ -224,11 +224,16 @@ dialog ::backdrop {
     background-color: var(--button-background);
 }
 
+.user-avatar-stack > .user-status {
+    position: absolute;
+    transform: translate(-75%, 150%);
+    outline: 2px solid var(--button-background);
+}
+
 .user-status {
     display: inline-block;
-    width: 1em;
-    height: 1em;
-    transform: translateY(0.1em);
+    width: 0.7em;
+    height: 0.7em;
     border-radius: 50%;
 }
 
@@ -250,6 +255,10 @@ dialog ::backdrop {
 
 .main section h1 {
     margin-top: 4px;
+}
+
+.user-avatar-stack {
+    display: inline-block;
 }
 
 .user-avatar {
@@ -303,20 +312,23 @@ dialog ::backdrop {
     display: none;
 }
 
-.bundle-item > span {
-    display: block;
-    margin: 4px;
+.bundle-item {
     border: 2px solid var(--base3);
-    padding: 4px 8px;
     border-radius: var(--border-radius);
+    margin: 4px;
+    padding: 4px 8px;
     color: var(--text);
-    flex: 1 1 100%;
-    cursor: pointer;
     background-color: var(--button-background);
 }
 
-.bundle-item > span:hover,
-.bundle-item > span:active {
+.bundle-item > span {
+    display: block;
+    flex: 1 1 100%;
+    cursor: pointer;
+}
+
+.bundle-item:hover,
+.bundle-item:active {
     background-color: var(--base3);
     border: 2px solid var(--highlight);
     color: var(--highlight);

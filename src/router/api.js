@@ -279,9 +279,8 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
                 content: newMessage.content,
                 channel: sqlChannel[0].uuid,
                 createdUtc: newMessage.createdUtc,
-                user: {
-                    nickname: req.user.nickname
-                }
+                ...req.user,
+                senderId: req.user.id,
             })))
         }
 
@@ -382,6 +381,13 @@ router.get('/api/bundles', auth.middleware, async (req, res) => {
 })
 
 router.post('/api/bundles', auth.middleware, async (req, res) => {
+    if (!req.body.name || !('' + req.body.name).trim()) {
+        res
+            .status(400)
+            .end()
+        return
+    }
+
     /** @type {import('../db/model').default['bundles']} */
     const newBundle = {
         uuid: uuid.v4(),
@@ -413,6 +419,31 @@ router.post('/api/bundles', auth.middleware, async (req, res) => {
             .setHeader('Content-Type', 'application/json')
             .flushHeaders()
         res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.delete('/api/bundles/:uuid', auth.middleware, async (req, res) => {
+    try {
+        const sqlBundles = await databaseConnection.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.uuid = ?', [ req.credentials.id, req.params['uuid'] + '' ])
+        if (!sqlBundles.length) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+        
+        const sqlRes1 = database.queryRaw('DELETE FROM bundleUser WHERE bundleUser.userId = ? AND bundleUser.bundleId = ?', [ req.credentials.id, sqlBundles[0].id ])
+        res
+            .status(200)
+            .json(sqlRes1)
+            .end()
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.json(JSON.stringify(error, jsonUtils.replacer))
         res.end()
     }
 })

@@ -69,3 +69,7 @@
     inherits: false;
     initial-value: #686868;
 }
+
+* {
+    scrollbar-color: var(--input-background) var(--base1);
+}
