@@ -12,12 +12,11 @@ const router = express.Router(({ mergeParams: true }))
 
 router.get('/api/user', auth.middleware, async (req, res) => {
     try {
-        const sqlUser = await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1', req.credentials.id)
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
         res.flushHeaders()
         res.write(JSON.stringify({
-            ...sqlUser[0],
+            ...req.user,
             id: undefined,
             password: undefined,
         }))
@@ -60,19 +59,28 @@ router.get('/users/:userId/avatar.webp', auth.middleware, async (req, res) => {
                 .end()
             return
         }
-        
+
+        const size = Number.parseInt(req.query['size'] + '')
+
         const filePath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.params.userId}.webp`)
         if (!fs.existsSync(filePath)) {
-            res
-                .status(404)
+            if (req.query['nodefault']) {
+                res
+                .status (404)
                 .end()
+            } else {
+                if (req.query['size'] && !Number.isNaN(size)) {
+                    res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser[0].id)}.webp?set=set4&size=${size}x${size}`)
+                } else {
+                    res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser[0].id)}.webp?set=set4`)
+                }
+            }
             return
         }
 
         res.status(200)
         res.setHeader('Content-Type', 'image/webp')
 
-        const size = Number.parseInt(req.query['size'] + '')
         if (req.query['size'] && !Number.isNaN(size)) {
             sharp(fs.readFileSync(filePath))
                 .resize(size, size)
@@ -265,10 +273,18 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
 
     /** @type {import('../db/model').default['messages']} */
     const newMessage = {
-        content: req.body.content,
+        content: (req.body.content ?? '').trim(),
         createdUtc: Math.floor(new Date().getTime() / 1000),
         channelId: sqlChannel[0].id,
         senderId: req.credentials.id,
+    }
+
+    if (!newMessage.content) {
+        res
+            .status(400)
+            .json({ error: 'Empty message' })
+            .end()
+        return
     }
 
     try {
@@ -279,8 +295,9 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
                 content: newMessage.content,
                 channel: sqlChannel[0].uuid,
                 createdUtc: newMessage.createdUtc,
-                ...req.user,
+                user: req.user,
                 senderId: req.user.id,
+                ...req.user,
             })))
         }
 
@@ -653,6 +670,14 @@ router.get('/api/invitations/:uuid/use', auth.middleware, async (req, res) => {
         res.json(JSON.stringify(error, jsonUtils.replacer))
         res.end()
     }
+})
+
+router.get('/hbs/partials', async (req, res) => {
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'public', 'partials'))
+    res
+        .status(200)
+        .json(files.map(v => v.replace('.handlebars', '')))
+        .end()
 })
 
 module.exports = router

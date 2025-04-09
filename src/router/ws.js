@@ -9,7 +9,7 @@ router.ws('/', async (ws, req, next) => {
     ws.token = token
     const verifyRes = await auth.verify(token)
     if (verifyRes) {
-        const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]
+        const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1;', verifyRes.id))?.[0]
         if (user) {
             // @ts-ignore
             ws.credentials = verifyRes

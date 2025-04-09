@@ -99,11 +99,9 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         return
     }
 
-    const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', req.credentials.id))[0]
-
     res.render('channel', {
         user: {
-            ...user,
+            ...req.user,
             password: undefined,
         },
         channel: {
@@ -164,6 +162,7 @@ router.get('/invitations/:uuid/use', auth.middleware, async (req, res) => {
     }
 })
 
+router.use(express.static(path.join(__dirname, '..', '..', 'public')))
 router.use(express.static(path.join(__dirname, '..', '..', 'public')))
 router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
 

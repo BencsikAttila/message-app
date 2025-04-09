@@ -19,6 +19,7 @@ require('./db') // the instance is created once in this file
 const app = express()
 global['wsInstance'] = expressWs(app)
 app.engine('handlebars', expressHandlebars.engine({
+    partialsDir: path.join(__dirname, '..', 'public', 'partials'),
     helpers: {
         'JSON': function (obj) {
             return JSON.stringify(obj)

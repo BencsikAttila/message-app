@@ -5,8 +5,16 @@
     const newBundleAddChannelButton = document.getElement('new-bundle-button-add-channel', 'button')
     const newBundleAddCreateButton = document.getElement('new-bundle-button-create', 'button')
     const newBundleNameInput = document.getElement('new-bundle-name', 'input')
-
+    const bundlesContainer = document.getElement('bundles-container', 'div')
+    const bundlesHeader = document.getElement('bundles-header', 'h1')
     const newBundleDialog = document.getElement("new-bundle-dialog", 'dialog')
+    /** @type {Set<string>} */ const expandedBundles = new Set()
+
+    try {
+        for (const element of JSON.parse(localStorage.getItem('expanded-bundles') ?? '[]')) {
+            expandedBundles.add(element)
+        }
+    } catch (error) { }
 
     document.getElement('new-bundle-button', 'button').addEventListener('click', () => {
         newBundleDialog.showModal()
@@ -83,16 +91,14 @@
     }
 
     function refreshList() {
-        for (const element of document.getElementsByClassName('bundle-item')) {
-            element.remove()
-        }
-
         fetch('/api/bundles')
             .then(v => v.json())
             .then(async v => {
+                bundlesContainer.innerHTML = ''
+                bundlesHeader.style.display = v.length ? null : 'none'
                 for (const bundle of v) {
-                    const bundleElement = document.getElement('channels-container').appendChild(document.fromHTML(Handlebars.compile(`
-                        <div class="bundle-item collapsed">
+                    const bundleElement = bundlesContainer.appendChild(document.fromHTML(Handlebars.compile(`
+                        <div class="bundle-item${expandedBundles.has(bundle.uuid) ? '' : ' collapsed'}">
                             <span>{{name}} <button class="x">X</button></span>
                             <div class="bundle-channels">
         
@@ -113,7 +119,18 @@
                     })
 
                     bundleElement.querySelector('span').addEventListener('click', () => {
-                        bundleElement.classList.toggle('collapsed')
+                        if (bundleElement.classList.contains('collapsed')) {
+                            bundleElement.classList.remove('collapsed')
+                            expandedBundles.add(bundle.uuid)
+                        } else {
+                            bundleElement.classList.add('collapsed')
+                            expandedBundles.delete(bundle.uuid)
+                        }
+                        const _expandedBundles = []
+                        for (const element of expandedBundles) {
+                            _expandedBundles.push(element)
+                        }
+                        localStorage.setItem('expanded-bundles', JSON.stringify(_expandedBundles))
                     })
 
                     fetch(`/api/bundles/${bundle.uuid}/channels`)

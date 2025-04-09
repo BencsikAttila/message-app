@@ -34,12 +34,15 @@ input {
 
 button,
 input[type=submit],
-select {
+select,
+.file-input-label {
     border: 2px solid var(--base3);
     border-radius: var(--border-radius);
     color: var(--text);
     cursor: pointer;
     background-color: var(--button-background);
+    font-size: 0.8em;
+    padding-inline: 6px;
 }
 
 button:hover,
@@ -47,7 +50,9 @@ input[type=submit]:hover,
 select:hover,
 button:active,
 input[type=submit]:active,
-select:active {
+select:active,
+.file-input-label:hover,
+.file-input-label:active {
     background-color: var(--base3);
     border: 2px solid var(--highlight);
     color: var(--highlight);

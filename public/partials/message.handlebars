@@ -1,0 +1,20 @@
+<div class="message">
+    <div class="message-header">
+        <span class="message-author">
+            {{> useravatar id=senderId size=24 }}
+            <span>{{nickname}}</span>
+        </span>
+        <span class="message-time">at {{createdAt}}</span>
+        <div style="flex: 1;"></div>
+        <div class="message-dropdown">
+            <div class="dropdown-content">
+                <button>Edit</button>
+                <button>Delete</button>
+            </div>
+            <span>...</span>
+        </div>
+    </div>
+    <div class="message-content">
+        {{content}}
+    </div>
+</div>

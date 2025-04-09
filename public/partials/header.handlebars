@@ -2,7 +2,7 @@
     <div class="top-bar-left">
         <button id="button-toggle-left-side-bar">Channels</button>
         <span style="text-wrap-mode: nowrap; margin-left: 16px; align-items: center; display: flex;">
-            <img src="/users/{{user.id}}/avatar.webp?size=32" width=32 height=32 class="user-avatar" style="transform: translateY(0px);" onerror="this.classList.add('empty-avatar')">
+            {{> useravatar id=user.id size=32 }}
             <span style="margin: 8px;">
                 <b>{{user.nickname}}</b>
                 <a href="/logout">Logout</a>

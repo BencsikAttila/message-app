@@ -17,8 +17,9 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label for="nickname">Avatar:</label>
-                <img src="/users/{{user.id}}/avatar.webp" width=32 height=32 alt="Avatar">
-                <input type="file" id="account-avatar-input">
+                {{> useravatar id=user.id size=32 }}
+                <label for="account-avatar-input" class="file-input-label">Upload Avatar</label>
+                <input type="file" id="account-avatar-input" style="display: none;">
                 <button id="delete-avatar-button">Remove Avatar</button>
             </div>
             <button id="update-nickname-button">Save</button>
@@ -30,6 +31,16 @@
 </div>
 
 <script src="/handlebars.min.js"></script>
+<script>
+    (function () {
+        var revive    = Handlebars.template,
+            templates = Handlebars.templates = Handlebars.templates || {};
+
+        {{#templates}}
+        templates['{{{name}}}'] = revive({{{template}}});
+        {{/templates}}
+    }());
+</script>
 <script src="/js/hbs.js"></script>
 <script src="/js/utils.js"></script>
 <script src="/js/websocket-client.js"></script>

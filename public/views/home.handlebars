@@ -13,6 +13,16 @@
 </div>
 
 <script src="/handlebars.min.js"></script>
+<script>
+    (function () {
+        var revive    = Handlebars.template,
+            templates = Handlebars.templates = Handlebars.templates || {};
+
+        {{#templates}}
+        templates['{{{name}}}'] = revive({{{template}}});
+        {{/templates}}
+    }());
+</script>
 <script src="/js/hbs.js"></script>
 <script src="/js/utils.js"></script>
 <script src="/js/websocket-client.js"></script>

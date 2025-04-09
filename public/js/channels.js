@@ -11,6 +11,8 @@
     }
 
     const newChannelDialog = document.getElement("new-channel-dialog", 'dialog')
+    const channelsContainer = document.getElement('channels-container', 'div')
+    const channelsHeader = document.getElement('channels-header', 'h1')
 
     document.getElement('new-channel-button', 'button').addEventListener('click', () => {
         newChannelDialog.showModal()
@@ -36,19 +38,25 @@
             .catch(console.error)
     })
 
-    fetch('/api/channels', { method: 'GET' })
-        .then(res => res.json())
-        .then(async res => {
-            for (const channel of res) {
-                const template = await window.getTemplate('channel')
-                const html = template({
-                    ...channel,
-                    isSelected: channel.uuid === window.ENV.channel?.uuid,
-                })
-                document.getElement('channels-container', 'div').appendChild(document.fromHTML(html))
-            }
-        })
-        .catch(console.error)
+    function refreshList() {
+        fetch('/api/channels', { method: 'GET' })
+            .then(res => res.json())
+            .then(async v => {
+                channelsContainer.innerHTML = ''
+                channelsHeader.style.display = v.length ? null : 'none'
+                for (const channel of v) {
+                    const template = await window.getTemplate('channel')
+                    const html = template({
+                        ...channel,
+                        isSelected: channel.uuid === window.ENV.channel?.uuid,
+                    })
+                    channelsContainer.appendChild(document.fromHTML(html))
+                }
+            })
+            .catch(console.error)
+    }
+
+    refreshList()
 
     if (window.ENV.channel?.uuid) {
         fetch(`/api/channels/${window.ENV.channel?.uuid}/users`)

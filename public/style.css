@@ -136,8 +136,44 @@ body {
 }
 
 .message-time {
-    font-size: 0.5em;
+    font-size: 0.75em;
     color: var(--text-dark);
+    margin: 6px;
+}
+
+.message-header {
+    display: flex;
+    align-items: end;
+}
+
+.message-author {
+    display: flex;
+    align-items: center;
+}
+
+.message-author > span {
+    margin: 4px;
+}
+
+.message-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.message-dropdown > span {
+    margin-left: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.message-dropdown .dropdown-content {
+    display: none;
+}
+
+.message-dropdown:hover .dropdown-content {
+    display: block;
 }
 
 /*#endregion*/
@@ -222,18 +258,24 @@ dialog ::backdrop {
     color: var(--text);
     flex: 1 1 100%;
     background-color: var(--button-background);
+    display: flex;
+    align-items: center;
+}
+
+.user-nickname {
+    margin: 4px;
 }
 
 .user-avatar-stack > .user-status {
     position: absolute;
-    transform: translate(-75%, 150%);
+    transform: translate(-75%, 200%);
     outline: 2px solid var(--button-background);
 }
 
 .user-status {
     display: inline-block;
-    width: 0.7em;
-    height: 0.7em;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
 }
 
@@ -264,7 +306,6 @@ dialog ::backdrop {
 .user-avatar {
     border-radius: 50%;
     display: inline-block;
-    transform: translateY(2px);
 }
 
 .empty-avatar {
@@ -336,4 +377,15 @@ dialog ::backdrop {
 
 .bundle-item > .bundle-channels {
     transition: all 200ms linear;
+}
+
+.bundle-item .x {
+    float: right;
+}
+
+.left-side-bar > h1 {
+    font-size: 1em;
+    margin: 4px;
+    font-weight: normal;
+    color: var(--text-dark);
 }

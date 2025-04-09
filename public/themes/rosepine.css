@@ -25,7 +25,7 @@
 @property --text-dark {
     syntax: "<color>";
     inherits: false;
-    initial-value: #6e6a86;
+    initial-value: #908caa;
 }
 
 @property --text {
