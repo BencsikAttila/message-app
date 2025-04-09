@@ -10,6 +10,52 @@ const sharp = require('sharp')
 
 const router = express.Router(({ mergeParams: true }))
 
+router.post('/api/login', async (req, res) => {
+    const { username, password } = req.body
+
+    const authResult = await auth.authenticate(database, username, password)
+
+    if (authResult.error) {
+        res
+            .status(401)
+            .json({
+                error: authResult.error,
+            })
+            .end()
+        return
+    }
+
+    res
+        .status(200)
+        .json({
+            token: authResult.token
+        })
+        .end()
+})
+
+router.post('/api/register', async (req, res) => {
+    const { username, password } = req.body
+
+    const authRes = await auth.create(database, username, password)
+
+    if (authRes.error) {
+        res
+            .status(401)
+            .json({
+                error: authRes.error,
+            })
+            .end()
+        return
+    }
+
+    res
+        .status(200)
+        .json({
+            token: authRes.token,
+        })
+        .end()
+})
+
 router.get('/api/user', auth.middleware, async (req, res) => {
     try {
         res.setHeader('Content-Type', 'application/json')
@@ -243,7 +289,7 @@ router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res
             return
         }
 
-        const sqlMessages = await database.queryRaw('SELECT * FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
+        const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.username as senderUsername, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
 
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
@@ -303,6 +349,34 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
 
         res.statusCode = 200
         res.end()
+    } catch (error) {
+        console.error(error)
+        res.setHeader('Content-Type', 'application/json')
+        res.statusCode = 500
+        res.flushHeaders()
+        res.write(JSON.stringify(error, jsonUtils.replacer))
+        res.end()
+    }
+})
+
+router.delete('/api/channels/:channelId/messages/:messageId', auth.middleware, async (req, res) => {
+    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+
+    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
+    if (!sqlPermission.length) {
+        res
+            .status(400)
+            .json({ error: 'No permissions' })
+            .end()
+        return
+    }
+
+    try {
+        const sqlRes = await database.queryRaw('DELETE FROM messages WHERE messages.senderId = ? AND messages.id = ?', [ req.credentials.id, req.params['messageId'] + '' ])
+        res
+            .status(200)
+            .json(sqlRes)
+            .end()
     } catch (error) {
         console.error(error)
         res.setHeader('Content-Type', 'application/json')

@@ -1,15 +1,4 @@
 (() => {
-    if (false)
-    {
-        const regex = /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/
-        const uuid = regex.exec(location.pathname)?.[0]
-        // @ts-ignore
-        window.ENV ??= {}
-        fetch(`/api/channels/${uuid}`)
-            .then(v => v.json())
-            .then(v => window.ENV.channel = v)
-    }
-
     const newChannelDialog = document.getElement("new-channel-dialog", 'dialog')
     const channelsContainer = document.getElement('channels-container', 'div')
     const channelsHeader = document.getElement('channels-header', 'h1')
@@ -59,15 +48,17 @@
     refreshList()
 
     if (window.ENV.channel?.uuid) {
+        const membersContainer = document.getElement('users-container', 'div')
         fetch(`/api/channels/${window.ENV.channel?.uuid}/users`)
             .then(v => v.json())
             .then(async v => {
+                membersContainer.innerHTML = ''
                 for (const user of v) {
                     const template = await window.getTemplate('user-item')
                     const html = template({
                         ...user,
                     })
-                    document.getElement('users-container', 'div').appendChild(document.fromHTML(html))
+                    membersContainer.appendChild(document.fromHTML(html))
                 }
             })
     }

@@ -1,15 +1,15 @@
-<div class="message">
+<div class="message" id="message-{{id}}">
     <div class="message-header">
         <span class="message-author">
             {{> useravatar id=senderId size=24 }}
-            <span>{{nickname}}</span>
+            <span>{{senderNickname}}</span>
         </span>
         <span class="message-time">at {{createdAt}}</span>
         <div style="flex: 1;"></div>
         <div class="message-dropdown">
             <div class="dropdown-content">
-                <button>Edit</button>
-                <button>Delete</button>
+                <button onclick="window.editMessage('{{id}}')">Edit</button>
+                <button onclick="window.deleteMessage('{{id}}')">Delete</button>
             </div>
             <span>...</span>
         </div>

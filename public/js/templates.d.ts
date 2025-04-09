@@ -6,6 +6,8 @@ declare global {
             channel?: import('../../src/db/model').default['channels']
             user?: import('../../src/db/model').default['users']
         }
+
+        readonly App: AppClient
     }
 }
 

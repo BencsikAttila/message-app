@@ -99,6 +99,18 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         return
     }
 
+    const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
+
+    const sqlUsers = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', sqlChannel[0].id)
+
+    /** @type {Array<import('ws').WebSocket>} */
+    const wsClients = []
+    for (const wsClient of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
+        wsClients.push(wsClient)
+    }
+
+    const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.username as senderUsername, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
+
     res.render('channel', {
         user: {
             ...req.user,
@@ -108,6 +120,21 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
             ...sqlChannel[0],
             id: undefined,
         },
+        members: sqlUsers.map(v => ({
+            ...v,
+            password: undefined,
+            // @ts-ignore
+            isOnline: wsClients.some(_v => _v.user?.id === v.id),
+        })),
+        messages: sqlMessages.map(v => ({
+            ...v,
+            createdAt: new Date(v.createdUtc * 1000).toLocaleTimeString(),
+        })),
+        channels: sqlChannels.map(v => ({
+            ...v,
+            id: undefined,
+            ownerId: undefined,
+        })),
     })
 })
 
@@ -163,10 +190,6 @@ router.get('/invitations/:uuid/use', auth.middleware, async (req, res) => {
 })
 
 router.use(express.static(path.join(__dirname, '..', '..', 'public')))
-router.use(express.static(path.join(__dirname, '..', '..', 'public')))
 router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
-
-// router.use(express.static(path.join(__dirname, '..', '..', 'client', 'build')))
-// router.get('*', (req,res) =>{ res.sendFile(path.join(__dirname, '..', '..', 'client', 'build', 'index.html')) })
 
 module.exports = router

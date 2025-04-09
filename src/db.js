@@ -160,10 +160,10 @@ function createSqliteDB() {
                     .finalize()
             })
         },
-        insert(table, values) {
+        insert(table, params) {
             return new Promise((resolve, reject) => {
-                const _keys = Object.keys(values)
-                const _values = _keys.map((v) => values[v])
+                const _keys = Object.keys(params)
+                const _values = _keys.map((v) => params[v])
 
                 db.prepare(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`)
                     .run(_values, function(error) {

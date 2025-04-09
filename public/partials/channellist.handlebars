@@ -7,8 +7,11 @@
     <h1 id="bundles-header" style="display: none;">Groups</h1>
     <div id="bundles-container">
     </div>
-    <h1 id="channels-header" style="display: none;">Channels</h1>
+    <h1 id="channels-header" {{#unless channels}} style="display: none;" {{/unless}}>Channels</h1>
     <div id="channels-container">
+        {{#each channels}}
+            {{>channel this}}
+        {{/each}}
     </div>
     <div class="new-channel fake-channel-button-container">
         <button id="new-channel-button" class="fake-channel-button">New Channel</button>

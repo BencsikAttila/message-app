@@ -4,6 +4,9 @@
     {{> channellist }}
     <div class="main">
         <div class="chat-messages-container" id="chat-messages-container">
+            {{#each messages}}
+            {{>message this}}
+            {{/each}}
         </div>
         <div class="chat-input-container">
             <input type="text" placeholder="Message" id="chat-input">
@@ -12,7 +15,9 @@
     </div>
     <div class="right-side-bar" id="right-side-bar">
         <div id="users-container">
-
+            {{#each members}}
+            {{>user-item this}}
+            {{/each}}
         </div>
     </div>
 </div>
