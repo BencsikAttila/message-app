@@ -475,6 +475,15 @@ router.post('/api/bundles', auth.middleware, async (req, res) => {
     if (!req.body.name || !('' + req.body.name).trim()) {
         res
             .status(400)
+            .json({ error: 'Bundle name is empty' })
+            .end()
+        return
+    }
+
+    if (!req.body.channels || !req.body.channels.length) {
+        res
+            .status(400)
+            .json({ error: 'Bundle content is empty' })
             .end()
         return
     }

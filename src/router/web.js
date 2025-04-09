@@ -89,13 +89,18 @@ router.get('/account', auth.middleware, async (req, res) => {
 router.get('/channels/:id', auth.middleware, async (req, res) => {
     const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.id)
     if (sqlChannel.length === 0) {
-        res.status(404).end()
+        res
+            .status(404)
+            .end()
         return
     }
 
     const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
     if (!sqlPermission.length) {
-        res.status(400).end()
+        res
+            .status(400)
+            .json({ error: 'No permissions' })
+            .end()
         return
     }
 
