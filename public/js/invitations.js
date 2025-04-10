@@ -2,7 +2,7 @@
     const newChannelDialog = document.getElement("new-invitation-dialog", 'dialog')
 
     function refreshInvitations() {
-        fetch(`/api/invitations?channel=${encodeURIComponent(window.ENV.channel.uuid)}`)
+        fetch(`/api/invitations?channel=${encodeURIComponent(window.ENV.channel.id)}`)
             .then(v => v.json())
             .then(async (/** @type {ReadonlyArray<import('../../src/db/model').default['invitations']>} */ v) => {
                 const container = document.getElement('invitations-container', 'div')
@@ -29,7 +29,7 @@
         fetch('/api/invitations', {
             method: 'POST',
             body: JSON.stringify({
-                channelId: window.ENV.channel.uuid,
+                channelId: window.ENV.channel.id,
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
@@ -41,8 +41,8 @@
             .catch(console.error)
     })
 
-    window['deleteInvitation'] = function(uuid) {
-        fetch(`/api/invitations/${uuid}`, {
+    window['deleteInvitation'] = function(id) {
+        fetch(`/api/invitations/${id}`, {
             method: 'DELETE'
         })
             .then(() => {

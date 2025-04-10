@@ -57,7 +57,7 @@
                 for (const channel of v) {
                     // @ts-ignore
                     newBundleSelect.options.add(document.fromHTML(Handlebars.compile(`
-                        <option class="new-bundle-channel-option" value="{{uuid}}">
+                        <option class="new-bundle-channel-option" value="{{id}}">
                             {{name}}
                         </option>
                     `)(channel)))
@@ -98,7 +98,7 @@
                 bundlesHeader.style.display = v.length ? null : 'none'
                 for (const bundle of v) {
                     const bundleElement = bundlesContainer.appendChild(document.fromHTML(Handlebars.compile(`
-                        <div class="bundle-item${expandedBundles.has(bundle.uuid) ? '' : ' collapsed'}">
+                        <div class="bundle-item${expandedBundles.has(bundle.id) ? '' : ' collapsed'}">
                             <span>{{name}} <button class="x">X</button></span>
                             <div class="bundle-channels">
         
@@ -110,7 +110,7 @@
                     const channelsContainer = bundleElement.getElementsByClassName('bundle-channels').item(0)
 
                     deleteButton.addEventListener('click', () => {
-                        fetch(`/api/bundles/${bundle.uuid}`, {
+                        fetch(`/api/bundles/${bundle.id}`, {
                             method: 'DELETE'
                         })
                             .then(v => {
@@ -121,10 +121,10 @@
                     bundleElement.querySelector('span').addEventListener('click', () => {
                         if (bundleElement.classList.contains('collapsed')) {
                             bundleElement.classList.remove('collapsed')
-                            expandedBundles.add(bundle.uuid)
+                            expandedBundles.add(bundle.id)
                         } else {
                             bundleElement.classList.add('collapsed')
-                            expandedBundles.delete(bundle.uuid)
+                            expandedBundles.delete(bundle.id)
                         }
                         const _expandedBundles = []
                         for (const element of expandedBundles) {
@@ -133,14 +133,14 @@
                         localStorage.setItem('expanded-bundles', JSON.stringify(_expandedBundles))
                     })
 
-                    fetch(`/api/bundles/${bundle.uuid}/channels`)
+                    fetch(`/api/bundles/${bundle.id}/channels`)
                         .then(v => v.json())
                         .then(async v => {
                             for (const channel of v) {
                                 const template = await window.getTemplate('channel')
                                 const html = template({
                                     ...channel,
-                                    isSelected: channel.uuid === window.ENV.channel?.uuid,
+                                    isSelected: channel.id === window.ENV.channel?.id,
                                 })
                                 channelsContainer.appendChild(document.fromHTML(html))
                             }

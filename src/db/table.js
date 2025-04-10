@@ -3,6 +3,7 @@ const typeKeywords = {
     'TEXT': { mysql: 'TEXT', sqlite: 'TEXT' },
     'BIGINT': { mysql: 'BIGINT', sqlite: 'BIGINT' },
     'VARCHAR': { mysql: 'VARCHAR', sqlite: 'VARCHAR' },
+    'UUID': { mysql: 'UUID', sqlite: 'UUID' },
 }
 
 /**
@@ -18,7 +19,7 @@ const typeKeywords = {
 /**
  * @param {string} tableName
  * @returns {{
- *   addColumn(name: string, type: 'INT' | 'TEXT' | 'BIGINT'): ColumnBuilder
+ *   addColumn(name: string, type: 'INT' | 'TEXT' | 'BIGINT' | 'UUID'): ColumnBuilder
  *   addColumn(name: string, type: 'VARCHAR', length: number): ColumnBuilder
  *   addId(): void
  *   compile(protocol: 'sqlite' | 'mysql'): string

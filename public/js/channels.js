@@ -37,7 +37,7 @@
                     const template = await window.getTemplate('channel')
                     const html = template({
                         ...channel,
-                        isSelected: channel.uuid === window.ENV.channel?.uuid,
+                        isSelected: channel.id === window.ENV.channel?.id,
                     })
                     channelsContainer.appendChild(document.fromHTML(html))
                 }
@@ -47,9 +47,9 @@
 
     refreshList()
 
-    if (window.ENV.channel?.uuid) {
+    if (window.ENV.channel?.id) {
         const membersContainer = document.getElement('users-container', 'div')
-        fetch(`/api/channels/${window.ENV.channel?.uuid}/users`)
+        fetch(`/api/channels/${window.ENV.channel?.id}/users`)
             .then(v => v.json())
             .then(async v => {
                 membersContainer.innerHTML = ''
@@ -64,7 +64,7 @@
     }
 
     window['leaveChannel'] = function() {
-        fetch(`/api/channels/${window.ENV.channel?.uuid}/leave`, { method: 'POST' })
+        fetch(`/api/channels/${window.ENV.channel?.id}/leave`, { method: 'POST' })
             .then(v => {
                 window.location.replace(`${window.location.origin}/`)
             })

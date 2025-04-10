@@ -1,47 +1,46 @@
+type UUID = string
+
 type tables = {
     messages: {
-        id?: number,
+        id: UUID,
         content: number,
         createdUtc: number,
-        channelId: number,
-        senderId: number,
+        channelId: UUID,
+        senderId: UUID,
     },
     channels: {
-        id?: number,
-        uuid: string,
+        id: UUID,
         name: string,
-        ownerId: number,
+        ownerId: UUID,
     },
     users: {
-        id?: number,
+        id: UUID,
         username: string,
         nickname: string,
         password: string,
     },
     userChannel: {
-        userId: number
-        channelId: number
+        userId: UUID
+        channelId: UUID
     },
     invitations: {
-        id?: number
-        uuid: string,
-        userId: number
-        channelId: number
+        id: UUID
+        userId: UUID
+        channelId: UUID
         expiresAt: number
         usages: number
     },
     bundles: {
-        id?: number
-        uuid: string,
+        id: UUID
         name: string
     },
     bundleChannel: {
-        channelId: number
-        bundleId: number
+        channelId: UUID
+        bundleId: UUID
     },
     bundleUser: {
-        userId: number
-        bundleId: number
+        userId: UUID
+        bundleId: UUID
     },
 }
 

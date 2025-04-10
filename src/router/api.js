@@ -81,7 +81,6 @@ router.get('/api/user', auth.middleware, async (req, res) => {
         res.flushHeaders()
         res.write(JSON.stringify({
             ...req.user,
-            id: undefined,
             password: undefined,
         }))
         res.end()
@@ -233,9 +232,16 @@ router.delete('/api/user/avatar', auth.middleware, async (req, res) => {
 
 router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
     try {
-        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
+        if (!sqlChannel.length) {
+            res
+                .status(404)
+                .json({ error: 'Channel not found' })
+                .end()
+            return
+        }
 
-        const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
+        const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ req.params.channelId, req.credentials.id ])
         if (!sqlPermission.length) {
             res
                 .status(400)
@@ -249,8 +255,6 @@ router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
         res.flushHeaders()
         res.write(JSON.stringify({
             ...sqlChannel[0],
-            id: undefined,
-            ownerId: undefined,
         }))
         res.end()
     } catch (error) {
@@ -264,9 +268,16 @@ router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
 
 router.get('/api/channels/:channelId/users', auth.middleware, async (req, res) => {
     try {
-        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
+        if (!sqlChannel.length) {
+            res
+                .status(404)
+                .json({ error: 'Channel not found' })
+                .end()
+            return
+        }
 
-        const sqlUsers = await databaseConnection.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', sqlChannel[0].id)
+        const sqlUsers = await databaseConnection.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', req.params.channelId)
 
         /** @type {Array<import('ws').WebSocket>} */
         const wsClients = []
@@ -296,9 +307,16 @@ router.get('/api/channels/:channelId/users', auth.middleware, async (req, res) =
 
 router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res) => {
     try {
-        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+        const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
+        if (!sqlChannel.length) {
+            res
+                .status(404)
+                .json({ error: 'Channel not found' })
+                .end()
+            return
+        }
 
-        const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
+        const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ req.params.channelId, req.credentials.id ])
         if (!sqlPermission.length) {
             res
                 .status(400)
@@ -307,7 +325,7 @@ router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res
             return
         }
 
-        const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.username as senderUsername, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
+        const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', req.params.channelId)
 
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 200
@@ -324,9 +342,16 @@ router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res
 })
 
 router.post('/api/channels/:channelId/messages', auth.middleware, async (req, res) => {
-    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
+    if (!sqlChannel.length) {
+        res
+            .status(404)
+            .json({ error: 'Channel not found' })
+            .end()
+        return
+    }
 
-    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
+    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ req.params.channelId, req.credentials.id ])
     if (!sqlPermission.length) {
         res
             .status(400)
@@ -337,9 +362,10 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
 
     /** @type {import('../db/model').default['messages']} */
     const newMessage = {
+        id: uuid.v4(),
         content: (req.body.content ?? '').trim(),
         createdUtc: Math.floor(new Date().getTime() / 1000),
-        channelId: sqlChannel[0].id,
+        channelId: req.params.channelId,
         senderId: req.credentials.id,
     }
 
@@ -357,11 +383,11 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
             client.send(JSON.stringify(/** @type {import('../websocket-messages').MessageCreatedEvent} */ ({
                 type: 'message_created',
                 content: newMessage.content,
-                channel: sqlChannel[0].uuid,
+                channel: req.params.channelId,
                 createdUtc: newMessage.createdUtc,
                 user: req.user,
                 senderId: req.user.id,
-                ...req.user,
+                senderNickname: req.user.nickname,
             })))
         }
 
@@ -378,9 +404,16 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
 })
 
 router.delete('/api/channels/:channelId/messages/:messageId', auth.middleware, async (req, res) => {
-    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
+    if (!sqlChannel.length) {
+        res
+            .status(404)
+            .json({ error: 'Channel not found' })
+            .end()
+        return
+    }
 
-    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
+    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ req.params.channelId, req.credentials.id ])
     if (!sqlPermission.length) {
         res
             .status(400)
@@ -406,8 +439,7 @@ router.delete('/api/channels/:channelId/messages/:messageId', auth.middleware, a
 })
 
 router.post('/api/channels/:channelId/leave', auth.middleware, async (req, res) => {
-    const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
-
+    const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
     if (!sqlChannels.length) {
         res
             .status(400)
@@ -416,7 +448,7 @@ router.post('/api/channels/:channelId/leave', auth.middleware, async (req, res) 
         return
     }
 
-    await database.queryRaw('DELETE FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ?', [ sqlChannels[0].id, req.credentials.id ])
+    await database.queryRaw('DELETE FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ?', [ req.params.channelId, req.credentials.id ])
 
     res
         .status(200)
@@ -431,8 +463,6 @@ router.get('/api/channels', auth.middleware, async (req, res) => {
         res.flushHeaders()
         res.write(JSON.stringify(sqlChannels.map(v => ({
             ...v,
-            id: undefined,
-            ownerId: undefined,
         }))))
         res.end()
     } catch (error) {
@@ -447,7 +477,7 @@ router.get('/api/channels', auth.middleware, async (req, res) => {
 router.post('/api/channels', auth.middleware, async (req, res) => {
     /** @type {import('../db/model').default['channels']} */
     const newChannel = {
-        uuid: uuid.v4(),
+        id: uuid.v4(),
         name: (req.body.name ?? '').trim(),
         ownerId: req.credentials.id,
     }
@@ -461,10 +491,10 @@ router.post('/api/channels', auth.middleware, async (req, res) => {
     }
 
     try {
-        const sqlRes = await database.insert('channels', newChannel)
+        await database.insert('channels', newChannel)
         await database.insert('userChannel', {
             userId: req.credentials.id,
-            channelId: sqlRes.lastID,
+            channelId: newChannel.id,
         })
         res
             .status(200)
@@ -486,7 +516,6 @@ router.get('/api/bundles', auth.middleware, async (req, res) => {
         res.flushHeaders()
         res.write(JSON.stringify(sqlBundles.map(v => ({
             ...v,
-            id: undefined,
         }))))
         res.end()
     } catch (error) {
@@ -517,23 +546,23 @@ router.post('/api/bundles', auth.middleware, async (req, res) => {
 
     /** @type {import('../db/model').default['bundles']} */
     const newBundle = {
-        uuid: uuid.v4(),
+        id: uuid.v4(),
         name: req.body.name,
     }
 
     try {
-        const sqlRes = await database.insert('bundles', newBundle)
+        await database.insert('bundles', newBundle)
         await database.insert('bundleUser', {
             userId: req.credentials.id,
-            bundleId: sqlRes.lastID,
+            bundleId: newBundle.id,
         })
 
         for (const channel of req.body.channels) {
-            const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', channel)
+            const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', channel)
             if (!sqlChannels.length) continue
 
             await database.insert('bundleChannel', {
-                bundleId: sqlRes.lastID,
+                bundleId: newBundle.id,
                 channelId: sqlChannels[0].id,
             })
         }
@@ -550,17 +579,18 @@ router.post('/api/bundles', auth.middleware, async (req, res) => {
     }
 })
 
-router.delete('/api/bundles/:uuid', auth.middleware, async (req, res) => {
+router.delete('/api/bundles/:bundleId', auth.middleware, async (req, res) => {
     try {
-        const sqlBundles = await databaseConnection.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.uuid = ?', [ req.credentials.id, req.params['uuid'] + '' ])
+        const sqlBundles = await databaseConnection.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.id = ?', [ req.credentials.id, req.params.bundleId ])
         if (!sqlBundles.length) {
             res
                 .status(404)
+                .json({ error: 'Bundle not found' })
                 .end()
             return
         }
         
-        const sqlRes1 = database.queryRaw('DELETE FROM bundleUser WHERE bundleUser.userId = ? AND bundleUser.bundleId = ?', [ req.credentials.id, sqlBundles[0].id ])
+        const sqlRes1 = database.queryRaw('DELETE FROM bundleUser WHERE bundleUser.userId = ? AND bundleUser.bundleId = ?', [ req.credentials.id, req.params.bundleId ])
         res
             .status(200)
             .json(sqlRes1)
@@ -582,12 +612,12 @@ router.get('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) 
             FROM bundles
             JOIN bundleUser ON bundles.id = bundleUser.bundleId
             WHERE bundleUser.userId = ?
-            AND bundles.uuid = ?
+            AND bundles.id = ?
         `, [ req.credentials.id, req.params.bundleId ])
-
         if (!sqlBundles.length) {
             res
                 .status(404)
+                .json({ error: 'Bundle not found' })
                 .end()
             return
         }
@@ -597,7 +627,7 @@ router.get('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) 
             FROM channels
             JOIN bundleChannel ON channels.id = bundleChannel.channelId
             AND bundleChannel.bundleId = ?
-        `, [ sqlBundles[0].id ])
+        `, [ req.params.bundleId ])
 
         res
             .status(200)
@@ -605,7 +635,6 @@ router.get('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) 
             .flushHeaders()
         res.write(JSON.stringify(sqlChannels.map(v => ({
             ...v,
-            id: undefined,
         }))))
         res.end()
     } catch (error) {
@@ -625,26 +654,28 @@ router.post('/api/bundles/:bundleId/channels', auth.middleware, async (req, res)
             JOIN bundleChannel ON bundles.id = bundleChannel.bundleId
             JOIN bundleUser ON bundles.id = bundleUser.bundleId
             WHERE bundleUser.userId = ?
-            AND channels.uuid = ?
-        `, [])
+            AND channels.id = ?
+        `, [ req.credentials.id, req.params.bundleId ])
         if (!sqlBundles.length) {
             res
                 .status(404)
+                .json({ error: 'Bundle not found' })
                 .end()
             return
         }
 
-        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.channelId)
+        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.channelId)
         if (!sqlChannels.length) {
             res
                 .status(404)
+                .json({ error: 'Channel not found' })
                 .end()
             return
         }
 
         await database.insert('bundleChannel', {
-            bundleId: sqlBundles[0].id,
-            channelId: sqlChannels[0].id,
+            bundleId: req.params.bundleId,
+            channelId: req.params.channelId,
         })
 
         res
@@ -674,8 +705,6 @@ router.get('/api/invitations', auth.middleware, async (req, res) => {
         res.flushHeaders()
         res.write(JSON.stringify(result.map(v => ({
             ...v,
-            id: undefined,
-            userId: undefined,
         }))))
         res.end()
     } catch (error) {
@@ -689,8 +718,8 @@ router.get('/api/invitations', auth.middleware, async (req, res) => {
 
 router.post('/api/invitations', auth.middleware, async (req, res) => {
     try {
-        const sqlRes = await database.insert('invitations', {
-            uuid: uuid.v4(),
+        await database.insert('invitations', {
+            id: uuid.v4(),
             channelId: req.body.channelId,
             usages: 0,
             userId: req.credentials.id,
@@ -698,7 +727,7 @@ router.post('/api/invitations', auth.middleware, async (req, res) => {
         })
         res.statusCode = 200
         res.json({
-            id: sqlRes,
+            
         })
         res.end()
     } catch (error) {
@@ -711,12 +740,13 @@ router.post('/api/invitations', auth.middleware, async (req, res) => {
     }
 })
 
-router.delete('/api/invitations/:uuid', auth.middleware, async (req, res) => {
+router.delete('/api/invitations/:id', auth.middleware, async (req, res) => {
     try {
-        const sqlRes = database.queryRaw('DELETE FROM invitations WHERE invitations.userId = ? AND invitations.uuid = ?', [ req.credentials.id, req.params['uuid'] + '' ])
-        res.statusCode = 200
-        res.json(sqlRes)
-        res.end()
+        const sqlRes = database.queryRaw('DELETE FROM invitations WHERE invitations.userId = ? AND invitations.id = ?', [ req.credentials.id, req.params['id'] + '' ])
+        res
+            .status(200)
+            .json(sqlRes)
+            .end()
     } catch (error) {
         console.error(error)
         res.setHeader('Content-Type', 'application/json')
@@ -727,9 +757,9 @@ router.delete('/api/invitations/:uuid', auth.middleware, async (req, res) => {
     }
 })
 
-router.get('/api/invitations/:uuid/use', auth.middleware, async (req, res) => {
+router.get('/api/invitations/:id/use', auth.middleware, async (req, res) => {
     try {
-        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.uuid = ? LIMIT 1', [ req.params['uuid'] ])
+        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.id = ? LIMIT 1', [ req.params.id ])
         if (!sqlInvitations.length) {
             res
                 .status(404)
@@ -741,7 +771,7 @@ router.get('/api/invitations/:uuid/use', auth.middleware, async (req, res) => {
         /** @type {import('../db/model').default['invitations']} */
         const sqlInvitation = sqlInvitations[0]
 
-        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', [ sqlInvitation.channelId ])
+        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', [ sqlInvitation.channelId ])
         if (!sqlChannels.length) {
             res
                 .status(404)

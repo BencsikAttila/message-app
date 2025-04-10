@@ -6,9 +6,9 @@
         <section>
             <h1>Account</h1>
             <div style="margin-bottom: 16px;">
-                <label for="nickname">Nickname:</label>
+                <label for="account-nickname-input">Nickname:</label>
                 <input type="string" id="account-nickname-input" value="{{user.nickname}}">
-                <label for="theme">Theme:</label>
+                <label for="account-theme-input">Theme:</label>
                 <select id="account-theme-input" value="{{user.theme}}">
                     <option value="1" {{#eq user.theme 1}}selected{{/eq}}>Default White</option>
                     <option value="2" {{#eq user.theme 2}}selected{{/eq}}>Dark Google</option>
@@ -16,7 +16,7 @@
                 </select>
             </div>
             <div style="margin-bottom: 16px;">
-                <label for="nickname">Avatar:</label>
+                <span>Avatar:</span>
                 {{> useravatar id=user.id size=32 }}
                 <label for="account-avatar-input" class="file-input-label">Upload Avatar</label>
                 <input type="file" id="account-avatar-input" style="display: none;">
@@ -53,4 +53,5 @@
 <script src="/js/websocket-client.js"></script>
 <script src="/js/script.js"></script>
 <script src="/js/channels.js"></script>
+<script src="/js/bundles.js"></script>
 <script src="/js/account.js"></script>

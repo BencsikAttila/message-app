@@ -17,7 +17,7 @@
         // TODO: better message type routing,
         switch (e.message.type) {
             case 'message_created': {
-                if (e.message.channel === window.ENV.channel.uuid) {
+                if (e.message.channel === window.ENV.channel.id) {
                     appendMessage(e.message)
                 }
                 break
@@ -31,7 +31,7 @@
     function sendMessage() {
         const messageContent = document.getElement('chat-input', 'input').value
 
-        fetch(`/api/channels/${window.ENV.channel.uuid}/messages`, {
+        fetch(`/api/channels/${window.ENV.channel.id}/messages`, {
             method: "POST",
             body: JSON.stringify({
                 type: "send_message",
@@ -56,7 +56,7 @@
     })
 
     window['deleteMessage'] = (id) => {
-        fetch(`/api/channels/${window.ENV.channel.uuid}/messages/${id}`, { method: 'DELETE' })
+        fetch(`/api/channels/${window.ENV.channel.id}/messages/${id}`, { method: 'DELETE' })
             .then(() => {
                 
             })
@@ -65,7 +65,7 @@
 
     // TODO: Fetch the messages server-side and send the populated HTML
     // to the client
-    fetch(`/api/channels/${window.ENV.channel.uuid}/messages`, { method: 'GET' })
+    fetch(`/api/channels/${window.ENV.channel.id}/messages`, { method: 'GET' })
         .then(res => res.json())
         .then(res => {
             messagesContainer.innerHTML = ''

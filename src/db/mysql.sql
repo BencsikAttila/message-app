@@ -13,7 +13,6 @@ CREATE TABLE messages (
 
 CREATE TABLE channels (
     id INT AUTO_INCREMENT,
-    uuid VARCHAR(36) NOT NULL,
     name TEXT NOT NULL,
     ownerId INT NOT NULL,
     PRIMARY KEY (id)
@@ -34,7 +33,6 @@ CREATE TABLE userChannel (
 
 CREATE TABLE invitations (
     id INT AUTO_INCREMENT,
-    uuid VARCHAR(36) NOT NULL,
     userId INT NOT NULL,
     channelId INT NOT NULL,
     expiresAt BIGINT NOT NULL,

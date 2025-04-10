@@ -87,7 +87,7 @@ const auth = {
         return await auth.authenticate(database, username, password)
     },
     // @ts-ignore
-    /** @param {string} token @returns {Promise<false | (import('jose').JWTPayload & { id: number })>} */
+    /** @param {string} token @returns {Promise<false | (import('jose').JWTPayload & { id: string })>} */
     async verify(token) {
         if (this.tokenBlacklist.has(token)) {
             return false

@@ -87,7 +87,7 @@ router.get('/account', auth.middleware, async (req, res) => {
 })
 
 router.get('/channels/:id', auth.middleware, async (req, res) => {
-    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', req.params.id)
+    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.id)
     if (sqlChannel.length === 0) {
         res
             .status(404)
@@ -114,7 +114,7 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         wsClients.push(wsClient)
     }
 
-    const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.username as senderUsername, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
+    const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
 
     res.render('channel', {
         user: {
@@ -123,7 +123,6 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         },
         channel: {
             ...sqlChannel[0],
-            id: undefined,
         },
         members: sqlUsers.map(v => ({
             ...v,
@@ -137,15 +136,13 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         })),
         channels: sqlChannels.map(v => ({
             ...v,
-            id: undefined,
-            ownerId: undefined,
         })),
     })
 })
 
-router.get('/invitations/:uuid/use', auth.middleware, async (req, res) => {
+router.get('/invitations/:id/use', auth.middleware, async (req, res) => {
     try {
-        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.uuid = ? LIMIT 1', [ req.params['uuid'] ])
+        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.id = ? LIMIT 1', [ req.params['id'] ])
         if (!sqlInvitations.length) {
             res.status(404)
             res.write('Invitation not found')
@@ -156,7 +153,7 @@ router.get('/invitations/:uuid/use', auth.middleware, async (req, res) => {
         /** @type {import('../db/model').default['invitations']} */
         const sqlInvitation = sqlInvitations[0]
 
-        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.uuid = ? LIMIT 1', [ sqlInvitation.channelId ])
+        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', [ sqlInvitation.channelId ])
         if (!sqlChannels.length) {
             res.status(404)
             res.write('Channel not found')
@@ -184,7 +181,7 @@ router.get('/invitations/:uuid/use', auth.middleware, async (req, res) => {
 
         res
             .status(303)
-            .header('Location', '/channels/' + sqlChannel.uuid)
+            .header('Location', '/channels/' + sqlChannel.id)
             .end()
     } catch (error) {
         console.error(error)

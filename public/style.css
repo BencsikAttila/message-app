@@ -23,18 +23,16 @@ body {
     font-weight: bold;
 }
 
+.top-bar-right,
 .top-bar-left {
     flex: 1 1;
     display: flex;
+    height: 100%;
 }
 
 .top-bar-center {
     flex: 1 1 100%;
-    text-align: center;
-}
-
-.top-bar-right {
-    flex: 1 1;
+    justify-content: center;
     display: flex;
 }
 
@@ -323,6 +321,7 @@ dialog ::backdrop {
     border-style: solid;
     border-radius: 50%;
     margin-right: 16px;
+    align-self: center;
 }
 
 #icon-status.loading {
@@ -372,10 +371,8 @@ dialog ::backdrop {
     cursor: pointer;
 }
 
-.bundle-item:hover,
-.bundle-item:active {
-    background-color: var(--base3);
-    border: 2px solid var(--highlight);
+.bundle-item > span:hover,
+.bundle-item > span:active {
     color: var(--highlight);
 }
 
