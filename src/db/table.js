@@ -20,6 +20,7 @@ const typeKeywords = {
  * @returns {{
  *   addColumn(name: string, type: 'INT' | 'TEXT' | 'BIGINT'): ColumnBuilder
  *   addColumn(name: string, type: 'VARCHAR', length: number): ColumnBuilder
+ *   addId(): void
  *   compile(protocol: 'sqlite' | 'mysql'): string
  * }}
  */
@@ -27,10 +28,11 @@ module.exports = function(tableName) {
     /** @type {Record<string, {
      *   type: any
      *   param: any
-     *   isPrimary: any
-     *   isNotNull: any
-     *   isUnique: any
-     *   isAutoIncrement: any
+     *   isId: boolean
+     *   isPrimary: boolean
+     *   isNotNull: boolean
+     *   isUnique: boolean
+     *   isAutoIncrement: boolean
      *   referenceTo: any
      * }>} */
     const columns = {}
@@ -38,6 +40,7 @@ module.exports = function(tableName) {
         const column = {
             type,
             param,
+            isId: false,
             isPrimary: false,
             isNotNull: true,
             isUnique: false,
@@ -54,6 +57,18 @@ module.exports = function(tableName) {
         }
         return columnBuilder
     }
+    const addId = () => {
+        columns['id'] = {
+            type: 'INT',
+            param: null,
+            isId: true,
+            isPrimary: true,
+            isNotNull: true,
+            isUnique: true,
+            isAutoIncrement: true,
+            referenceTo: null,
+        }
+    }
     const compile = (protocol) => {
         let builder = ''
         builder += 'CREATE TABLE '
@@ -67,12 +82,16 @@ module.exports = function(tableName) {
             if (!isFirst) builder += ', '
             isFirst = false
 
-            builder += `${columnName} ${typeKeywords[column.type][protocol]}`
-            if (column.param) { builder += `(${column.param})` }
-            if (column.isPrimary) { builder += ` PRIMARY KEY` }
-            if (column.isNotNull) { builder += ` NOT NULL` }
-            if (column.isUnique) { builder += ` UNIQUE` }
-            if (column.isAutoIncrement) { builder += { mysql: ` AUTO_INCREMENT`, sqlite: ` AUTOINCREMENT` }[protocol] }
+            if (column.isId) {
+                builder += `id UUID PRIMARY KEY UNIQUE NOT NULL`
+            } else {
+                builder += `${columnName} ${typeKeywords[column.type][protocol]}`
+                if (column.param) { builder += `(${column.param})` }
+                if (column.isPrimary) { builder += ` PRIMARY KEY` }
+                if (column.isNotNull) { builder += ` NOT NULL` }
+                if (column.isUnique) { builder += ` UNIQUE` }
+                if (column.isAutoIncrement) { builder += { mysql: ` AUTO_INCREMENT`, sqlite: ` AUTOINCREMENT` }[protocol] }
+            }
         }
         // FOREIGN KEY(trackartist) REFERENCES artist(artistid)
         for (const columnName in columns) {
@@ -94,6 +113,7 @@ module.exports = function(tableName) {
 
     return {
         addColumn,
+        addId,
         compile,
     }
 }

@@ -37,7 +37,7 @@
 @property --text-link {
     syntax: "<color>";
     inherits: false;
-    initial-value: #46a9eb;
+    initial-value: #1979e6;
 }
 
 @property --highlight {

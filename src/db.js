@@ -87,7 +87,7 @@ function createSqliteDB() {
     // TODO: read setup sql from file
     db.serialize(() => {
         const users = table('users')
-        users.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        users.addId()
         users.addColumn('username', 'TEXT')
         users.addColumn('nickname', 'TEXT')
         users.addColumn('password', 'VARCHAR', 64)
@@ -95,14 +95,14 @@ function createSqliteDB() {
         db.run(users.compile('sqlite')).on('error', console.error)
 
         const channels = table('channels')
-        channels.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        channels.addId()
         channels.addColumn('uuid', 'VARCHAR', 36)
         channels.addColumn('name', 'TEXT')
         channels.addColumn('ownerId', 'INT').referenceTo('users', 'id')
         db.run(channels.compile('sqlite')).on('error', console.error)
 
         const messages = table('messages')
-        messages.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        messages.addId()
         messages.addColumn('content', 'TEXT')
         messages.addColumn('createdUtc', 'BIGINT')
         messages.addColumn('channelId', 'INT').referenceTo('channels', 'id')
@@ -115,7 +115,7 @@ function createSqliteDB() {
         db.run(userChannel.compile('sqlite')).on('error', console.error)
 
         const invitations = table('invitations')
-        invitations.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        invitations.addId()
         invitations.addColumn('uuid', 'VARCHAR', 36)
         invitations.addColumn('userId', 'INT').referenceTo('users', 'id')
         invitations.addColumn('channelId', 'INT').referenceTo('channels', 'id')
@@ -124,7 +124,7 @@ function createSqliteDB() {
         db.run(invitations.compile('sqlite')).on('error', console.error)
 
         const bundles = table('bundles')
-        bundles.addColumn('id', 'INT').setPrimary().setAutoIncrement()
+        bundles.addId()
         bundles.addColumn('uuid', 'VARCHAR', 36)
         bundles.addColumn('name', 'TEXT')
         db.run(bundles.compile('sqlite')).on('error', console.error)

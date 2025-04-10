@@ -56,6 +56,24 @@ router.post('/api/register', async (req, res) => {
         .end()
 })
 
+router.get('/api/loggedin', auth.middleware, async (req, res) => {
+    const result = []
+    for (const token of auth.tokens) {
+        const v = await auth.verify(token)
+        if (!v) continue
+        if (v.id !== req.credentials.id) continue
+        result.push({
+            token: token,
+            payload: v,
+        })
+    }
+
+    res
+        .status(200)
+        .json(result)
+        .end()
+})
+
 router.get('/api/user', auth.middleware, async (req, res) => {
     try {
         res.setHeader('Content-Type', 'application/json')
@@ -430,8 +448,16 @@ router.post('/api/channels', auth.middleware, async (req, res) => {
     /** @type {import('../db/model').default['channels']} */
     const newChannel = {
         uuid: uuid.v4(),
-        name: req.body.name,
+        name: (req.body.name ?? '').trim(),
         ownerId: req.credentials.id,
+    }
+
+    if (!newChannel.name) {
+        res
+            .status(400)
+            .json({ error: 'Channel name is empty' })
+            .end()
+        return
     }
 
     try {
@@ -440,8 +466,9 @@ router.post('/api/channels', auth.middleware, async (req, res) => {
             userId: req.credentials.id,
             channelId: sqlRes.lastID,
         })
-        res.statusCode = 200
-        res.end()
+        res
+            .status(200)
+            .end()
     } catch (error) {
         res.setHeader('Content-Type', 'application/json')
         res.statusCode = 500

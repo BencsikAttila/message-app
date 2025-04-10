@@ -1,4 +1,4 @@
-const { createSecretKey } = require('crypto')
+const { createSecretKey, randomUUID } = require('crypto')
 const database = require('./db')
 
 const cryptoAlt = require('crypto').webcrypto
@@ -21,6 +21,11 @@ const secretKey = createSecretKey(process.env.JWT_SECRET, 'utf-8')
 const { createHash } = require('crypto')
 
 const auth = {
+    /**
+     * @private @readonly
+     * @type {Set<string>}
+     */
+    tokens: new Set(),
     /**
      * @private @readonly
      * @type {Set<string>}
@@ -53,6 +58,7 @@ const auth = {
             .setIssuedAt()
             .setExpirationTime('1d')
             .sign(secretKey)
+            this.tokens.add(token)
         return {
             token: token,
         }
@@ -72,6 +78,7 @@ const auth = {
 
         const encryptedPassword = createHash('sha256').update(password).digest('base64')
         await database.insert('users', {
+            id: require('uuid').v4(),
             username: username,
             nickname: username,
             password: encryptedPassword,
@@ -85,8 +92,10 @@ const auth = {
         if (this.tokenBlacklist.has(token)) {
             return false
         }
+
         try {
             const { payload } = await jwtVerify(token, secretKey, {})
+            this.tokens.add(token)
             // @ts-ignore
             return payload
         } catch (e) {

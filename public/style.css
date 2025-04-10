@@ -288,7 +288,7 @@ dialog ::backdrop {
 }
 
 .main section {
-    margin: 32px;
+    margin: 32px 32px 0 32px;
     border: 2px solid var(--base3);
     padding: 16px;
     border-radius: var(--border-radius);
@@ -297,6 +297,10 @@ dialog ::backdrop {
 
 .main section h1 {
     margin-top: 4px;
+}
+
+.main section h2 {
+    font-size: 1.2em;
 }
 
 .user-avatar-stack {

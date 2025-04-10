@@ -40,4 +40,21 @@
                 window.location.reload()
             })
     })
+
+    window.invalidateToken = function (token) {
+        
+    }
+
+    fetch('/api/loggedin')
+        .then(v => v.json())
+        .then(v => {
+            for (const i of v) {
+                document.getElement('loggedin-container').appendChild(document.fromHTML(Handlebars.compile(`
+                    <div>
+                        <span>Logged in at {{payload.iat}}</span>
+                        <button onclick="window.invalidateToken('{{token}}')">Invalidate</button>
+                    </div>
+                `)(i)))
+            }
+        })
 })()

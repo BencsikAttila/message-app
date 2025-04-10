@@ -87,6 +87,7 @@ class Client {
 
     /**
      * @param {string} path
+     * @param {any} body
      */
     post(path, body) {
         return new Promise((resolve, reject) => {
@@ -98,12 +99,18 @@ class Client {
                     'Authorization': this.#token,
                 },
             })
-                .then(v => v.json())
                 .then(v => {
-                    if ('error' in v) {
-                        reject(v.error)
+                    if (v.status >= 200 && v.status < 300) {
+                        resolve()
                     } else {
-                        resolve(v)
+                        v.json()
+                            .then(v => {
+                                if ('error' in v) {
+                                    reject(v.error)
+                                } else {
+                                    resolve(new Error('Failed'))
+                                }
+                            })
                     }
                 })
         })

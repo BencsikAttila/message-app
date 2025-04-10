@@ -4,8 +4,7 @@
         <span style="text-wrap-mode: nowrap; margin-left: 16px; align-items: center; display: flex;">
             {{> useravatar id=user.id size=32 }}
             <span style="margin: 8px;">
-                <b>{{user.nickname}}</b>
-                <a href="/logout">Logout</a>
+                <a href="/account"><b>{{user.nickname}}</b></a>
             </span>
         </span>
     </div>
@@ -13,8 +12,24 @@
         {{#if title}}
         <span>{{title}}</span>
         {{else}}
+        {{#if channel}}
         <span>{{channel.name}}</span>
-        <button onclick="window.leaveChannel()">Leave Channel</button>
+        <div>
+            <button onclick="window.leaveChannel()">Leave Channel</button>
+            <button id="new-invitation-button" >Invite</button>
+            <dialog id="new-invitation-dialog">
+                <button autofocus id="new-invitation-button-x">Close</button>
+                <div>
+                    <div id="invitations-container">
+
+                    </div>
+                    <button id="new-invitation-button-create">Create</button>
+                </div>
+            </dialog>
+        </div>
+        {{else}}
+        <span>???</span>
+        {{/if}}
         {{/if}}
     </div>
     <div class="top-bar-right">
