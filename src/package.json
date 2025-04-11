@@ -19,6 +19,9 @@
   },
   "scripts": {
     "start": "node ./index.js",
-    "populate": "node ./test/populate.js"
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "mocha": "^11.1.0"
   }
 }

@@ -10,6 +10,13 @@ const sharp = require('sharp')
 
 const router = express.Router(({ mergeParams: true }))
 
+router.post('/api/logout', auth.middleware, async (req, res) => {
+    await auth.logout(req.token)
+    res
+        .status(200)
+        .end()
+})
+
 router.post('/api/login', async (req, res) => {
     const { username, password } = req.body
 

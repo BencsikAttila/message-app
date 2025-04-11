@@ -25,7 +25,6 @@ class Client {
             })
                 .then(v => v.json())
                 .then(v => {
-                    console.log(v)
                     if (v.error) {
                         reject(v.error)
                     } else {
@@ -63,6 +62,11 @@ class Client {
         })
     }
 
+    async logout() {
+        await this.post(`/api/logout`)
+        this.#token = null
+    }
+
     /**
      * @param {string} path
      */
@@ -74,7 +78,10 @@ class Client {
                     'Authorization': this.#token,
                 },
             })
-                .then(v => v.json())
+                .then(v => {
+                    console.log(v.headers.get('content-type'))
+                    return v.json()
+                })
                 .then(v => {
                     if ('error' in v) {
                         reject(v.error)
@@ -82,6 +89,7 @@ class Client {
                         resolve(v)
                     }
                 })
+                .catch(reject)
         })
     }
 
@@ -103,6 +111,7 @@ class Client {
                     if (v.status >= 200 && v.status < 300) {
                         resolve()
                     } else {
+                        console.log(v.headers.get('content-type'))
                         v.json()
                             .then(v => {
                                 if ('error' in v) {
@@ -113,6 +122,7 @@ class Client {
                             })
                     }
                 })
+                .catch(reject)
         })
     }
 
@@ -127,7 +137,10 @@ class Client {
                     'Authorization': this.#token,
                 },
             })
-                .then(v => v.json())
+                .then(v => {
+                    console.log(v.headers.get('content-type'))
+                    return v.json()
+                })
                 .then(v => {
                     if ('error' in v) {
                         reject(v.error)
@@ -135,6 +148,7 @@ class Client {
                         resolve(v)
                     }
                 })
+                .catch(reject)
         })
     }
 
