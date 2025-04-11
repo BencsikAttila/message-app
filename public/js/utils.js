@@ -49,3 +49,50 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 })
+
+globalThis['API'] = {
+    /**
+     * @param {string} route
+     * @returns {Promise<any | void>}
+     */
+    get(route) {
+        return new Promise((resolve, reject) => {
+            fetch(route)
+                .then(res => {
+                    if (res.headers.get('content-type').startsWith('application/json')) {
+                        res.json()
+                            .then(resolve)
+                            .catch(reject)
+                    } else {
+                        resolve()
+                    }
+                })
+                .catch(reject)
+        })
+    },
+    /**
+     * @param {string} route
+     * @param {any} body
+     * @returns {Promise<any | void>}
+     */
+    post(route, body) {
+        return new Promise((resolve, reject) => {
+            fetch(route, {
+                body: JSON.stringify(body),
+                headers: {
+                    'content-type': "application/json; charset=UTF-8"
+                }
+            })
+                .then(res => {
+                    if (res.headers.get('content-type') === 'application/json') {
+                        res.json()
+                            .then(resolve)
+                            .catch(reject)
+                    } else {
+                        resolve()
+                    }
+                })
+                .catch(reject)
+        })
+    },
+}

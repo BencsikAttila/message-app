@@ -81,6 +81,24 @@ router.get('/api/loggedin', auth.middleware, async (req, res) => {
         .end()
 })
 
+router.delete('/api/loggedin/:token', auth.middleware, async (req, res) => {
+    for (const token of auth.tokens) {
+        const v = await auth.verify(token)
+        if (!v) continue
+        if (v.id !== req.credentials.id) continue
+        await auth.logout(token)
+        res
+            .status(200)
+            .end()
+        return
+    }
+
+    res
+        .status(400)
+        .json({ error: 'Invalid token' })
+        .end()
+})
+
 router.get('/api/user', auth.middleware, async (req, res) => {
     try {
         res.setHeader('Content-Type', 'application/json')

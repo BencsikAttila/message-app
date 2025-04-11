@@ -42,7 +42,12 @@
     })
 
     window.invalidateToken = function (token) {
-        
+        fetch(`/api/loggedin/${encodeURIComponent(token)}`, {
+            method: 'DELETE'
+        })
+            .finally(() => {
+                window.location.reload()
+            })
     }
 
     fetch('/api/loggedin')
