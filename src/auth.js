@@ -99,6 +99,7 @@ const auth = {
             // @ts-ignore
             return payload
         } catch (e) {
+            console.error(e)
             return false
         }
     },

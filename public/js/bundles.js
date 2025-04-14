@@ -14,7 +14,9 @@
         for (const element of JSON.parse(localStorage.getItem('expanded-bundles') ?? '[]')) {
             expandedBundles.add(element)
         }
-    } catch (error) { }
+    } catch (error) {
+        console.error(error)
+    }
 
     document.getElement('new-bundle-button', 'button').addEventListener('click', () => {
         newBundleDialog.showModal()
@@ -26,6 +28,8 @@
 
     /** @type {Set<string>} */
     const currentBundle = new Set()
+    /** @type {Record<string, import('../../src/db/model').default['channels']>} */
+    const channels = {}
 
     newBundleAddCreateButton.addEventListener('click', () => {
         const channels = []
@@ -54,7 +58,9 @@
         fetch('/api/channels')
             .then(v => v.json())
             .then(v => {
+                while (newBundleSelect.options.length > 0) newBundleSelect.options.remove(0)
                 for (const channel of v) {
+                    channels[channel.id] = channel
                     // @ts-ignore
                     newBundleSelect.options.add(document.fromHTML(Handlebars.compile(`
                         <option class="new-bundle-channel-option" value="{{id}}">
@@ -80,9 +86,7 @@
                     {{name}}
                     <button>Remove</button>
                 </div>
-            `)({
-                name: item
-            })))
+            `)(channels[item])))
             element.querySelector('button').addEventListener('click', () => {
                 currentBundle.delete(item)
                 refreshCurrentChannelList()
@@ -103,6 +107,7 @@
                             <div class="bundle-channels">
         
                             </div>
+                            <button onclick="window.showInvitationsModal('{{id}}')">Invitations</button>
                         </div>
                     `)(bundle)))
 
