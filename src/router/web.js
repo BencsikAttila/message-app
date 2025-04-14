@@ -68,7 +68,7 @@ router.get('/logout', auth.middleware, async (req, res) => {
 })
 
 router.get('/', auth.middleware, async (req, res) => {
-    const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', req.credentials.id))[0]
+    const user = await app.getUser(req.credentials.id)
 
     res.render('home', {
         user: {
@@ -142,16 +142,13 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
 
 router.get('/invitations/:id/use', auth.middleware, async (req, res) => {
     try {
-        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.id = ? LIMIT 1', [ req.params['id'] ])
-        if (!sqlInvitations.length) {
+        const sqlInvitation = await app.getInvitation( req.params.id)
+        if (!sqlInvitation) {
             res.status(404)
             res.write('Invitation not found')
             res.end()
             return
         }
-
-        /** @type {import('../db/model').default['invitations']} */
-        const sqlInvitation = sqlInvitations[0]
 
         const sqlChannels = await app.getChannel(sqlInvitation.channelId)
         if (sqlChannels) {

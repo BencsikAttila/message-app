@@ -2,6 +2,7 @@ const express = require('express')
 const database = require('../db')
 const auth = require('../auth')
 const router = express.Router(({ mergeParams: true }))
+const app = require('../app')
 
 router.ws('/', async (ws, req, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
@@ -9,7 +10,7 @@ router.ws('/', async (ws, req, next) => {
     ws.token = token
     const verifyRes = await auth.verify(token)
     if (verifyRes) {
-        const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1;', verifyRes.id))?.[0]
+        const user = await app.getUser(verifyRes.id)
         if (user) {
             // @ts-ignore
             ws.credentials = verifyRes

@@ -142,8 +142,8 @@ router.patch('/api/user', auth.middleware, async (req, res) => {
 
 router.get('/users/:userId/avatar.webp', auth.middleware, async (req, res) => {
     try {
-        const sqlUser = await database.queryRaw('SELECT * FROM users WHERE users.id = ? LIMIT 1', req.params.userId)
-        if (!sqlUser.length) {
+        const sqlUser = await app.getUser(req.params.userId)
+        if (!sqlUser) {
             res
                 .status(404)
                 .end()
@@ -160,9 +160,9 @@ router.get('/users/:userId/avatar.webp', auth.middleware, async (req, res) => {
                 .end()
             } else {
                 if (req.query['size'] && !Number.isNaN(size)) {
-                    res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser[0].id)}.webp?set=set4&size=${size}x${size}`)
+                    res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser.id)}.webp?set=set4&size=${size}x${size}`)
                 } else {
-                    res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser[0].id)}.webp?set=set4`)
+                    res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser.id)}.webp?set=set4`)
                 }
             }
             return
@@ -806,18 +806,14 @@ router.delete('/api/invitations/:id', auth.middleware, async (req, res) => {
 
 router.get('/api/invitations/:id/use', auth.middleware, async (req, res) => {
     try {
-        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.id = ? LIMIT 1', [ req.params.id ])
-        if (!sqlInvitations.length) {
+        const sqlInvitation = await app.getInvitation(req.params.id)
+        if (!sqlInvitation) {
             res
                 .status(404)
                 .json({ error: 'Invitation not found' })
                 .end()
             return
         }
-
-        /** @type {import('../db/model').default['invitations']} */
-        const sqlInvitation = sqlInvitations[0]
-
         const channel = await app.getChannel(sqlInvitation.channelId)
         if (channel) {
             const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ channel.id, req.credentials.id ])
