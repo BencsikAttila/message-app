@@ -407,6 +407,7 @@ router.post('/api/channels/:channelId/messages', auth.middleware, async (req, re
         for (const client of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
             client.send(JSON.stringify(/** @type {import('../websocket-messages').MessageCreatedEvent} */ ({
                 type: 'message_created',
+                id: newMessage.id,
                 content: newMessage.content,
                 channel: req.params.channelId,
                 createdUtc: newMessage.createdUtc,
@@ -448,10 +449,25 @@ router.delete('/api/channels/:channelId/messages/:messageId', auth.middleware, a
     }
 
     try {
-        const sqlRes = await database.queryRaw('DELETE FROM messages WHERE messages.senderId = ? AND messages.id = ?', [ req.credentials.id, req.params['messageId'] + '' ])
+        const sqlRes = await database.delete('messages', 'messages.senderId = ? AND messages.id = ?', [ req.credentials.id, req.params['messageId'] + '' ])
+
+        if (!sqlRes) {
+            res
+                .status(400)
+                .json({ error: 'Failed to delete the message' })
+                .end()
+            return
+        }
+
+        for (const client of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
+            client.send(JSON.stringify(/** @type {import('../websocket-messages').MessageDeletedEvent} */ ({
+                type: 'message_deleted',
+                id: req.params['messageId'],
+            })))
+        }
+
         res
             .status(200)
-            .json(sqlRes)
             .end()
     } catch (error) {
         console.error(error)

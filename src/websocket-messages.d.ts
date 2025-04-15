@@ -15,12 +15,17 @@ export interface ErrorEvent extends GenericEvent<'error'> {
 }
 
 export interface MessageCreatedEvent extends GenericEvent<'message_created'> {
+    id: string
     content: number
     createdUtc: number
     channel: string
     user: {
         nickname: string
     }
+}
+
+export interface MessageDeletedEvent extends GenericEvent<'message_deleted'> {
+    id: string
 }
 
 export interface SqlResultEvent extends GenericEvent<'sql_result'> {
@@ -31,5 +36,6 @@ export type WebSocketMessage = (
     SqlErrorEvent |
     ErrorEvent |
     SqlResultEvent |
-    MessageCreatedEvent
+    MessageCreatedEvent |
+    MessageDeletedEvent
 )

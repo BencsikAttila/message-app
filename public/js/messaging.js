@@ -22,6 +22,10 @@
                 }
                 break
             }
+            case 'message_deleted': {
+                document.getElementById(`message-${e.message.id}`)?.remove()
+                break
+            }
             default: {
                 break
             }

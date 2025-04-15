@@ -9,6 +9,7 @@ const table = require('./db/table')
  *   query<Table extends keyof import('./db/model').default>(table: Table): Promise<ReadonlyArray<import('./db/model').default[Table]>>
  *   queryRaw(query: string, params: any): Promise<ReadonlyArray<any>>
  *   insert<Table extends keyof import('./db/model').default>(table: Table, values: import('./db/model').default[Table]): Promise<Readonly<{ changes: number; lastID: number; }>>
+ *   delete<Table extends keyof import('./db/model').default>(table: Table, filter: string, params: any): Promise<number>
  * }} DB
  */
 
@@ -64,6 +65,14 @@ function createMysqlDB() {
                 const _values = _keys.map((v) => values[v])
 
                 db.execute(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`, _values, (error, result, fields) => {
+                    if (error) reject(error)
+                    else resolve()
+                })
+            })
+        },
+        delete(table, filter, params) {
+            return new Promise((resolve, reject) => {
+                db.execute(`DELETE FROM ${table} WHERE ${filter};`, params, (error, result, fields) => {
                     if (error) reject(error)
                     else resolve()
                 })
@@ -166,6 +175,15 @@ function createSqliteDB() {
                     .run(_values, function(error) {
                         if (error) reject(error)
                         else resolve(this)
+                    })
+            })
+        },
+        delete(table, filter, params) {
+            return new Promise((resolve, reject) => {
+                db.prepare(`DELETE FROM ${table} WHERE ${filter};`)
+                    .run(params, function(error) {
+                        if (error) reject(error)
+                        else resolve(this.changes)
                     })
             })
         },
