@@ -1,19 +1,18 @@
 const path = require('path')
 const express = require('express')
-const database = require('../../db')
 const jsonUtils = require('../../json-utils')
-const auth = require('../../auth')
 const fs = require('fs')
 const sharp = require('sharp')
-const app = require('../../app')
 
 /**
  * @param {express.Router} router
+ * @param {import('../../app')} app
  */
-module.exports = (router) => {
+module.exports = (router, app) => {
+    const database = app.database
 
-    router.post('/api/logout', auth.middleware, async (req, res) => {
-        await auth.logout(req.token)
+    router.post('/api/logout', app.auth.middleware, async (req, res) => {
+        await app.auth.logout(req.token)
         res
             .status(200)
             .end()
@@ -22,7 +21,7 @@ module.exports = (router) => {
     router.post('/api/login', async (req, res) => {
         const { username, password } = req.body
     
-        const authResult = await auth.authenticate(database, username, password)
+        const authResult = await app.auth.authenticate(database, username, password)
     
         if (authResult.error) {
             res
@@ -45,7 +44,7 @@ module.exports = (router) => {
     router.post('/api/register', async (req, res) => {
         const { username, password } = req.body
     
-        const authRes = await auth.create(database, username, password)
+        const authRes = await app.auth.create(database, username, password)
     
         if (authRes.error) {
             res
@@ -65,10 +64,10 @@ module.exports = (router) => {
             .end()
     })
     
-    router.get('/api/loggedin', auth.middleware, async (req, res) => {
+    router.get('/api/loggedin', app.auth.middleware, async (req, res) => {
         const result = []
-        for (const token of auth.tokens) {
-            const v = await auth.verify(token)
+        for (const token of app.auth.tokens) {
+            const v = await app.auth.verify(token)
             if (!v) continue
             if (v.id !== req.credentials.id) continue
             result.push({
@@ -83,12 +82,12 @@ module.exports = (router) => {
             .end()
     })
     
-    router.delete('/api/loggedin/:token', auth.middleware, async (req, res) => {
-        for (const token of auth.tokens) {
-            const v = await auth.verify(token)
+    router.delete('/api/loggedin/:token', app.auth.middleware, async (req, res) => {
+        for (const token of app.auth.tokens) {
+            const v = await app.auth.verify(token)
             if (!v) continue
             if (v.id !== req.credentials.id) continue
-            await auth.logout(token)
+            await app.auth.logout(token)
             res
                 .status(200)
                 .end()
@@ -101,7 +100,7 @@ module.exports = (router) => {
             .end()
     })
     
-    router.get('/api/user', auth.middleware, async (req, res) => {
+    router.get('/api/user', app.auth.middleware, async (req, res) => {
         try {
             res.setHeader('Content-Type', 'application/json')
             res.statusCode = 200
@@ -121,7 +120,7 @@ module.exports = (router) => {
         }
     })
     
-    router.patch('/api/user', auth.middleware, async (req, res) => {
+    router.patch('/api/user', app.auth.middleware, async (req, res) => {
         try {
             if ('nickname' in req.body) {
                 await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [ req.body['nickname'], req.credentials.id ])
@@ -142,7 +141,7 @@ module.exports = (router) => {
         }
     })
     
-    router.get('/users/:userId/avatar.webp', auth.middleware, async (req, res) => {
+    router.get('/users/:userId/avatar.webp', app.auth.middleware, async (req, res) => {
         try {
             const sqlUser = await app.getUser(req.params.userId)
             if (!sqlUser) {
@@ -199,7 +198,7 @@ module.exports = (router) => {
         }
     })
     
-    router.put('/api/user/avatar', auth.middleware, async (req, res) => {
+    router.put('/api/user/avatar', app.auth.middleware, async (req, res) => {
         try {
             req.pipe(req.busboy)
             req.busboy.on('file', (fieldname, file, filename) => {
@@ -239,7 +238,7 @@ module.exports = (router) => {
         }
     })
     
-    router.delete('/api/user/avatar', auth.middleware, async (req, res) => {
+    router.delete('/api/user/avatar', app.auth.middleware, async (req, res) => {
         try {
             const filepath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.user.id}.webp`)
             if (fs.existsSync(filepath)) {

@@ -37,6 +37,7 @@ class WebSocketClient extends EventTarget {
                 reason: e.reason,
                 wasClean: e.wasClean,
             }))
+            console.log(`[WS] Closed: ${e.reason}`)
             console.log(`[WS] Reconnecting in 1s ...`)
             setTimeout(() => {
                 _self.connect()

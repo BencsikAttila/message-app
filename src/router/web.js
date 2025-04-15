@@ -1,225 +1,228 @@
 const express = require('express')
 const path = require('path')
-const database = require('../db')
-const auth = require('../auth')
-const router = express.Router(({ mergeParams: true }))
-const app = require('../app')
 const fs = require('fs')
 
-router.get('/login', async (req, res) => {
-    res.render('login')
-})
+/**
+ * @param {express.Router} router
+ * @param {import('../app')} app
+ */
+module.exports = (router, app) => {
+    const database = app.database
 
-router.get('/register', async (req, res) => {
-    res.render('register')
-})
-
-router.post('/login', async (req, res) => {
-    const { username, password, redirect } = req.body
-
-    const authResult = await auth.authenticate(database, username, password)
-
-    if (authResult.error) {
-        res
-            .status(401)
-            .render('login', {
-                error: authResult.error,
-                redirect: redirect,
-            })
-        return
-    }
-
-    res
-        .cookie('token', authResult.token, { path: '/', maxAge: 1000 * 60 * 30 })
-        .status(303)
-        .header('Location', '/')
-        .end()
-})
-
-router.post('/register', async (req, res) => {
-    const { username, password, redirect } = req.body
-
-    const authRes = await auth.create(database, username, password)
-
-    if (authRes.error) {
-        res
-            .status(401)
-            .json({
-                error: authRes.error,
-                redirect: redirect,
-            })
-            .end()
-        return
-    }
-
-    res
-        .cookie('token', authRes.token, { path: '/', maxAge: 1000 * 60 })
-        .header('Location', '/')
-        .status(303)
-        .end()
-})
-
-router.get('/logout', auth.middleware, async (req, res) => {
-    await auth.logout(req.token)
-    res
-        .clearCookie('token')
-        .status(303)
-        .header('Location', '/')
-        .end()
-})
-
-router.get('/', auth.middleware, async (req, res) => {
-    const user = await app.getUser(req.credentials.id)
-
-    res.render('home', {
-        user: {
-            ...user,
-            password: undefined,
-        },
+    router.get('/login', async (req, res) => {
+        res.render('login')
     })
-})
-
-router.get('/account', auth.middleware, async (req, res) => {
-    res.render('account', {
-        user: {
-            ...req.user,
-            password: undefined,
-        },
+    
+    router.get('/register', async (req, res) => {
+        res.render('register')
     })
-})
-
-router.get('/channels/:id', auth.middleware, async (req, res) => {
-    const channel = await app.getChannel(req.params.id)
-    if (!channel) {
+    
+    router.post('/login', async (req, res) => {
+        const { username, password, redirect } = req.body
+    
+        const authResult = await app.auth.authenticate(database, username, password)
+    
+        if (authResult.error) {
+            res
+                .status(401)
+                .render('login', {
+                    error: authResult.error,
+                    redirect: redirect,
+                })
+            return
+        }
+    
         res
-            .status(404)
+            .cookie('token', authResult.token, { path: '/', maxAge: 1000 * 60 * 30 })
+            .status(303)
+            .header('Location', '/')
             .end()
-        return
-    }
-
-    if (!(await app.checkChannelPermissions(req.credentials.id, req.params.id))) {
-        res
-            .status(400)
-            .json({ error: 'No permissions' })
-            .end()
-        return
-    }
-
-    const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
-
-    const sqlUsers = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
-
-    /** @type {Array<import('ws').WebSocket>} */
-    const wsClients = []
-    for (const wsClient of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
-        wsClients.push(wsClient)
-    }
-
-    const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
-
-    res.render('channel', {
-        user: {
-            ...req.user,
-            password: undefined,
-        },
-        channel: {
-            ...channel,
-        },
-        members: sqlUsers.map(v => ({
-            ...v,
-            password: undefined,
-            // @ts-ignore
-            isOnline: wsClients.some(_v => _v.user?.id === v.id),
-        })),
-        messages: sqlMessages.map(v => ({
-            ...v,
-            createdAt: new Date(v.createdUtc * 1000).toLocaleTimeString(),
-        })),
-        channels: sqlChannels.map(v => ({
-            ...v,
-        })),
     })
-})
-
-router.get('/invitations/:id/use', auth.middleware, async (req, res) => {
-    try {
-        const sqlInvitation = await app.getInvitation( req.params.id)
-        if (!sqlInvitation) {
+    
+    router.post('/register', async (req, res) => {
+        const { username, password, redirect } = req.body
+    
+        const authRes = await app.auth.create(database, username, password)
+    
+        if (authRes.error) {
+            res
+                .status(401)
+                .json({
+                    error: authRes.error,
+                    redirect: redirect,
+                })
+                .end()
+            return
+        }
+    
+        res
+            .cookie('token', authRes.token, { path: '/', maxAge: 1000 * 60 })
+            .header('Location', '/')
+            .status(303)
+            .end()
+    })
+    
+    router.get('/logout', app.auth.middleware, async (req, res) => {
+        await app.auth.logout(req.token)
+        res
+            .clearCookie('token')
+            .status(303)
+            .header('Location', '/')
+            .end()
+    })
+    
+    router.get('/', app.auth.middleware, async (req, res) => {
+        const user = await app.getUser(req.credentials.id)
+    
+        res.render('home', {
+            user: {
+                ...user,
+                password: undefined,
+            },
+        })
+    })
+    
+    router.get('/account', app.auth.middleware, async (req, res) => {
+        res.render('account', {
+            user: {
+                ...req.user,
+                password: undefined,
+            },
+        })
+    })
+    
+    router.get('/channels/:id', app.auth.middleware, async (req, res) => {
+        const channel = await app.getChannel(req.params.id)
+        if (!channel) {
+            res
+                .status(404)
+                .end()
+            return
+        }
+    
+        if (!(await app.checkChannelPermissions(req.credentials.id, req.params.id))) {
+            res
+                .status(400)
+                .json({ error: 'No permissions' })
+                .end()
+            return
+        }
+    
+        const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
+    
+        const sqlUsers = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
+    
+        /** @type {Array<import('ws').WebSocket>} */
+        const wsClients = []
+        for (const wsClient of app.wss.getWss().clients.values()) {
+            wsClients.push(wsClient)
+        }
+    
+        const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
+    
+        res.render('channel', {
+            user: {
+                ...req.user,
+                password: undefined,
+            },
+            channel: {
+                ...channel,
+            },
+            members: sqlUsers.map(v => ({
+                ...v,
+                password: undefined,
+                // @ts-ignore
+                isOnline: wsClients.some(_v => _v.user?.id === v.id),
+            })),
+            messages: sqlMessages.map(v => ({
+                ...v,
+                createdAt: new Date(v.createdUtc * 1000).toLocaleTimeString(),
+            })),
+            channels: sqlChannels.map(v => ({
+                ...v,
+            })),
+        })
+    })
+    
+    router.get('/invitations/:id/use', app.auth.middleware, async (req, res) => {
+        try {
+            const sqlInvitation = await app.getInvitation( req.params.id)
+            if (!sqlInvitation) {
+                res.status(404)
+                res.write('Invitation not found')
+                res.end()
+                return
+            }
+    
+            const sqlChannels = await app.getChannel(sqlInvitation.channelId)
+            if (sqlChannels) {
+                const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannels.id, req.credentials.id ])
+                if (sqlUserChannels.length) {
+                    res.status(400)
+                    res.write('You are already in this channel')
+                    res.end()
+                    return
+                }
+        
+                await database.insert('userChannel', {
+                    userId: req.credentials.id,
+                    channelId: sqlChannels.id,
+                })
+        
+                await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
+        
+                res
+                    .status(303)
+                    .header('Location', '/channels/' + sqlChannels.id)
+                    .end()
+                return
+            }
+    
+            const sqlBundles = await app.getBundle(sqlInvitation.channelId)
+            if (sqlBundles) {
+                const sqlUserBundles = await database.queryRaw('SELECT * FROM bundleUser WHERE bundleUser.bundleId = ? AND bundleUser.userId = ? LIMIT 1', [ sqlBundles.id, req.credentials.id ])
+                if (sqlUserBundles.length) {
+                    res.status(400)
+                    res.write('You are already in this bundle')
+                    res.end()
+                    return
+                }
+    
+                await database.insert('bundleUser', {
+                    userId: req.credentials.id,
+                    bundleId: sqlBundles.id,
+                })
+    
+                await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
+    
+                res
+                    .status(303)
+                    .header('Location', '/')
+                    .end()
+                return
+            }
+    
             res.status(404)
-            res.write('Invitation not found')
+            res.write('Channel not found')
             res.end()
             return
-        }
-
-        const sqlChannels = await app.getChannel(sqlInvitation.channelId)
-        if (sqlChannels) {
-            const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannels.id, req.credentials.id ])
-            if (sqlUserChannels.length) {
-                res.status(400)
-                res.write('You are already in this channel')
-                res.end()
-                return
-            }
-    
-            await database.insert('userChannel', {
-                userId: req.credentials.id,
-                channelId: sqlChannels.id,
-            })
-    
-            await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
-    
+        } catch (error) {
+            console.error(error)
             res
-                .status(303)
-                .header('Location', '/channels/' + sqlChannels.id)
+                .status(500)
                 .end()
-            return
         }
-
-        const sqlBundles = await app.getBundle(sqlInvitation.channelId)
-        if (sqlBundles) {
-            const sqlUserBundles = await database.queryRaw('SELECT * FROM bundleUser WHERE bundleUser.bundleId = ? AND bundleUser.userId = ? LIMIT 1', [ sqlBundles.id, req.credentials.id ])
-            if (sqlUserBundles.length) {
-                res.status(400)
-                res.write('You are already in this bundle')
-                res.end()
-                return
-            }
-
-            await database.insert('bundleUser', {
-                userId: req.credentials.id,
-                bundleId: sqlBundles.id,
-            })
-
-            await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
-
-            res
-                .status(303)
-                .header('Location', '/')
-                .end()
-            return
-        }
-
-        res.status(404)
-        res.write('Channel not found')
-        res.end()
-        return
-    } catch (error) {
-        console.error(error)
+    })
+    
+    router.get('/hbs/partials', async (req, res) => {
+        const files = fs.readdirSync(path.join(__dirname, '..', '..', 'public', 'partials'))
         res
-            .status(500)
+            .status(200)
+            .json(files.map(v => v.replace('.handlebars', '')))
             .end()
-    }
-})
-
-router.get('/hbs/partials', async (req, res) => {
-    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'public', 'partials'))
-    res
-        .status(200)
-        .json(files.map(v => v.replace('.handlebars', '')))
-        .end()
-})
-
-router.use(express.static(path.join(__dirname, '..', '..', 'public')))
-router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
-
-module.exports = router
+    })
+    
+    router.use(express.static(path.join(__dirname, '..', '..', 'public')))
+    router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
+    
+}

@@ -1,16 +1,15 @@
 const express = require('express')
-const database = require('../../db')
 const jsonUtils = require('../../json-utils')
-const auth = require('../../auth')
 const uuid = require('uuid')
-const app = require('../../app')
 
 /**
  * @param {express.Router} router
+ * @param {import('../../app')} app
  */
-module.exports = (router) => {
+module.exports = (router, app) => {
+    const database = app.database
 
-    router.get('/api/invitations', auth.middleware, async (req, res) => {
+    router.get('/api/invitations', app.auth.middleware, async (req, res) => {
         try {
             const result = await (() => {
                 if (req.query['for']) {
@@ -36,7 +35,7 @@ module.exports = (router) => {
         }
     })
     
-    router.post('/api/invitations', auth.middleware, async (req, res) => {
+    router.post('/api/invitations', app.auth.middleware, async (req, res) => {
         try {
             const newInvitation = {
                 id: uuid.v4(),
@@ -62,7 +61,7 @@ module.exports = (router) => {
         }
     })
     
-    router.delete('/api/invitations/:id', auth.middleware, async (req, res) => {
+    router.delete('/api/invitations/:id', app.auth.middleware, async (req, res) => {
         try {
             const sqlRes = database.queryRaw('DELETE FROM invitations WHERE invitations.userId = ? AND invitations.id = ?', [ req.credentials.id, req.params['id'] + '' ])
             res
@@ -79,7 +78,7 @@ module.exports = (router) => {
         }
     })
     
-    router.get('/api/invitations/:id/use', auth.middleware, async (req, res) => {
+    router.get('/api/invitations/:id/use', app.auth.middleware, async (req, res) => {
         try {
             const sqlInvitation = await app.getInvitation(req.params.id)
             if (!sqlInvitation) {

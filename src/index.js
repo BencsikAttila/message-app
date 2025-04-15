@@ -1,67 +1,79 @@
 const path = require('path')
-
-{
-    const res = require('dotenv').config({
-        path: [
-            path.join(__dirname, '.env'),
-        ]
-    })
-    if (res.error) throw res.error
-}
-
 const express = require('express')
-const port = 6789
 const expressHandlebars = require('express-handlebars')
 const expressWs = require('express-ws')
+const App = require('./app')
+const DB = require('./db')
+const expressApp = express()
 
-require('./db') // the instance is created once in this file
+function create() {
+    {
+        const res = require('dotenv').config({
+            path: [
+                path.join(__dirname, '.env'),
+            ]
+        })
+        if (res.error) throw res.error
+    }
 
-const app = express()
-global['wsInstance'] = expressWs(app)
-app.engine('handlebars', expressHandlebars.engine({
-    partialsDir: path.join(__dirname, '..', 'public', 'partials'),
-    helpers: {
-        'JSON': function (obj) {
-            return JSON.stringify(obj)
-        },
-        'eq': function (arg1, arg2, options) {
-            return (arg1 == arg2) ? options.fn(this) : options.inverse(this)
-        },
-        'switch': function (value, options) {
-            this.switch_value = value
-            this.switch_break = false
-            return options.fn(this)
-        },
-        'case': function (value, options) {
-            if (value == this.switch_value) {
-                this.switch_break = true
+    const port = 6789
+
+    const wss = expressWs(expressApp)
+    expressApp.engine('handlebars', expressHandlebars.engine({
+        partialsDir: path.join(__dirname, '..', 'public', 'partials'),
+        helpers: {
+            'JSON': function (obj) {
+                return JSON.stringify(obj)
+            },
+            'eq': function (arg1, arg2, options) {
+                return (arg1 == arg2) ? options.fn(this) : options.inverse(this)
+            },
+            'switch': function (value, options) {
+                this.switch_value = value
+                this.switch_break = false
                 return options.fn(this)
-            }
+            },
+            'case': function (value, options) {
+                if (value == this.switch_value) {
+                    this.switch_break = true
+                    return options.fn(this)
+                }
+            },
+            'default': function (options) {
+                if (this.switch_break == false) {
+                    return options.fn(this)
+                }
+            },
         },
-        'default': function (options) {
-            if (this.switch_break == false) {
-                return options.fn(this)
-            }
-        },
-    },
-}))
-app.set('view engine', 'handlebars')
-app.set('views', path.join(__dirname, '..', 'public', 'views'))
+    }))
+    expressApp.set('view engine', 'handlebars')
+    expressApp.set('views', path.join(__dirname, '..', 'public', 'views'))
 
-app.use(require('cookie-parser')())
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
-app.use(require('connect-busboy')())
+    expressApp.use(require('cookie-parser')())
+    expressApp.use(express.json())
+    expressApp.use(express.urlencoded({ extended: false }))
+    expressApp.use(require('connect-busboy')())
 
-{
-    const apiRouter = express.Router(({ mergeParams: true }))
-    require('./router/api')(apiRouter)
-    app.use(apiRouter)
+    const router = express.Router(({ mergeParams: true }))
+    const app = new App(DB.createSqliteDB(false), expressApp, wss)
+    require('./router/api')(router, app)
+    require('./router/web')(router, app)
+    require('./router/ws')(router, app)
+    expressApp.use(router)
+
+    app.server = expressApp.listen(port, '0.0.0.0', () => {
+        console.log(`Listening on http://localhost:${port}`)
+    })
+
+    app.server.addListener('close', () => {
+        console.log(`Closed`)
+    })
+
+    return app
 }
 
-app.use(require('./router/web'))
-app.use(require('./router/ws'))
+if (require.main === module) {
+    create()
+}
 
-global['server'] = app.listen(port, '0.0.0.0', () => {
-    console.log(`Listening on http://localhost:${port}`)
-})
+module.exports = create

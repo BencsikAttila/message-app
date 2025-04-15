@@ -1,16 +1,15 @@
 const express = require('express')
-const database = require('../../db')
 const jsonUtils = require('../../json-utils')
-const auth = require('../../auth')
 const uuid = require('uuid')
-const app = require('../../app')
 
 /**
  * @param {express.Router} router
+ * @param {import('../../app')} app
  */
-module.exports = (router) => {
+module.exports = (router, app) => {
+    const database = app.database
 
-    router.get('/api/channels/:channelId/messages', auth.middleware, async (req, res) => {
+    router.get('/api/channels/:channelId/messages', app.auth.middleware, async (req, res) => {
         try {
             const sqlChannel = await app.getChannel(req.params.channelId)
             if (!sqlChannel) {
@@ -46,7 +45,7 @@ module.exports = (router) => {
         }
     })
     
-    router.post('/api/channels/:channelId/messages', auth.middleware, async (req, res) => {
+    router.post('/api/channels/:channelId/messages', app.auth.middleware, async (req, res) => {
         const sqlChannel = await app.getChannel(req.params.channelId)
         if (!sqlChannel) {
             res
@@ -83,7 +82,7 @@ module.exports = (router) => {
     
         try {
             await database.insert('messages', newMessage)
-            for (const client of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
+            for (const client of app.wss.getWss().clients.values()) {
                 client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageCreatedEvent} */ ({
                     type: 'message_created',
                     id: newMessage.id,
@@ -110,7 +109,7 @@ module.exports = (router) => {
         }
     })
     
-    router.delete('/api/channels/:channelId/messages/:messageId', auth.middleware, async (req, res) => {
+    router.delete('/api/channels/:channelId/messages/:messageId', app.auth.middleware, async (req, res) => {
         const sqlChannel = await app.getChannel(req.params.channelId)
         if (!sqlChannel) {
             res
@@ -139,7 +138,7 @@ module.exports = (router) => {
                 return
             }
     
-            for (const client of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
+            for (const client of app.wss.getWss().clients.values()) {
                 client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageDeletedEvent} */ ({
                     type: 'message_deleted',
                     id: req.params['messageId'],

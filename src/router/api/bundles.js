@@ -1,16 +1,15 @@
 const express = require('express')
-const database = require('../../db')
 const jsonUtils = require('../../json-utils')
-const auth = require('../../auth')
 const uuid = require('uuid')
-const app = require('../../app')
 
 /**
  * @param {express.Router} router
+ * @param {import('../../app')} app
  */
-module.exports = (router) => {
+module.exports = (router, app) => {
+    const database = app.database
 
-    router.get('/api/bundles', auth.middleware, async (req, res) => {
+    router.get('/api/bundles', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ?', req.credentials.id)
             res.setHeader('Content-Type', 'application/json')
@@ -30,7 +29,7 @@ module.exports = (router) => {
         }
     })
     
-    router.post('/api/bundles', auth.middleware, async (req, res) => {
+    router.post('/api/bundles', app.auth.middleware, async (req, res) => {
         if (!req.body.name || !('' + req.body.name).trim()) {
             res
                 .status(400)
@@ -84,7 +83,7 @@ module.exports = (router) => {
         }
     })
     
-    router.delete('/api/bundles/:bundleId', auth.middleware, async (req, res) => {
+    router.delete('/api/bundles/:bundleId', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.id = ?', [ req.credentials.id, req.params.bundleId ])
             if (!sqlBundles.length) {
@@ -110,7 +109,7 @@ module.exports = (router) => {
         }
     })
     
-    router.get('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) => {
+    router.get('/api/bundles/:bundleId/channels', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw(`
                 SELECT bundles.*
@@ -152,7 +151,7 @@ module.exports = (router) => {
         }
     })
     
-    router.post('/api/bundles/:bundleId/channels', auth.middleware, async (req, res) => {
+    router.post('/api/bundles/:bundleId/channels', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw(`
                 SELECT bundles.*

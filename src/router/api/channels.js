@@ -1,16 +1,15 @@
 const express = require('express')
-const database = require('../../db')
 const jsonUtils = require('../../json-utils')
-const auth = require('../../auth')
 const uuid = require('uuid')
-const app = require('../../app')
 
 /**
  * @param {express.Router} router
+ * @param {import('../../app')} app
  */
-module.exports = (router) => {
+module.exports = (router, app) => {
+    const database = app.database
 
-    router.get('/api/channels/:channelId', auth.middleware, async (req, res) => {
+    router.get('/api/channels/:channelId', app.auth.middleware, async (req, res) => {
         try {
             const channel = await app.getChannel(req.params.channelId)
             if (!channel) {
@@ -43,7 +42,7 @@ module.exports = (router) => {
         }
     })
     
-    router.get('/api/channels/:channelId/users', auth.middleware, async (req, res) => {
+    router.get('/api/channels/:channelId/users', app.auth.middleware, async (req, res) => {
         try {
             const channel = await app.getChannel(req.params.channelId)
             if (!channel) {
@@ -76,7 +75,7 @@ module.exports = (router) => {
     
             /** @type {Array<import('ws').WebSocket>} */
             const wsClients = []
-            for (const wsClient of (/** @type {ReturnType<import('express-ws')>} */ (global['wsInstance'])).getWss().clients.values()) {
+            for (const wsClient of app.wss.getWss().clients.values()) {
                 wsClients.push(wsClient)
             }
     
@@ -100,7 +99,7 @@ module.exports = (router) => {
         }
     })
     
-    router.post('/api/channels/:channelId/leave', auth.middleware, async (req, res) => {
+    router.post('/api/channels/:channelId/leave', app.auth.middleware, async (req, res) => {
         const sqlChannels = await app.getChannel(req.params.channelId)
         if (!sqlChannels) {
             res
@@ -117,7 +116,7 @@ module.exports = (router) => {
             .end()
     })
     
-    router.get('/api/channels', auth.middleware, async (req, res) => {
+    router.get('/api/channels', app.auth.middleware, async (req, res) => {
         try {
             const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
             res.setHeader('Content-Type', 'application/json')
@@ -137,7 +136,7 @@ module.exports = (router) => {
         }
     })
     
-    router.post('/api/channels', auth.middleware, async (req, res) => {
+    router.post('/api/channels', app.auth.middleware, async (req, res) => {
         /** @type {import('../../db/model').default['channels']} */
         const newChannel = {
             id: uuid.v4(),

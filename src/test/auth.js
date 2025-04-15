@@ -1,7 +1,7 @@
 const assert = require('assert')
-const App = require('../../public/js/client')
+const Client = require('../../public/js/client')
 
-/** @type {App} */
+/** @type {Client} */
 let client = null
 
 /**
@@ -16,8 +16,7 @@ assert['rejects'] = function(promise) {
 }
 
 before(() => {  
-  require('../index')
-  client = new App('http://localhost:6789')
+  client = new Client('http://localhost:6789')
 })
 
 describe('Auth', function () {
@@ -35,8 +34,4 @@ describe('Auth', function () {
     await client.register('Test user 3', 'passwd3')
     await assert.rejects(() => client.login('Test user 3', 'passwd3__'))
   })
-})
-
-after(() => {
-  (/** @type {import('http').Server} */ (global.server)).close()
 })

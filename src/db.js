@@ -82,9 +82,10 @@ function createMysqlDB() {
 }
 
 /**
+ * @param {boolean} inMemory
  * @returns {DB}
  */
-function createSqliteDB() {
+function createSqliteDB(inMemory) {
     const sqlite = require('sqlite3')
     const path = require('path')
 
@@ -92,9 +93,7 @@ function createSqliteDB() {
         fs.mkdirSync(path.join(__dirname, '..', 'database'), { recursive: true })
     }
 
-    //const db = new sqlite.Database(':memory:')
-    const db = new sqlite.Database(path.join(__dirname, '..', 'database', 'db.sqlite'))
-    // TODO: read setup sql from file
+    const db = new sqlite.Database(inMemory ? ':memory:' : path.join(__dirname, '..', 'database', 'db.sqlite'))
     db.serialize(() => {
         const users = table('users')
         users.addId()
@@ -191,6 +190,7 @@ function createSqliteDB() {
     }
 }
 
-// TODO: choose the provider based on a config file
-const database = createSqliteDB()
-module.exports = database
+module.exports = {
+    createSqliteDB,
+    createMysqlDB,
+}
