@@ -104,10 +104,12 @@
                     const bundleElement = bundlesContainer.appendChild(document.fromHTML(Handlebars.compile(`
                         <div class="bundle-item${expandedBundles.has(bundle.id) ? '' : ' collapsed'}">
                             <span>{{name}} <button class="x">X</button></span>
-                            <div class="bundle-channels">
-        
+                            <div class="bundle-dropdown">
+                                <div class="bundle-channels">
+                                
+                                </div>
+                                <button onclick="window.showInvitationsModal('{{id}}')">Invitations</button>
                             </div>
-                            <button onclick="window.showInvitationsModal('{{id}}')">Invitations</button>
                         </div>
                     `)(bundle)))
 

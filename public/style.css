@@ -352,7 +352,7 @@ dialog ::backdrop {
     color: var(--text);
 }
 
-.bundle-item.collapsed > .bundle-channels {
+.bundle-item.collapsed > .bundle-dropdown {
     display: none;
 }
 
@@ -374,10 +374,6 @@ dialog ::backdrop {
 .bundle-item > span:hover,
 .bundle-item > span:active {
     color: var(--highlight);
-}
-
-.bundle-item > .bundle-channels {
-    transition: all 200ms linear;
 }
 
 .bundle-item .x {
