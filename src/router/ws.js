@@ -1,5 +1,4 @@
 const express = require('express')
-const database = require('../db')
 const auth = require('../auth')
 const router = express.Router(({ mergeParams: true }))
 const app = require('../app')

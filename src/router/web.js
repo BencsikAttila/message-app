@@ -4,6 +4,7 @@ const database = require('../db')
 const auth = require('../auth')
 const router = express.Router(({ mergeParams: true }))
 const app = require('../app')
+const fs = require('fs')
 
 router.get('/login', async (req, res) => {
     res.render('login')
@@ -208,6 +209,14 @@ router.get('/invitations/:id/use', auth.middleware, async (req, res) => {
             .status(500)
             .end()
     }
+})
+
+router.get('/hbs/partials', async (req, res) => {
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'public', 'partials'))
+    res
+        .status(200)
+        .json(files.map(v => v.replace('.handlebars', '')))
+        .end()
 })
 
 router.use(express.static(path.join(__dirname, '..', '..', 'public')))

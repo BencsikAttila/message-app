@@ -156,7 +156,7 @@ class Client {
      * @param {string} name
      */
     async createChannel(name) {
-        return await this.post(`/api/channels`, {
+        await this.post(`/api/channels`, {
             name: name,
         })
     }
