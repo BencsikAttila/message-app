@@ -99,6 +99,7 @@ const auth = {
             // @ts-ignore
             return payload
         } catch (e) {
+            console.error(e)
             return false
         }
     },
@@ -114,28 +115,39 @@ const auth = {
     async middleware(req, res, next) {
         const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
         req.token = token
-        const verifyRes = await auth.verify(token)
-        if (verifyRes) {
-            const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]
-            if (user) {
-                req.credentials = verifyRes
-                req.user = user
-                next()
-                return
+
+        let error = 'Invalid token'
+
+        if (token) {
+            const verifyRes = await auth.verify(token)
+            if (verifyRes) {
+                const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', verifyRes.id))?.[0]
+                if (user) {
+                    req.credentials = verifyRes
+                    req.user = user
+                    next()
+                    return
+                } else {
+                    error = 'User not found'
+                }
+            } else {
+                error = 'Invalid token'
             }
+        } else {
+            error = null    
         }
 
         if (req.path.startsWith('/api')) {
             res
                 .status(401)
                 .json({
-                    error: 'Invalid token'
+                    error: error
                 })
                 .end()
         } else {
             res
                 .status(303)
-                .header('Location', `/login?error=${encodeURIComponent('Invalid token' ?? '')}&redirect=${encodeURIComponent(req.url)}`)
+                .header('Location', `/login?error=${encodeURIComponent(error ?? '')}&redirect=${encodeURIComponent(req.url)}`)
                 .end()
         }
     },

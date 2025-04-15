@@ -3,6 +3,7 @@ const path = require('path')
 const database = require('../db')
 const auth = require('../auth')
 const router = express.Router(({ mergeParams: true }))
+const app = require('../app')
 
 router.get('/login', async (req, res) => {
     res.render('login')
@@ -67,7 +68,7 @@ router.get('/logout', auth.middleware, async (req, res) => {
 })
 
 router.get('/', auth.middleware, async (req, res) => {
-    const user = (await database.queryRaw('SELECT * FROM users WHERE users.id = ?;', req.credentials.id))[0]
+    const user = await app.getUser(req.credentials.id)
 
     res.render('home', {
         user: {
@@ -87,16 +88,15 @@ router.get('/account', auth.middleware, async (req, res) => {
 })
 
 router.get('/channels/:id', auth.middleware, async (req, res) => {
-    const sqlChannel = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', req.params.id)
-    if (sqlChannel.length === 0) {
+    const channel = await app.getChannel(req.params.id)
+    if (!channel) {
         res
             .status(404)
             .end()
         return
     }
 
-    const sqlPermission = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel[0].id, req.credentials.id ])
-    if (!sqlPermission.length) {
+    if (!(await app.checkChannelPermissions(req.credentials.id, req.params.id))) {
         res
             .status(400)
             .json({ error: 'No permissions' })
@@ -106,7 +106,7 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
 
     const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
 
-    const sqlUsers = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', sqlChannel[0].id)
+    const sqlUsers = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
 
     /** @type {Array<import('ws').WebSocket>} */
     const wsClients = []
@@ -114,7 +114,7 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
         wsClients.push(wsClient)
     }
 
-    const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', sqlChannel[0].id)
+    const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
 
     res.render('channel', {
         user: {
@@ -122,7 +122,7 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
             password: undefined,
         },
         channel: {
-            ...sqlChannel[0],
+            ...channel,
         },
         members: sqlUsers.map(v => ({
             ...v,
@@ -142,47 +142,66 @@ router.get('/channels/:id', auth.middleware, async (req, res) => {
 
 router.get('/invitations/:id/use', auth.middleware, async (req, res) => {
     try {
-        const sqlInvitations = await database.queryRaw('SELECT * FROM invitations WHERE invitations.id = ? LIMIT 1', [ req.params['id'] ])
-        if (!sqlInvitations.length) {
+        const sqlInvitation = await app.getInvitation( req.params.id)
+        if (!sqlInvitation) {
             res.status(404)
             res.write('Invitation not found')
             res.end()
             return
         }
 
-        /** @type {import('../db/model').default['invitations']} */
-        const sqlInvitation = sqlInvitations[0]
-
-        const sqlChannels = await database.queryRaw('SELECT * FROM channels WHERE channels.id = ? LIMIT 1', [ sqlInvitation.channelId ])
-        if (!sqlChannels.length) {
-            res.status(404)
-            res.write('Channel not found')
-            res.end()
+        const sqlChannels = await app.getChannel(sqlInvitation.channelId)
+        if (sqlChannels) {
+            const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannels.id, req.credentials.id ])
+            if (sqlUserChannels.length) {
+                res.status(400)
+                res.write('You are already in this channel')
+                res.end()
+                return
+            }
+    
+            await database.insert('userChannel', {
+                userId: req.credentials.id,
+                channelId: sqlChannels.id,
+            })
+    
+            await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
+    
+            res
+                .status(303)
+                .header('Location', '/channels/' + sqlChannels.id)
+                .end()
             return
         }
 
-        /** @type {import('../db/model').default['channels']} */
-        const sqlChannel = sqlChannels[0]
+        const sqlBundles = await app.getBundle(sqlInvitation.channelId)
+        if (sqlBundles) {
+            const sqlUserBundles = await database.queryRaw('SELECT * FROM bundleUser WHERE bundleUser.bundleId = ? AND bundleUser.userId = ? LIMIT 1', [ sqlBundles.id, req.credentials.id ])
+            if (sqlUserBundles.length) {
+                res.status(400)
+                res.write('You are already in this bundle')
+                res.end()
+                return
+            }
 
-        const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ sqlChannel.id, req.credentials.id ])
-        if (sqlUserChannels.length) {
-            res.status(400)
-            res.write('You are already in this channel')
-            res.end()
+            await database.insert('bundleUser', {
+                userId: req.credentials.id,
+                bundleId: sqlBundles.id,
+            })
+
+            await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
+
+            res
+                .status(303)
+                .header('Location', '/')
+                .end()
             return
         }
 
-        await database.insert('userChannel', {
-            userId: req.credentials.id,
-            channelId: sqlChannel.id,
-        })
-
-        await database.queryRaw(`UPDATE invitations SET usages = usages + 1 WHERE id = ?`, [ sqlInvitation.id ])
-
-        res
-            .status(303)
-            .header('Location', '/channels/' + sqlChannel.id)
-            .end()
+        res.status(404)
+        res.write('Channel not found')
+        res.end()
+        return
     } catch (error) {
         console.error(error)
         res

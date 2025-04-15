@@ -56,6 +56,6 @@ app.use(require('./router/api'))
 app.use(require('./router/web'))
 app.use(require('./router/ws'))
 
-global['server'] = app.listen(port, () => {
+global['server'] = app.listen(port, '0.0.0.0', () => {
     console.log(`Listening on http://localhost:${port}`)
 })
