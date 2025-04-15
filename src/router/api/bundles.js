@@ -71,6 +71,7 @@ module.exports = (router) => {
             }
             res
                 .status(200)
+                .json(newBundle)
                 .end()
         } catch (error) {
             console.error(error)
@@ -169,7 +170,7 @@ module.exports = (router) => {
                 return
             }
     
-            const channel = await app.getChannel(req.params.channelId)
+            const channel = await app.getChannel(req.body.id)
             if (!channel) {
                 res
                     .status(404)
@@ -180,7 +181,7 @@ module.exports = (router) => {
     
             await database.insert('bundleChannel', {
                 bundleId: req.params.bundleId,
-                channelId: req.params.channelId,
+                channelId: req.body.id,
             })
     
             res
@@ -195,5 +196,4 @@ module.exports = (router) => {
             res.end()
         }
     })
-    
 }

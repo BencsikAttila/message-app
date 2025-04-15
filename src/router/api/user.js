@@ -129,8 +129,9 @@ module.exports = (router) => {
             if ('theme' in req.body) {
                 await database.queryRaw('UPDATE users SET theme = ? WHERE users.id = ?', [ req.body['theme'], req.credentials.id ])
             }
-            res.status(200)
-            res.end()
+            res
+                .status(200)
+                .end()
         } catch (error) {
             console.error(error)
             res.setHeader('Content-Type', 'application/json')

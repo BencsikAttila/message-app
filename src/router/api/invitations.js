@@ -38,18 +38,19 @@ module.exports = (router) => {
     
     router.post('/api/invitations', auth.middleware, async (req, res) => {
         try {
-            await database.insert('invitations', {
+            const newInvitation = {
                 id: uuid.v4(),
                 channelId: req.body.for,
                 usages: 0,
                 userId: req.credentials.id,
                 expiresAt: 0,
-            })
+            }
+
+            await database.insert('invitations', newInvitation)
+
             res
                 .status(200)
-                .json({
-                    
-                })
+                .json(newInvitation)
                 .end()
         } catch (error) {
             console.error(error)

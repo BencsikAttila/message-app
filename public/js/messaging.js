@@ -38,7 +38,6 @@
         fetch(`/api/channels/${window.ENV.channel.id}/messages`, {
             method: "POST",
             body: JSON.stringify({
-                type: "send_message",
                 content: messageContent
             }),
             headers: {

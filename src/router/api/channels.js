@@ -161,6 +161,7 @@ module.exports = (router) => {
             })
             res
                 .status(200)
+                .json(newChannel)
                 .end()
         } catch (error) {
             console.error(error)

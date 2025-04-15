@@ -1,3 +1,86 @@
+/**
+ * @param {Client} client
+ * @param {import('../../src/db/model').default['channels']} data
+ */
+function channel(client, data) {
+    return {
+        ...data,
+        /**
+         * @param {string} content
+         */
+        async send(content) {
+            /** @type {import('../../src/db/model').default['messages']} */
+            const res = await client.post(`/api/channels/${this.id}/messages`, {
+                content: content,
+            })
+            return message(client, res)
+        },
+        async delete() {
+            await client.delete(`/api/channels/${this.id}`)
+        },
+        async createInvitation() {
+            /** @type {import('../../src/db/model').default['invitations']} */
+            const res = await client.post(`/api/invitations`, {
+                for: this.id,
+            })
+            return invitation(client, res)
+        },
+    }
+}
+
+/**
+ * @param {Client} client
+ * @param {import('../../src/db/model').default['invitations']} data
+ */
+function invitation(client, data) {
+    return {
+        ...data,
+        async delete() {
+            await client.delete(`/api/invitations/${this.id}`)
+        },
+    }
+}
+
+/**
+ * @param {Client} client
+ * @param {import('../../src/db/model').default['messages']} data
+ */
+function message(client, data) {
+    return {
+        ...data,
+        async delete() {
+            await client.delete(`/api/channels/${this.channelId}/messages/${this.id}`)
+        },
+    }
+}
+
+/**
+ * @param {Client} client
+ * @param {import('../../src/db/model').default['bundles']} data
+ */
+function bundle(client, data) {
+    return {
+        ...data,
+        /**
+         * @param {string} id
+         */
+        async addChannel(id) {
+            await client.post(`/api/bundles/${this.id}/channels`, {
+                id: id,
+            })
+        },
+        /**
+         * @param {string} id
+         */
+        async removeChannel(id) {
+            await client.delete(`/api/bundles/${this.id}/channels/${id}`)
+        },
+        async delete() {
+            await client.delete(`/api/bundles/${this.id}`)
+        },
+    }
+}
+
 class Client {
     /** @readonly @type {string} */ #origin
     /** @type {string | null} */ #token
@@ -79,8 +162,11 @@ class Client {
                 },
             })
                 .then(v => {
-                    console.log(v.headers.get('content-type'))
-                    return v.json()
+                    if (v.headers.get('content-type')?.startsWith('application/json')) {
+                        return v.json()
+                    } else {
+                        resolve(null)
+                    }
                 })
                 .then(v => {
                     if ('error' in v) {
@@ -109,9 +195,14 @@ class Client {
             })
                 .then(v => {
                     if (v.status >= 200 && v.status < 300) {
-                        resolve()
+                        if (v.headers.get('content-type')?.startsWith('application/json')) {
+                            v.json()
+                                .then(resolve)
+                                .catch(reject)
+                        } else {
+                            resolve(null)
+                        }
                     } else {
-                        console.log(v.headers.get('content-type'))
                         v.json()
                             .then(v => {
                                 if ('error' in v) {
@@ -153,12 +244,46 @@ class Client {
     }
 
     /**
+     * @param {string} invitationId
+     */
+    async useInvitation(invitationId) {
+        await this.get(`/api/invitations/${invitationId}/use`)
+    }
+
+    /**
+     * @param {string} id
+     */
+    async getChannel(id) {
+        /** @type {import('../../src/db/model').default['channels']} */
+        const res = await this.get(`/api/channels/${id}`)
+
+        return channel(this, res)
+    }
+
+    /**
      * @param {string} name
      */
     async createChannel(name) {
-        await this.post(`/api/channels`, {
+        /** @type {import('../../src/db/model').default['channels']} */
+        const res = await this.post(`/api/channels`, {
             name: name,
         })
+
+        return channel(this, res)
+    }
+
+    /**
+     * @param {string} name
+     * @param {ReadonlyArray<string>} channels
+     */
+    async createBundle(name, channels) {
+        /** @type {import('../../src/db/model').default['bundles']} */
+        const res = await this.post(`/api/bundles`, {
+            name: name,
+            channels: channels,
+        })
+
+        return bundle(this, res)
     }
 }
 

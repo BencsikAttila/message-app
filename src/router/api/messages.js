@@ -96,8 +96,10 @@ module.exports = (router) => {
                 })))
             }
     
-            res.statusCode = 200
-            res.end()
+            res
+                .status(200)
+                .json(newMessage)
+                .end()
         } catch (error) {
             console.error(error)
             res.setHeader('Content-Type', 'application/json')

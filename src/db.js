@@ -92,7 +92,8 @@ function createSqliteDB() {
         fs.mkdirSync(path.join(__dirname, '..', 'database'), { recursive: true })
     }
 
-    const db = new sqlite.Database(path.join(__dirname, '..', 'database', 'db.sqlite'))
+    const db = new sqlite.Database(':memory:')
+    //const db = new sqlite.Database(path.join(__dirname, '..', 'database', 'db.sqlite'))
     // TODO: read setup sql from file
     db.serialize(() => {
         const users = table('users')
