@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "dbaeumer.vscode-eslint"
+        "qwtel.sqlite-viewer",
+        "hbenl.vscode-mocha-test-adapter"
     ]
 }

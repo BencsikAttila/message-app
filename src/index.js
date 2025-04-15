@@ -52,7 +52,13 @@ app.use(require('cookie-parser')())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(require('connect-busboy')())
-app.use(require('./router/api'))
+
+{
+    const apiRouter = express.Router(({ mergeParams: true }))
+    require('./router/api')(apiRouter)
+    app.use(apiRouter)
+}
+
 app.use(require('./router/web'))
 app.use(require('./router/ws'))
 
