@@ -28,6 +28,11 @@ export interface MessageDeletedEvent extends GenericEvent<'message_deleted'> {
     id: string
 }
 
+export interface UserStatusEvent extends GenericEvent<'user_status'> {
+    id: string
+    isOnline: boolean
+}
+
 export interface SqlResultEvent extends GenericEvent<'sql_result'> {
     result: import('mysql2').QueryResult
 }
@@ -37,5 +42,6 @@ export type WebSocketMessage = (
     ErrorEvent |
     SqlResultEvent |
     MessageCreatedEvent |
-    MessageDeletedEvent
+    MessageDeletedEvent |
+    UserStatusEvent
 )

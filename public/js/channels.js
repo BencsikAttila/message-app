@@ -63,6 +63,25 @@
             })
     }
 
+    wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
+        switch (e.message.type) {
+            case 'user_status': {
+                const element = document.getElementById(`user-${e.message.id}`)
+                if (!element) break
+                const statusElement = element.getElementsByClassName('user-status').item(0)
+                if (!statusElement) break
+                if (e.message.isOnline) {
+                    statusElement.classList.add('user-status-online')
+                    statusElement.classList.remove('user-status-offline')
+                } else {
+                    statusElement.classList.remove('user-status-online')
+                    statusElement.classList.add('user-status-offline')
+                }
+                break
+            }
+        }
+    })
+
     window['leaveChannel'] = function() {
         fetch(`/api/channels/${window.ENV.channel?.id}/leave`, { method: 'POST' })
             .then(v => {
