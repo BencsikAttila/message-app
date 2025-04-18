@@ -1,6 +1,6 @@
 /**
  * @param {import('express-ws').Router} router
- * @param {import('../app')} app
+ * @param {import('../utils')} app
  */
 module.exports = (router, app) => {
     router.ws('/', async (ws, req, next) => {

@@ -2,8 +2,8 @@ const path = require('path')
 const express = require('express')
 const expressHandlebars = require('express-handlebars')
 const expressWs = require('express-ws')
-const App = require('./app')
-const DB = require('./db')
+const App = require('./utils')
+const DB = require('./db/interface')
 const expressApp = express()
 
 function create() {

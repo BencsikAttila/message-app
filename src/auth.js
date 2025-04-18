@@ -18,7 +18,7 @@ import('jose/jwt/verify').then(v => jwtVerify = v.jwtVerify)
 const { createHash } = require('crypto')
 
 /**
- * @param {import('./app')} app
+ * @param {import('./utils')} app
  */
 module.exports = (app) => {
     const secretKey = createSecretKey(process.env.JWT_SECRET, 'utf-8')
@@ -35,7 +35,7 @@ module.exports = (app) => {
          */
         tokenBlacklist: new Set(),
         /**
-         * @param {import('./db').DB} database
+         * @param {import('./db/interface').DB} database
          * @param {string} username
          * @param {string} password
          */
@@ -67,7 +67,7 @@ module.exports = (app) => {
             }
         },
         /**
-         * @param {import('./db').DB} database
+         * @param {import('./db/interface').DB} database
          * @param {string} username
          * @param {string} password
          */

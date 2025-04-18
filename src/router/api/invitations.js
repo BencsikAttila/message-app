@@ -4,7 +4,7 @@ const uuid = require('uuid')
 
 /**
  * @param {express.Router} router
- * @param {import('../../app')} app
+ * @param {import('../../utils')} app
  */
 module.exports = (router, app) => {
     const database = app.database

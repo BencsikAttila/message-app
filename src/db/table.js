@@ -17,6 +17,20 @@ const typeKeywords = {
  */
 
 /**
+ * @typedef {Table & {
+ *   addColumn(name: string, type: 'INT' | 'TEXT' | 'BIGINT' | 'UUID'): ColumnBuilder
+ *   addColumn(name: string, type: 'VARCHAR', length: number): ColumnBuilder
+ *   addId(): void
+ * }} TableBuilder
+ */
+
+/**
+ * @typedef {{
+ *   compile(protocol: 'sqlite' | 'mysql'): string
+ * }} Table
+ */
+
+/**
  * @param {string} tableName
  * @returns {{
  *   addColumn(name: string, type: 'INT' | 'TEXT' | 'BIGINT' | 'UUID'): ColumnBuilder

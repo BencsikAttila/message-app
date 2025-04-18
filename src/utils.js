@@ -1,12 +1,12 @@
 module.exports = class App {
-    /** @readonly @type {import('./db').DB} */ database
+    /** @readonly @type {import('./db/interface').DB} */ database
     /** @readonly @type {import('express').Application} */ express
     /** @readonly @type {import('express-ws').Instance} */ wss
     /** @readonly @type {ReturnType<import('./auth')>} */ auth
     /** @readonly @type {import('http').Server} */ server
 
     /**
-     * @param {import('./db').DB} database
+     * @param {import('./db/interface').DB} database
      * @param {import('express').Application} express
      * @param {import('express-ws').Instance} wss
      */
