@@ -33,7 +33,7 @@ module.exports = (router, app) => {
         }
     
         res
-            .cookie('token', authResult.token, { path: '/', maxAge: 1000 * 60 * 30 })
+            .cookie('token', authResult.token, { path: '/', maxAge: app.auth.exparationTimeSec * 1000 })
             .status(303)
             .header('Location', '/')
             .end()

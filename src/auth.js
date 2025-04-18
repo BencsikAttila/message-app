@@ -22,6 +22,9 @@ const { createHash } = require('crypto')
  */
 module.exports = (app) => {
     const secretKey = createSecretKey(process.env.JWT_SECRET, 'utf-8')
+    const expirationTime = '1w'
+    const renewTime = 60 * 60 * 24 * 7 // 1 week
+    const exparationTimeSec = 60 * 60 * 24 // 1 day
 
     const auth = {
         /**
@@ -59,7 +62,7 @@ module.exports = (app) => {
             const token = await new SignJWT({ id: user.id })
                 .setProtectedHeader({ alg: 'HS256' })
                 .setIssuedAt()
-                .setExpirationTime('1d')
+                .setExpirationTime(expirationTime)
                 .sign(secretKey)
             auth.tokens.add(token)
             return {
@@ -116,7 +119,7 @@ module.exports = (app) => {
          * @type {import('express').Handler}
          */
         async middleware(req, res, next) {
-            const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
+            let token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
             req.token = token
 
             let error = 'Invalid token'
@@ -128,6 +131,21 @@ module.exports = (app) => {
                     if (user) {
                         req.credentials = verifyRes
                         req.user = user
+                        const remaining = (verifyRes.exp - (new Date().getTime() / 1000))
+                        if (remaining < renewTime) {
+                            token = await new SignJWT({ id: user.id })
+                                .setProtectedHeader({ alg: 'HS256' })
+                                .setIssuedAt()
+                                .setExpirationTime(expirationTime)
+                                .sign(secretKey)
+                            req.token = token
+                            auth.tokens.add(token)
+
+                            if (!req.path.startsWith('/api')) {
+                                res
+                                    .cookie('token', token, { path: '/', maxAge: exparationTimeSec * 1000 })
+                            }
+                        }
                         next()
                         return
                     } else {
@@ -154,6 +172,7 @@ module.exports = (app) => {
                     .end()
             }
         },
+        /** @readonly */ exparationTimeSec,
     }
     return auth
 }
