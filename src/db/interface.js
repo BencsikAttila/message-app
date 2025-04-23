@@ -1,12 +1,11 @@
 const fs = require('fs')
-const table = require('./table')
 const init = require('./init')
 
 /**
  * @typedef {{
  *   query<Table extends keyof import('./model').default>(table: Table): Promise<ReadonlyArray<import('./model').default[Table]>>
  *   queryRaw(query: string, params: any): Promise<ReadonlyArray<any>>
- *   insert<Table extends keyof import('./model').default>(table: Table, values: import('./model').default[Table]): Promise<Readonly<{ changes: number; lastID: number; }>>
+ *   insert<Table extends keyof import('./model').default>(table: Table, values: import('./model').default[Table]): Promise<Readonly<{ changes: number; lastId: number; }>>
  *   delete<Table extends keyof import('./model').default>(table: Table, filter: string, params: any): Promise<number>
  * }} DB
  */
@@ -21,21 +20,68 @@ function createMysqlDB() {
 
     // TODO: handle the case if the database aint reachable (send an error page to the users)
 
+    if (!process.env.DATABASE_USERNAME) {
+        throw new Error(`Environment variable DATABASE_USERNAME isn't set`)
+    }
+
+    if (!process.env.DATABASE_PASSWORD) {
+        throw new Error(`Environment variable DATABASE_PASSWORD isn't set`)
+    }
+
+    if (!process.env.DATABASE_HOST) {
+        throw new Error(`Environment variable DATABASE_HOST isn't set`)
+    }
+
     const db = mysql.createConnection({
-        // TODO: environment variables
-        host: '127.0.0.1',
-        user: 'root',
-        password: 'root',
-        database: 'message_app',
-        port: 3306,
+        host: process.env.DATABASE_HOST,
+        port: Number(process.env.DATABASE_PORT) ?? 3306,
+        user: process.env.DATABASE_USERNAME,
+        password: process.env.DATABASE_PASSWORD,
     })
 
     db.connect((error) => {
         if (error) {
-            console.error('Failed connection to MySQL:', error)
-            return
+            throw error
         }
-        console.log('Connected to MySQL on thread', db.threadId)
+        console.log(`Connected to MySQL database ${db.config.host}:${db.config.port}`)
+
+        if (!process.env.DATABASE_NAME) {
+            throw new Error(`Environment variable DATABASE_NAME isn't set`)
+        }
+
+        ;(async () => {
+            await (() => new Promise((resolve, reject) => {
+                db.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DATABASE_NAME}`, (error, result, fields) => {
+                    if (error) {
+                        reject(error)
+                        return
+                    }
+                    resolve()
+                })
+            }))()
+
+            await (() => new Promise((resolve, reject) => {
+                db.query(`USE ${process.env.DATABASE_NAME}`, (error, result, fields) => {
+                    if (error) {
+                        reject(error)
+                        return
+                    }
+                    resolve()
+                })
+            }))()
+
+            for (const table of init()) {
+                await (() => new Promise((resolve, reject) => {
+                    db.query(table.compile('mysql'), (error, result, fields) => {
+                        if (error) {
+                            reject(error)
+                            return
+                        }
+                        resolve()
+                    })
+                }))()
+            }
+        })()
     })
 
     return {
@@ -64,7 +110,12 @@ function createMysqlDB() {
 
                 db.execute(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`, _values, (error, result, fields) => {
                     if (error) reject(error)
-                    else resolve()
+                    else resolve({
+                        // @ts-ignore
+                        changes: result.affectedRows,
+                        // @ts-ignore
+                        lastId: result.insertId,
+                    })
                 })
             })
         },
@@ -72,7 +123,8 @@ function createMysqlDB() {
             return new Promise((resolve, reject) => {
                 db.execute(`DELETE FROM ${table} WHERE ${filter};`, params, (error, result, fields) => {
                     if (error) reject(error)
-                    else resolve()
+                    // @ts-ignore
+                    else resolve(result.affectedRows)
                 })
             })
         },
@@ -80,10 +132,10 @@ function createMysqlDB() {
 }
 
 /**
- * @param {boolean} inMemory
+ * @param {boolean} [inMemory]
  * @returns {DB}
  */
-function createSqliteDB(inMemory) {
+function createSqliteDB(inMemory = false) {
     const sqlite = require('sqlite3')
     const path = require('path')
     const filename = path.join(__dirname, '..', '..', 'database', 'db.sqlite')
@@ -97,6 +149,9 @@ function createSqliteDB(inMemory) {
         for (const table of init()) {
             db.run(table.compile('sqlite')).on('error', console.error)
         }
+    })
+    db.on('open', () => {
+        console.log(`Opened SQLite database at ${inMemory ? ':memory:' : filename}`)
     })
 
     return {
@@ -128,7 +183,10 @@ function createSqliteDB(inMemory) {
                 db.prepare(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`)
                     .run(_values, function(error) {
                         if (error) reject(error)
-                        else resolve(this)
+                        else resolve({
+                            changes: this.changes,
+                            lastId: this.lastID,
+                        })
                     })
             })
         },

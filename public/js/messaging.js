@@ -66,8 +66,6 @@
             .catch(console.error)
     }
 
-    // TODO: Fetch the messages server-side and send the populated HTML
-    // to the client
     fetch(`/api/channels/${window.ENV.channel.id}/messages`, { method: 'GET' })
         .then(res => res.json())
         .then(res => {

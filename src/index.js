@@ -61,6 +61,7 @@ function create() {
     require('./router/ws')(router, app)
     expressApp.use(router)
 
+    // @ts-ignore
     app.server = expressApp.listen(port, '0.0.0.0', () => {
         console.log(`Listening on http://localhost:${port}`)
     })

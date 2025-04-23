@@ -13,8 +13,9 @@ let SignJWT = null
 /** @type {import('jose/jwt/verify')['jwtVerify']} */
 let jwtVerify = null
 
-import('jose/jwt/sign').then(v => SignJWT = v.SignJWT)
-import('jose/jwt/verify').then(v => jwtVerify = v.jwtVerify)
+const _task1 = import('jose/jwt/sign').then(v => SignJWT = v.SignJWT)
+const _task2 = import('jose/jwt/verify').then(v => jwtVerify = v.jwtVerify)
+const _task = Promise.all([_task1, _task2])
 const { createHash } = require('crypto')
 
 /**
@@ -51,6 +52,8 @@ module.exports = (app) => {
                 }
             }
 
+            await _task
+
             const encryptedPassword = createHash('sha256').update(password).digest('base64')
 
             if (user.password !== encryptedPassword) {
@@ -82,6 +85,8 @@ module.exports = (app) => {
                 }
             }
 
+            await _task
+
             const encryptedPassword = createHash('sha256').update(password).digest('base64')
             await database.insert('users', {
                 id: require('uuid').v4(),
@@ -98,6 +103,8 @@ module.exports = (app) => {
             if (auth.tokenBlacklist.has(token)) {
                 return false
             }
+
+            await _task
 
             try {
                 const { payload } = await jwtVerify(token, secretKey, {})
@@ -119,6 +126,8 @@ module.exports = (app) => {
          * @type {import('express').Handler}
          */
         async middleware(req, res, next) {
+            await _task
+
             let token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
             req.token = token
 
