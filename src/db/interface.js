@@ -49,7 +49,7 @@ function createMysqlDB() {
             throw new Error(`Environment variable DATABASE_NAME isn't set`)
         }
 
-        ;(async () => {
+        ; (async () => {
             await (() => new Promise((resolve, reject) => {
                 db.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DATABASE_NAME}`, (error, result, fields) => {
                     if (error) {
@@ -181,7 +181,7 @@ function createSqliteDB(inMemory = false) {
                 const _values = _keys.map((v) => params[v])
 
                 db.prepare(`INSERT INTO ${table} (${_keys.join(', ')}) VALUES (${_values.map(() => '?').join(', ')});`)
-                    .run(_values, function(error) {
+                    .run(_values, function (error) {
                         if (error) reject(error)
                         else resolve({
                             changes: this.changes,
@@ -193,7 +193,7 @@ function createSqliteDB(inMemory = false) {
         delete(table, filter, params) {
             return new Promise((resolve, reject) => {
                 db.prepare(`DELETE FROM ${table} WHERE ${filter};`)
-                    .run(params, function(error) {
+                    .run(params, function (error) {
                         if (error) reject(error)
                         else resolve(this.changes)
                     })

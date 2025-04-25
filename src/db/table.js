@@ -39,8 +39,9 @@ const typeKeywords = {
  *   compile(protocol: 'sqlite' | 'mysql'): string
  * }}
  */
-module.exports = function(tableName) {
-    /** @type {Record<string, {
+module.exports = function (tableName) {
+    /**
+     * @type {Record<string, {
      *   type: any
      *   param: any
      *   isId: boolean
@@ -49,7 +50,8 @@ module.exports = function(tableName) {
      *   isUnique: boolean
      *   isAutoIncrement: boolean
      *   referenceTo: any
-     * }>} */
+     * }>}
+     */
     const columns = {}
     const addColumn = (name, type, param) => {
         const column = {

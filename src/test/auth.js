@@ -7,7 +7,7 @@ let client = null
 /**
  * @param {() => Promise} promise
  */
-assert['rejects'] = function(promise) {
+assert['rejects'] = function (promise) {
   return new Promise((resolve, reject) => {
     promise()
       .then(() => reject(new this.AssertionError({ message: 'Promise didn\'t rejected' })))
@@ -15,7 +15,7 @@ assert['rejects'] = function(promise) {
   })
 }
 
-before(() => {  
+before(() => {
   client = new Client('http://localhost:6789')
 })
 

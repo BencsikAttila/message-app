@@ -17,12 +17,12 @@ module.exports = (router, app) => {
             .status(200)
             .end()
     })
-    
+
     router.post('/api/login', async (req, res) => {
         const { username, password } = req.body
-    
+
         const authResult = await app.auth.authenticate(database, username, password)
-    
+
         if (authResult.error) {
             res
                 .status(401)
@@ -32,7 +32,7 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         res
             .status(200)
             .json({
@@ -40,12 +40,12 @@ module.exports = (router, app) => {
             })
             .end()
     })
-    
+
     router.post('/api/register', async (req, res) => {
         const { username, password } = req.body
-    
+
         const authRes = await app.auth.create(database, username, password)
-    
+
         if (authRes.error) {
             res
                 .status(401)
@@ -55,7 +55,7 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         res
             .status(200)
             .json({
@@ -63,7 +63,7 @@ module.exports = (router, app) => {
             })
             .end()
     })
-    
+
     router.get('/api/loggedin', app.auth.middleware, async (req, res) => {
         const result = []
         for (const token of app.auth.tokens) {
@@ -75,13 +75,13 @@ module.exports = (router, app) => {
                 payload: v,
             })
         }
-    
+
         res
             .status(200)
             .json(result)
             .end()
     })
-    
+
     router.delete('/api/loggedin/:token', app.auth.middleware, async (req, res) => {
         for (const token of app.auth.tokens) {
             const v = await app.auth.verify(token)
@@ -93,13 +93,13 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         res
             .status(400)
             .json({ error: 'Invalid token' })
             .end()
     })
-    
+
     router.get('/api/user', app.auth.middleware, async (req, res) => {
         try {
             res.setHeader('Content-Type', 'application/json')
@@ -119,14 +119,14 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.patch('/api/user', app.auth.middleware, async (req, res) => {
         try {
             if ('nickname' in req.body) {
-                await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [ req.body['nickname'], req.credentials.id ])
+                await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [req.body['nickname'], req.credentials.id])
             }
             if ('theme' in req.body) {
-                await database.queryRaw('UPDATE users SET theme = ? WHERE users.id = ?', [ req.body['theme'], req.credentials.id ])
+                await database.queryRaw('UPDATE users SET theme = ? WHERE users.id = ?', [req.body['theme'], req.credentials.id])
             }
             res
                 .status(200)
@@ -140,7 +140,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.get('/users/:userId/avatar.webp', app.auth.middleware, async (req, res) => {
         try {
             const sqlUser = await app.getUser(req.params.userId)
@@ -150,15 +150,15 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             const size = Number.parseInt(req.query['size'] + '')
-    
+
             const filePath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.params.userId}.webp`)
             if (!fs.existsSync(filePath)) {
                 if (req.query['nodefault']) {
                     res
-                    .status (404)
-                    .end()
+                        .status(404)
+                        .end()
                 } else {
                     if (req.query['size'] && !Number.isNaN(size)) {
                         res.redirect(`https://robohash.org/${encodeURIComponent(sqlUser.id)}.webp?set=set4&size=${size}x${size}`)
@@ -168,10 +168,10 @@ module.exports = (router, app) => {
                 }
                 return
             }
-    
+
             res.status(200)
             res.setHeader('Content-Type', 'image/webp')
-    
+
             if (req.query['size'] && !Number.isNaN(size)) {
                 sharp(fs.readFileSync(filePath))
                     .resize(size, size)
@@ -185,7 +185,7 @@ module.exports = (router, app) => {
                 const fileStream = fs.createReadStream(filePath, {
                     autoClose: true,
                 })
-                
+
                 fileStream.pipe(res)
             }
         } catch (error) {
@@ -197,7 +197,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.put('/api/user/avatar', app.auth.middleware, async (req, res) => {
         try {
             req.pipe(req.busboy)
@@ -237,14 +237,14 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.delete('/api/user/avatar', app.auth.middleware, async (req, res) => {
         try {
             const filepath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.user.id}.webp`)
             if (fs.existsSync(filepath)) {
                 fs.rmSync(filepath)
             }
-    
+
             res
                 .status(200)
                 .end()
@@ -257,5 +257,5 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
 }

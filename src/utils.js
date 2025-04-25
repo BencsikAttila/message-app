@@ -34,10 +34,10 @@ module.exports = class App {
      * @param {string} channelId
      */
     async checkChannelPermissions(userId, channelId) {
-        const channels = await this.database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [ channelId, userId ])
+        const channels = await this.database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [channelId, userId])
         if (channels.length) return true
 
-        const bundles = await this.database.queryRaw('SELECT * FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId WHERE bundleUser.userId = ? AND bundleChannel.channelId = ? LIMIT 1', [ userId, channelId ])
+        const bundles = await this.database.queryRaw('SELECT * FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId WHERE bundleUser.userId = ? AND bundleChannel.channelId = ? LIMIT 1', [userId, channelId])
         if (bundles.length) return true
 
         return false

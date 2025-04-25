@@ -28,7 +28,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.post('/api/bundles', app.auth.middleware, async (req, res) => {
         if (!req.body.name || !('' + req.body.name).trim()) {
             res
@@ -37,7 +37,7 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         if (!req.body.channels || !req.body.channels.length) {
             res
                 .status(400)
@@ -45,24 +45,24 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         /** @type {import('../../db/model').default['bundles']} */
         const newBundle = {
             id: uuid.v4(),
             name: req.body.name,
         }
-    
+
         try {
             await database.insert('bundles', newBundle)
             await database.insert('bundleUser', {
                 userId: req.credentials.id,
                 bundleId: newBundle.id,
             })
-    
+
             for (const channel of req.body.channels) {
                 const sqlChannels = await app.getChannel(channel)
                 if (!sqlChannels) continue
-    
+
                 await database.insert('bundleChannel', {
                     bundleId: newBundle.id,
                     channelId: sqlChannels.id,
@@ -82,10 +82,10 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.delete('/api/bundles/:bundleId', app.auth.middleware, async (req, res) => {
         try {
-            const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.id = ?', [ req.credentials.id, req.params.bundleId ])
+            const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.id = ?', [req.credentials.id, req.params.bundleId])
             if (!sqlBundles.length) {
                 res
                     .status(404)
@@ -93,8 +93,8 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-            
-            const sqlRes1 = database.queryRaw('DELETE FROM bundleUser WHERE bundleUser.userId = ? AND bundleUser.bundleId = ?', [ req.credentials.id, req.params.bundleId ])
+
+            const sqlRes1 = database.queryRaw('DELETE FROM bundleUser WHERE bundleUser.userId = ? AND bundleUser.bundleId = ?', [req.credentials.id, req.params.bundleId])
             res
                 .status(200)
                 .json(sqlRes1)
@@ -108,7 +108,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.get('/api/bundles/:bundleId/channels', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw(`
@@ -117,7 +117,7 @@ module.exports = (router, app) => {
                 JOIN bundleUser ON bundles.id = bundleUser.bundleId
                 WHERE bundleUser.userId = ?
                 AND bundles.id = ?
-            `, [ req.credentials.id, req.params.bundleId ])
+            `, [req.credentials.id, req.params.bundleId])
             if (!sqlBundles.length) {
                 res
                     .status(404)
@@ -125,14 +125,14 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             const sqlChannels = await database.queryRaw(`
                 SELECT channels.*
                 FROM channels
                 JOIN bundleChannel ON channels.id = bundleChannel.channelId
                 AND bundleChannel.bundleId = ?
-            `, [ req.params.bundleId ])
-    
+            `, [req.params.bundleId])
+
             res
                 .status(200)
                 .setHeader('Content-Type', 'application/json')
@@ -150,7 +150,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.post('/api/bundles/:bundleId/channels', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw(`
@@ -160,7 +160,7 @@ module.exports = (router, app) => {
                 JOIN bundleUser ON bundles.id = bundleUser.bundleId
                 WHERE bundleUser.userId = ?
                 AND channels.id = ?
-            `, [ req.credentials.id, req.params.bundleId ])
+            `, [req.credentials.id, req.params.bundleId])
             if (!sqlBundles.length) {
                 res
                     .status(404)
@@ -168,7 +168,7 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             const channel = await app.getChannel(req.body.id)
             if (!channel) {
                 res
@@ -177,12 +177,12 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             await database.insert('bundleChannel', {
                 bundleId: req.params.bundleId,
                 channelId: req.body.id,
             })
-    
+
             res
                 .status(200)
                 .end()

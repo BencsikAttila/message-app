@@ -19,7 +19,7 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             if (!(await app.checkChannelPermissions(req.credentials.id, req.params.channelId))) {
                 res
                     .status(400)
@@ -27,9 +27,9 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', req.params.channelId)
-    
+
             res.setHeader('Content-Type', 'application/json')
             res.statusCode = 200
             res.flushHeaders()
@@ -44,7 +44,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.post('/api/channels/:channelId/messages', app.auth.middleware, async (req, res) => {
         const sqlChannel = await app.getChannel(req.params.channelId)
         if (!sqlChannel) {
@@ -54,7 +54,7 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         if (!(await app.checkChannelPermissions(req.credentials.id, req.params.channelId))) {
             res
                 .status(400)
@@ -62,7 +62,7 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         /** @type {import('../../db/model').default['messages']} */
         const newMessage = {
             id: uuid.v4(),
@@ -71,7 +71,7 @@ module.exports = (router, app) => {
             channelId: req.params.channelId,
             senderId: req.credentials.id,
         }
-    
+
         if (!newMessage.content) {
             res
                 .status(400)
@@ -79,11 +79,11 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         try {
             await database.insert('messages', newMessage)
             for (const client of app.wss.getWss().clients.values()) {
-                client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageCreatedEvent} */ ({
+                client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageCreatedEvent} */({
                     type: 'message_created',
                     id: newMessage.id,
                     content: newMessage.content,
@@ -94,7 +94,7 @@ module.exports = (router, app) => {
                     senderNickname: req.user.nickname,
                 })))
             }
-    
+
             res
                 .status(200)
                 .json(newMessage)
@@ -108,7 +108,7 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
     router.delete('/api/channels/:channelId/messages/:messageId', app.auth.middleware, async (req, res) => {
         const sqlChannel = await app.getChannel(req.params.channelId)
         if (!sqlChannel) {
@@ -118,7 +118,7 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         if (!(await app.checkChannelPermissions(req.credentials.id, req.params.channelId))) {
             res
                 .status(400)
@@ -126,10 +126,10 @@ module.exports = (router, app) => {
                 .end()
             return
         }
-    
+
         try {
-            const sqlRes = await database.delete('messages', 'messages.senderId = ? AND messages.id = ?', [ req.credentials.id, req.params['messageId'] + '' ])
-    
+            const sqlRes = await database.delete('messages', 'messages.senderId = ? AND messages.id = ?', [req.credentials.id, req.params['messageId'] + ''])
+
             if (!sqlRes) {
                 res
                     .status(400)
@@ -137,14 +137,14 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-    
+
             for (const client of app.wss.getWss().clients.values()) {
-                client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageDeletedEvent} */ ({
+                client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageDeletedEvent} */({
                     type: 'message_deleted',
                     id: req.params['messageId'],
                 })))
             }
-    
+
             res
                 .status(200)
                 .end()
@@ -157,5 +157,5 @@ module.exports = (router, app) => {
             res.end()
         }
     })
-    
+
 }

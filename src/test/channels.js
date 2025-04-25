@@ -3,7 +3,7 @@ const Client = require('../../public/js/client')
 /** @type {Client} */
 let client = null
 
-before(() => {  
+before(() => {
   client = new Client('http://localhost:6789')
 })
 
@@ -14,8 +14,8 @@ const _ = describe('Channels', function () {
   })
 })
 _.beforeAll(async () => {
-    await client.register(`Test user : Channels`, 'passwd')
-  })
+  await client.register(`Test user : Channels`, 'passwd')
+})
 _.afterAll(async () => {
-    await client.logout()
-  })
+  await client.logout()
+})
