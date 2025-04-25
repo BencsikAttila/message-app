@@ -386,3 +386,7 @@ dialog ::backdrop {
     font-weight: normal;
     color: var(--text-dark);
 }
+
+.link {
+    cursor: pointer;
+}

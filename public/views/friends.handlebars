@@ -1,0 +1,89 @@
+{{> header title="Friends"}}
+
+<div class="main-container">
+    {{> channel-list }}
+    <div class="main">
+        <section>
+            <div id="user-search-container">
+                <div>
+                    <input type="text" id="user-search-input">
+                    <button id="user-search-button">Search</button>
+                </div>
+                <div id="user-search-users-container"></div>
+            </div>
+        </section>
+        <section>
+            <h2>Friend requests</h2>
+            <div id="friend-requests-container">
+                {{#each friendRequests}}
+                <div class="user-item" id="user-{{id}}">
+                    <div class="user-avatar-stack">
+                        {{> useravatar id=id size=24 }}
+                        <span class="user-status {{#if isOnline}}user-status-online{{else}}user-status-offline{{/if}}"></span>
+                    </div>
+                    <span class="user-nickname">
+                        {{nickname}}
+                    </span>
+                    <button onclick="window.acceptFriend('{{id}}')">Accept</button>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+        <section>
+            <h2>Sent friend requests</h2>
+            <div id="sent-friend-requests-container">
+                {{#each sentFriendRequests}}
+                <div class="user-item" id="user-{{id}}">
+                    <div class="user-avatar-stack">
+                        {{> useravatar id=id size=24 }}
+                        <span class="user-status {{#if isOnline}}user-status-online{{else}}user-status-offline{{/if}}"></span>
+                    </div>
+                    <span class="user-nickname">
+                        {{nickname}}
+                    </span>
+                    <button onclick="window.cancelFriend('{{id}}')">Cancel</button>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+    </div>
+    <div class="right-side-bar" id="right-side-bar">
+        <div id="friends-container">
+            {{#each friends}}
+            <div class="user-item" id="user-{{id}}">
+                <div class="user-avatar-stack">
+                    {{> useravatar id=id size=24 }}
+                    <span class="user-status {{#if isOnline}}user-status-online{{else}}user-status-offline{{/if}}"></span>
+                </div>
+                <span class="user-nickname link" onclick="
+                    API.get(`/api/friends/{{id}}/channel`)
+                        .then(v => {
+                            window.location.replace(`${window.location.origin}/channels/${v}`)
+                        })
+                ">
+                    {{nickname}}
+                </span>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+<script src="/handlebars.min.js"></script>
+<script>
+    (function () {
+        var revive    = Handlebars.template,
+            templates = Handlebars.templates = Handlebars.templates || {};
+
+        {{#templates}}
+        templates['{{{name}}}'] = revive({{{template}}});
+        {{/templates}}
+    }());
+</script>
+<script src="/js/hbs.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/websocket-client.js"></script>
+<script src="/js/script.js"></script>
+<script src="/js/channels.js"></script>
+<script src="/js/bundles.js"></script>
+<script src="/js/friends.js"></script>

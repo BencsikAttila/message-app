@@ -1,23 +1,27 @@
 type UUID = string
+type BOOL = 0 | 1
+type INT = number
+type VARCHAR = string
 
 type tables = {
     messages: {
         id: UUID,
-        content: number,
-        createdUtc: number,
+        content: INT,
+        createdUtc: INT,
         channelId: UUID,
         senderId: UUID,
     },
     channels: {
         id: UUID,
-        name: string,
+        name: VARCHAR,
         ownerId: UUID,
+        friendChannel: BOOL,
     },
     users: {
         id: UUID,
-        username: string,
-        nickname: string,
-        password: string,
+        username: VARCHAR,
+        nickname: VARCHAR,
+        password: VARCHAR,
     },
     userChannel: {
         userId: UUID
@@ -27,12 +31,12 @@ type tables = {
         id: UUID
         userId: UUID
         channelId: UUID
-        expiresAt: number
-        usages: number
+        expiresAt: INT
+        usages: INT
     },
     bundles: {
         id: UUID
-        name: string
+        name: VARCHAR
     },
     bundleChannel: {
         channelId: UUID
@@ -41,6 +45,12 @@ type tables = {
     bundleUser: {
         userId: UUID
         bundleId: UUID
+    },
+    friends: {
+        user1_id: UUID
+        user2_id: UUID
+        verified: BOOL
+        channel?: UUID
     },
 }
 

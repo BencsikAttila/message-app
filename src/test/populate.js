@@ -41,4 +41,10 @@ const App = require('../../public/js/client')
 
     await app3_channel3.send(`walk alone`)
 
+    const app4 = new App('http://localhost:6789')
+    await app4.register('asd1', 'asd1')
+
+    const app5 = new App('http://localhost:6789')
+    await app5.register('asd2', 'asd2')
+
 })()

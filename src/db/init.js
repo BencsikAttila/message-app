@@ -15,6 +15,7 @@ module.exports = () => {
     channels.addId()
     channels.addColumn('name', 'TEXT')
     channels.addColumn('ownerId', 'UUID').referenceTo('users', 'id')
+    channels.addColumn('friendChannel', 'INT')
 
     const messages = table('messages')
     messages.addId()
@@ -46,6 +47,12 @@ module.exports = () => {
     bundleUser.addColumn('userId', 'UUID').referenceTo('users', 'id')
     bundleUser.addColumn('bundleId', 'UUID').referenceTo('bundles', 'id')
 
+    const friends = table('friends')
+    friends.addColumn('user1_id', 'UUID').referenceTo('users', 'id')
+    friends.addColumn('user2_id', 'UUID').referenceTo('users', 'id')
+    friends.addColumn('verified', 'INT')
+    friends.addColumn('channelId', 'UUID').setNullable().referenceTo('channels', 'id')
+
     return [
         users,
         channels,
@@ -55,5 +62,6 @@ module.exports = () => {
         bundles,
         bundleChannel,
         bundleUser,
+        friends,
     ]
 }

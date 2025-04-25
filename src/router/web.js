@@ -82,6 +82,36 @@ module.exports = (router, app) => {
         })
     })
 
+    router.get('/friends', app.auth.middleware, async (req, res) => {
+        const user = await app.getUser(req.credentials.id)
+        const friends = await app.getFriends(req.credentials.id)
+
+        res.render('friends', {
+            user: {
+                ...user,
+                password: undefined,
+            },
+            friends: [ ...friends.incoming, ...friends.outgoing ]
+                .filter(v => v.verified)
+                .map(v => ({
+                    ...v,
+                    password: undefined,
+                })),
+            friendRequests: friends.incoming
+                .filter(v => !v.verified)
+                .map(v => ({
+                    ...v,
+                    password: undefined,
+                })),
+            sentFriendRequests: friends.outgoing
+                .filter(v => !v.verified)
+                .map(v => ({
+                    ...v,
+                    password: undefined,
+                })),
+        })
+    })
+
     router.get('/account', app.auth.middleware, async (req, res) => {
         res.render('account', {
             user: {

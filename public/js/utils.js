@@ -52,12 +52,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
 globalThis['API'] = {
     /**
+     * @param {string | URL | globalThis.Request} input
+     * @param {RequestInit} [init]
+     */
+    fetch(input, init) {
+        return new Promise(async (resolve, reject) => {
+            let res = null
+            let error = null
+            try {
+                res = await fetch(input, init)
+            } catch (_error) {
+                error = _error
+            }
+    
+            if (res.ok) {
+                resolve(res)
+                return
+            }
+
+            if (!error) error = new Error(`HTTP ${res.status} ${res.statusText}`)
+
+            if (res.headers.get('content-type').startsWith('application/json')) {
+                res.json()
+                    .then(v => {
+                        if ('error' in v) {
+                            reject(new Error(v.error))
+                        } else {
+                            reject(error)
+                        }
+                    })
+                    .catch(v => {
+                        reject(new AggregateError([ error, v ]))
+                    })
+            } else {
+                reject(error)
+            }
+        })
+    },
+    /**
      * @param {string} route
      * @returns {Promise<any | void>}
      */
     get(route) {
         return new Promise((resolve, reject) => {
-            fetch(route)
+            this.fetch(route)
                 .then(res => {
                     if (res.headers.get('content-type').startsWith('application/json')) {
                         res.json()
@@ -76,15 +114,37 @@ globalThis['API'] = {
      * @returns {Promise<any | void>}
      */
     post(route, body) {
-        return new Promise((resolve, reject) => {
-            fetch(route, {
+        return new Promise(async (resolve, reject) => {
+            this.fetch(route, {
                 body: JSON.stringify(body),
+                method: 'POST',
                 headers: {
                     'content-type': "application/json; charset=UTF-8"
-                }
+                },
             })
                 .then(res => {
-                    if (res.headers.get('content-type') === 'application/json') {
+                    if (res.headers.get('content-type').startsWith('application/json')) {
+                        res.json()
+                            .then(resolve)
+                            .catch(reject)
+                    } else {
+                        resolve()
+                    }
+                })
+                .catch(reject)
+        })
+    },
+    /**
+     * @param {string} route
+     * @returns {Promise<any | void>}
+     */
+    delete(route) {
+        return new Promise(async (resolve, reject) => {
+            this.fetch(route, {
+                method: 'DELETE',
+            })
+                .then(res => {
+                    if (res.headers.get('content-type').startsWith('application/json')) {
                         res.json()
                             .then(resolve)
                             .catch(reject)

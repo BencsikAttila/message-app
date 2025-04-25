@@ -258,4 +258,23 @@ module.exports = (router, app) => {
         }
     })
 
+    router.get('/api/users/search', app.auth.middleware, async (req, res) => {
+        if (!req.query['nickname']) {
+            res
+                .status(400)
+                .json({ error: 'Parameter "nickname" is required' })
+                .end()
+            return
+        }
+
+        const users = await database.queryRaw(`SELECT * FROM users WHERE users.nickname = ?`, [ req.query['nickname'] ])
+        res
+            .status(200)
+            .json(users.map(v => ({
+                ...v,
+                password: undefined,
+            })))
+            .end()
+    })
+
 }

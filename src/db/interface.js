@@ -7,6 +7,7 @@ const init = require('./init')
  *   queryRaw(query: string, params: any): Promise<ReadonlyArray<any>>
  *   insert<Table extends keyof import('./model').default>(table: Table, values: import('./model').default[Table]): Promise<Readonly<{ changes: number; lastId: number; }>>
  *   delete<Table extends keyof import('./model').default>(table: Table, filter: string, params: any): Promise<number>
+ *   update<Table extends keyof import('./model').default>(table: Table, update: string, filter: string, params: any): Promise<number>
  * }} DB
  */
 
@@ -128,6 +129,15 @@ function createMysqlDB() {
                 })
             })
         },
+        update(table, update, filter, params) {
+            return new Promise((resolve, reject) => {
+                db.execute(`UPDATE ${table} SET ${update} WHERE ${filter};`, params, (error, result, fields) => {
+                    if (error) reject(error)
+                    // @ts-ignore
+                    else resolve(result.affectedRows)
+                })
+            })
+        },
     }
 }
 
@@ -145,9 +155,14 @@ function createSqliteDB(inMemory = false) {
     }
 
     const db = new sqlite.Database(inMemory ? ':memory:' : filename)
-    db.serialize(() => {
+    db.serialize(async () => {
         for (const table of init()) {
-            db.run(table.compile('sqlite')).on('error', console.error)
+            await new Promise((resolve, reject) => {
+                db.run(table.compile('sqlite'), (error) => {
+                    if (error) reject(error)
+                    else resolve()
+                })
+            })
         }
     })
     db.on('open', () => {
@@ -193,6 +208,15 @@ function createSqliteDB(inMemory = false) {
         delete(table, filter, params) {
             return new Promise((resolve, reject) => {
                 db.prepare(`DELETE FROM ${table} WHERE ${filter};`)
+                    .run(params, function (error) {
+                        if (error) reject(error)
+                        else resolve(this.changes)
+                    })
+            })
+        },
+        update(table, update, filter, params) {
+            return new Promise((resolve, reject) => {
+                db.prepare(`UPDATE ${table} SET ${update} WHERE ${filter};`)
                     .run(params, function (error) {
                         if (error) reject(error)
                         else resolve(this.changes)

@@ -78,4 +78,20 @@ module.exports = class App {
         }
         return res[0]
     }
+
+    /**
+     * @param {string} id
+     * @returns {Promise<{
+     *   incoming: ReadonlyArray<import('./db/model').default['users'] & { verified: any }>
+     *   outgoing: ReadonlyArray<import('./db/model').default['users'] & { verified: any }>
+     * }>}
+     */
+    async getFriends(id) {
+        const incoming = await this.database.queryRaw(`SELECT users.*, verified FROM friends JOIN users ON friends.user1_id = users.id AND friends.user2_id = ?`, [ id ])
+        const outgoing = await this.database.queryRaw(`SELECT users.*, verified FROM friends JOIN users ON friends.user2_id = users.id AND friends.user1_id = ?`, [ id ])
+        return {
+            incoming,
+            outgoing,
+        }
+    }
 }

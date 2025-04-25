@@ -10,4 +10,5 @@ module.exports = (router, app) => {
     require('./api/invitations')(router, app)
     require('./api/messages')(router, app)
     require('./api/user')(router, app)
+    require('./api/friends')(router, app)
 }

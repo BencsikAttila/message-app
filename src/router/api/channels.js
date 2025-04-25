@@ -118,7 +118,7 @@ module.exports = (router, app) => {
 
     router.get('/api/channels', app.auth.middleware, async (req, res) => {
         try {
-            const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
+            const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ? AND channels.friendChannel = 0', req.credentials.id)
             res.setHeader('Content-Type', 'application/json')
             res.statusCode = 200
             res.flushHeaders()
@@ -142,6 +142,7 @@ module.exports = (router, app) => {
             id: uuid.v4(),
             name: (req.body.name ?? '').trim(),
             ownerId: req.credentials.id,
+            friendChannel: 0,
         }
 
         if (!newChannel.name) {
