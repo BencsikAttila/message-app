@@ -91,7 +91,7 @@ module.exports = (router, app) => {
                 ...user,
                 password: undefined,
             },
-            friends: [ ...friends.incoming, ...friends.outgoing ]
+            friends: [...friends.incoming, ...friends.outgoing]
                 .filter(v => v.verified)
                 .map(v => ({
                     ...v,

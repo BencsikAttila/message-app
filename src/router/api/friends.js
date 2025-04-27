@@ -94,7 +94,7 @@ module.exports = (router, app) => {
             ok: {
                 const a = await database.queryRaw(`SELECT channelId FROM friends WHERE friends.user1_id = ? AND friends.user2_id = ? LIMIT 1`, [req.params.userId, req.credentials.id])
                 const b = await database.queryRaw(`SELECT channelId FROM friends WHERE friends.user1_id = ? AND friends.user2_id = ? LIMIT 1`, [req.credentials.id, req.params.userId])
-                
+
                 const friendChannels = [...a, ...b]
                 if (friendChannels.length !== 1) {
                     res
@@ -106,7 +106,7 @@ module.exports = (router, app) => {
                 if (!friendChannels[0]) {
                     break ok
                 }
-                
+
                 const channels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ? AND channels.friendChannel = 1 AND channels.id = ? LIMIT 1', [req.credentials.id, friendChannels[0].channelId])
                 if (channels.length !== 1) {
                     res
@@ -114,7 +114,7 @@ module.exports = (router, app) => {
                         .end()
                     return
                 }
-                
+
                 res
                     .status(200)
                     .json(channels[0].id)
