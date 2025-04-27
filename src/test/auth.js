@@ -4,17 +4,6 @@ const Client = require('../../public/js/client')
 /** @type {Client} */
 let client = null
 
-/**
- * @param {() => Promise} promise
- */
-assert['rejects'] = function (promise) {
-  return new Promise((resolve, reject) => {
-    promise()
-      .then(() => reject(new this.AssertionError({ message: 'Promise didn\'t rejected' })))
-      .catch(() => resolve())
-  })
-}
-
 before(() => {
   client = new Client('http://localhost:6789')
 })

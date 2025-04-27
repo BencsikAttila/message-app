@@ -15,8 +15,8 @@ function channel(client, data) {
             })
             return message(client, res)
         },
-        async delete() {
-            await client.delete(`/api/channels/${this.id}`)
+        async leave() {
+            await client.post(`/api/channels/${this.id}/leave`)
         },
         async createInvitation() {
             /** @type {import('../../src/db/model').default['invitations']} */
@@ -75,8 +75,8 @@ function bundle(client, data) {
         async removeChannel(id) {
             await client.delete(`/api/bundles/${this.id}/channels/${id}`)
         },
-        async delete() {
-            await client.delete(`/api/bundles/${this.id}`)
+        async leave() {
+            await client.post(`/api/bundles/${this.id}/leave`)
         },
     }
 }
@@ -258,6 +258,16 @@ class Client {
         const res = await this.get(`/api/channels/${id}`)
 
         return channel(this, res)
+    }
+
+    /**
+     * @param {string} id
+     */
+    async getBundle(id) {
+        /** @type {import('../../src/db/model').default['bundles']} */
+        const res = await this.get(`/api/bundles/${id}`)
+
+        return bundle(this, res)
     }
 
     /**

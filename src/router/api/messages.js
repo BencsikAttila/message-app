@@ -28,20 +28,18 @@ module.exports = (router, app) => {
                 return
             }
 
-            const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', req.params.channelId)
+            const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', req.params.channelId)
 
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 200
-            res.flushHeaders()
-            res.write(JSON.stringify(sqlMessages))
-            res.end()
+            res
+                .status(200)
+                .json(messages)
+                .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -96,16 +94,15 @@ module.exports = (router, app) => {
             }
 
             res
-                .status(200)
+                .status(201)
                 .json(newMessage)
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -150,11 +147,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 

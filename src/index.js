@@ -6,7 +6,13 @@ const App = require('./utils')
 const DB = require('./db/interface')
 const expressApp = express()
 
-function create() {
+/**
+ * 
+ * @param {{
+ *   inMemoryDatabase?: boolean
+ * }} [config] 
+ */
+function create(config) {
     {
         const res = require('dotenv').config({
             path: [
@@ -55,7 +61,7 @@ function create() {
     expressApp.use(require('connect-busboy')())
 
     const router = express.Router(({ mergeParams: true }))
-    const app = new App(DB.createSqliteDB(false), expressApp, wss)
+    const app = new App(config ? DB.createSqliteDB(true) : DB.createSqliteDB(false), expressApp, wss)
     require('./router/api')(router, app)
     require('./router/web')(router, app)
     require('./router/ws')(router, app)

@@ -117,8 +117,8 @@
                     const channelsContainer = bundleElement.getElementsByClassName('bundle-channels').item(0)
 
                     deleteButton.addEventListener('click', () => {
-                        fetch(`/api/bundles/${bundle.id}`, {
-                            method: 'DELETE'
+                        fetch(`/api/bundles/${bundle.id}/leave`, {
+                            method: 'POST'
                         })
                             .then(v => {
                                 refreshList()

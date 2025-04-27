@@ -22,11 +22,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -43,7 +42,7 @@ module.exports = (router, app) => {
             const res1 = await database.update('friends', `verified = 1`, `friends.user1_id = ? AND friends.user2_id = ?`, [req.params.userId, req.credentials.id])
             if (res1) {
                 res
-                    .status(200)
+                    .status(201)
                     .json({ message: 'Friend request verified' })
                     .end()
                 return
@@ -76,16 +75,15 @@ module.exports = (router, app) => {
             }
 
             res
-                .status(200)
+                .status(201)
                 .json({ message: 'Friend request sent' })
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -145,11 +143,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -170,11 +167,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 

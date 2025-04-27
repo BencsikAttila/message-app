@@ -58,7 +58,7 @@ module.exports = (router, app) => {
         }
 
         res
-            .status(200)
+            .status(201)
             .json({
                 token: authRes.token,
             })
@@ -103,21 +103,19 @@ module.exports = (router, app) => {
 
     router.get('/api/user', app.auth.middleware, async (req, res) => {
         try {
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 200
-            res.flushHeaders()
-            res.write(JSON.stringify({
-                ...req.user,
-                password: undefined,
-            }))
-            res.end()
+            res
+                .status(200)
+                .json({
+                    ...req.user,
+                    password: undefined,
+                })
+                .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -134,11 +132,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -191,11 +188,10 @@ module.exports = (router, app) => {
             }
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -231,11 +227,10 @@ module.exports = (router, app) => {
             })
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -251,11 +246,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 

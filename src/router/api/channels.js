@@ -34,11 +34,10 @@ module.exports = (router, app) => {
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -79,23 +78,21 @@ module.exports = (router, app) => {
                 wsClients.push(wsClient)
             }
 
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 200
-            res.flushHeaders()
-            res.write(JSON.stringify(sqlUsers.map(v => ({
-                ...v,
-                password: undefined,
-                // @ts-ignore
-                isOnline: v.id === req.credentials.id ? true : wsClients.some(_v => _v.user?.id === v.id),
-            }))))
-            res.end()
+            res
+                .status(200)
+                .json(sqlUsers.map(v => ({
+                    ...v,
+                    password: undefined,
+                    // @ts-ignore
+                    isOnline: v.id === req.credentials.id ? true : wsClients.some(_v => _v.user?.id === v.id),
+                })))
+                .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -111,6 +108,14 @@ module.exports = (router, app) => {
 
         await database.queryRaw('DELETE FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ?', [req.params.channelId, req.credentials.id])
 
+        // Cleanup
+        const usersInChannel = (await database.queryRaw(`SELECT COUNT(*) FROM userChannel WHERE userChannel.channelId = ?`, [req.params.channelId]))
+        const bundlesWithChannel = (await database.queryRaw(`SELECT COUNT(*) FROM bundleChannel WHERE bundleChannel.channelId = ?`, [req.params.channelId]))
+        if (!(usersInChannel[0][Object.keys(usersInChannel[0])[0]]) && !(bundlesWithChannel[0][Object.keys(bundlesWithChannel[0])[0]])) {
+            await database.delete('channels', 'channels.id = ?', [req.params.channelId])
+            await database.delete('messages', 'messages.channelId = ?', [req.params.channelId])
+        }
+
         res
             .status(200)
             .end()
@@ -119,20 +124,16 @@ module.exports = (router, app) => {
     router.get('/api/channels', app.auth.middleware, async (req, res) => {
         try {
             const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ? AND channels.friendChannel = 0', req.credentials.id)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 200
-            res.flushHeaders()
-            res.write(JSON.stringify(sqlChannels.map(v => ({
-                ...v,
-            }))))
-            res.end()
+            res
+                .status(200)
+                .json(sqlChannels)
+                .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -160,16 +161,15 @@ module.exports = (router, app) => {
                 channelId: newChannel.id,
             })
             res
-                .status(200)
+                .status(201)
                 .json(newChannel)
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 

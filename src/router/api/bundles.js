@@ -12,20 +12,34 @@ module.exports = (router, app) => {
     router.get('/api/bundles', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ?', req.credentials.id)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 200
-            res.flushHeaders()
-            res.write(JSON.stringify(sqlBundles.map(v => ({
-                ...v,
-            }))))
-            res.end()
+            res
+                .status(200)
+                .json(sqlBundles.map(v => ({
+                    ...v,
+                })))
+                .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
+        }
+    })
+
+    router.get('/api/bundles/:bundleId', app.auth.middleware, async (req, res) => {
+        try {
+            const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.id = ?', [req.credentials.id, req.params.bundleId])
+            res
+                .status(200)
+                .json(sqlBundles[0])
+                .end()
+        } catch (error) {
+            console.error(error)
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -69,7 +83,7 @@ module.exports = (router, app) => {
                 })
             }
             res
-                .status(200)
+                .status(201)
                 .json(newBundle)
                 .end()
         } catch (error) {
@@ -83,7 +97,7 @@ module.exports = (router, app) => {
         }
     })
 
-    router.delete('/api/bundles/:bundleId', app.auth.middleware, async (req, res) => {
+    router.post('/api/bundles/:bundleId/leave', app.auth.middleware, async (req, res) => {
         try {
             const sqlBundles = await database.queryRaw('SELECT bundles.* FROM bundles JOIN bundleUser ON bundles.id = bundleUser.bundleId WHERE bundleUser.userId = ? AND bundles.id = ?', [req.credentials.id, req.params.bundleId])
             if (!sqlBundles.length) {
@@ -94,18 +108,24 @@ module.exports = (router, app) => {
                 return
             }
 
-            const sqlRes1 = database.queryRaw('DELETE FROM bundleUser WHERE bundleUser.userId = ? AND bundleUser.bundleId = ?', [req.credentials.id, req.params.bundleId])
+            await database.delete('bundleUser', 'bundleUser.userId = ? AND bundleUser.bundleId = ?', [req.credentials.id, req.params.bundleId])
+
+            // Cleanup
+            const usersInBundle = (await database.queryRaw(`SELECT COUNT(*) FROM bundleUser WHERE bundleUser.bundleId = ?`, [req.params.bundleId]))
+            if (!(usersInBundle[0][Object.keys(usersInBundle[0])[0]])) {
+                await database.delete('bundleChannel', 'bundleChannel.bundleId = ?', [req.params.bundleId])
+                await database.delete('bundles', 'bundles.id = ?', [req.params.bundleId])
+            }
+
             res
                 .status(200)
-                .json(sqlRes1)
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -143,11 +163,10 @@ module.exports = (router, app) => {
             res.end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 
@@ -184,15 +203,14 @@ module.exports = (router, app) => {
             })
 
             res
-                .status(200)
+                .status(201)
                 .end()
         } catch (error) {
             console.error(error)
-            res.setHeader('Content-Type', 'application/json')
-            res.statusCode = 500
-            res.flushHeaders()
-            res.write(JSON.stringify(error, jsonUtils.replacer))
-            res.end()
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
         }
     })
 }

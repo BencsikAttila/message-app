@@ -1,4 +1,5 @@
 const Client = require('../../public/js/client')
+const assert = require('assert')
 
 /** @type {Client} */
 let client = null
@@ -8,9 +9,11 @@ before(() => {
 })
 
 const _ = describe('Channels', function () {
-  it('Create', async function () {
+  it('Create & Delete', async function () {
     const res = await client.createChannel('Test channel 1')
-    await client.getChannel(res.id)
+    const channel = await client.getChannel(res.id)
+    await channel.leave()
+    await assert.rejects(client.getChannel(res.id))
   })
 })
 _.beforeAll(async () => {

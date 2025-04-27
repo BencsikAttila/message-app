@@ -1,4 +1,4 @@
-module.exports = {
+const jsonUtils = {
     /** @type {(this: any, key: string, value: any) => any} */
     replacer: (key, value) => {
         if (typeof value === 'object' && value instanceof Error) {
@@ -11,4 +11,14 @@ module.exports = {
 
         return value
     },
+    /**
+     * @param {any} object
+     */
+    map: (object) => {
+        for (const key in object) {
+            object[key] = jsonUtils.replacer(key, object[key])
+        }
+    }
 }
+
+module.exports = jsonUtils
