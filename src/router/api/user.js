@@ -3,6 +3,7 @@ const express = require('express')
 const jsonUtils = require('../../json-utils')
 const fs = require('fs')
 const sharp = require('sharp')
+const levenshtein = require('fast-levenshtein').get
 
 /**
  * @param {express.Router} router
@@ -267,7 +268,15 @@ module.exports = (router, app) => {
             return
         }
 
-        const users = await database.queryRaw(`SELECT * FROM users WHERE users.nickname = ?`, [ req.query['nickname'] ])
+        const users = (await database.query('users'))
+            .filter(v => v.id !== req.credentials.id)
+            .map(v => ({
+                v: v,
+                score: levenshtein(v.nickname, req.query['nickname'] + '')
+            }))
+            .sort((a, b) => a.score - b.score)
+            .map(v => v.v)
+            .slice(0, 20)
         res
             .status(200)
             .json(users.map(v => ({
