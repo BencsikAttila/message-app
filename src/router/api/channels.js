@@ -97,11 +97,20 @@ module.exports = (router, app) => {
     })
 
     router.post('/api/channels/:channelId/leave', app.auth.middleware, async (req, res) => {
-        const sqlChannels = await app.getChannel(req.params.channelId)
-        if (!sqlChannels) {
+        const channel = await app.getChannel(req.params.channelId)
+
+        if (!channel) {
             res
                 .status(400)
                 .json({ error: 'Channel not found' })
+                .end()
+            return
+        }
+
+        if (channel.friendChannel) {
+            res
+                .status(400)
+                .json({ error: 'Cannot leave from a friend channel' })
                 .end()
             return
         }

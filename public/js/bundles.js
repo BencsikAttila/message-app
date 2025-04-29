@@ -34,15 +34,9 @@
     newBundleAddCreateButton.addEventListener('click', () => {
         const channels = []
         currentBundle.forEach(v => channels.push(v))
-        fetch('/api/bundles', {
-            method: 'POST',
-            body: JSON.stringify({
-                name: newBundleNameInput.value,
-                channels: channels,
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
+        API.post('/api/bundles', {
+            name: newBundleNameInput.value,
+            channels: channels,
         })
             .then(() => {
 
@@ -55,8 +49,7 @@
             newBundleSelect.options.remove(i)
         }
 
-        fetch('/api/channels')
-            .then(v => v.json())
+        API.get('/api/channels')
             .then(v => {
                 while (newBundleSelect.options.length > 0) newBundleSelect.options.remove(0)
                 for (const channel of v) {
@@ -95,8 +88,7 @@
     }
 
     function refreshList() {
-        fetch('/api/bundles')
-            .then(v => v.json())
+        API.get('/api/bundles')
             .then(async v => {
                 bundlesContainer.innerHTML = ''
                 bundlesHeader.style.display = v.length ? null : 'none'
@@ -117,10 +109,8 @@
                     const channelsContainer = bundleElement.getElementsByClassName('bundle-channels').item(0)
 
                     deleteButton.addEventListener('click', () => {
-                        fetch(`/api/bundles/${bundle.id}/leave`, {
-                            method: 'POST'
-                        })
-                            .then(v => {
+                        API.post(`/api/bundles/${bundle.id}/leave`)
+                            .then(() => {
                                 refreshList()
                             })
                     })
@@ -140,8 +130,7 @@
                         localStorage.setItem('expanded-bundles', JSON.stringify(_expandedBundles))
                     })
 
-                    fetch(`/api/bundles/${bundle.id}/channels`)
-                        .then(v => v.json())
+                    API.get(`/api/bundles/${bundle.id}/channels`)
                         .then(async v => {
                             for (const channel of v) {
                                 const template = await window.getTemplate('channel')

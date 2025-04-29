@@ -390,3 +390,7 @@ dialog ::backdrop {
 .link {
     cursor: pointer;
 }
+
+.message-loading {
+    opacity: .8;
+}

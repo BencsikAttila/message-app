@@ -5,8 +5,7 @@
 
     function refreshInvitations() {
         if (!currentForId) { throw new Error(`currentForId is null`) }
-        fetch(`/api/invitations?for=${encodeURIComponent(currentForId)}`)
-            .then(v => v.json())
+        API.get(`/api/invitations?for=${encodeURIComponent(currentForId)}`)
             .then(async (/** @type {ReadonlyArray<import('../../src/db/model').default['invitations']>} */ v) => {
                 invitationsContainer.innerHTML = ''
                 for (const invitation of v) {
@@ -21,7 +20,7 @@
     /**
      * @param {string} invitationId
      */
-    window['deleteInvitation'] = function(invitationId) {
+    window['deleteInvitation'] = function (invitationId) {
         fetch(`/api/invitations/${invitationId}`, {
             method: 'DELETE'
         })
@@ -34,7 +33,7 @@
     /**
      * @param {string} forId
      */
-    window['showInvitationsModal'] = function(forId) {
+    window['showInvitationsModal'] = function (forId) {
         dialog.showModal()
         invitationsContainer.innerHTML = ''
         currentForId = forId

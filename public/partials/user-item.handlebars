@@ -3,7 +3,7 @@
         {{> useravatar id=id size=24 }}
         <span class="user-status {{#if isOnline}}user-status-online{{else}}user-status-offline{{/if}}"></span>
     </div>
-    <span class="user-nickname">
+    <span class="user-nickname link" onclick="window.openUser?.('{{id}}')">
         {{nickname}}
     </span>
 </div>

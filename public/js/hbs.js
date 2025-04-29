@@ -8,44 +8,18 @@
 // Wrapping in a function otherwise `templates` can be accessed globally
 (() => {
     /**
-     * @type {Record<string, Promise<HandlebarsTemplateDelegate<any>>>}
+     * @type {Record<string, HandlebarsTemplateDelegate<any>>}
      */
     const templates = {}
-
-    /**
-     * @param {string} templateName
-     * @returns {Promise<HandlebarsTemplateDelegate<any>>}
-     */
-    function downloadTemplate(templateName) {
-        return new Promise(async (resolve, reject) => {
-            fetch(`/partials/${templateName}.handlebars`)
-                .then(res => {
-                    if (res.status >= 300) {
-                        reject(new Error(res.statusText))
-                    } else {
-                        return res.text()
-                    }
-                })
-                .then(res => {
-                    const template = Handlebars.compile(res)
-                    Handlebars.registerPartial(templateName, template)
-                    resolve(template)
-                })
-                .catch(reject)
-        })
-    }
 
     const allPartialDownloadPromise = new Promise((resolve, reject) => {
         fetch('/hbs/partials')
             .then(v => v.json())
             .then(async v => {
-                const _templates = {}
-                for (const templateName of v) {
-                    const template = await downloadTemplate(templateName)
-                    _templates[templateName] = template
-                }
-                for (const templateName in _templates) {
-                    templates[templateName] = Promise.resolve(_templates[templateName])
+                for (const templateName in v) {
+                    const template = Handlebars.compile(v[templateName])
+                    Handlebars.registerPartial(templateName, template)
+                    templates[templateName] = template
                 }
                 resolve()
             })
@@ -54,13 +28,13 @@
 
     window.getTemplate = (/** @type {string} */ templateName) => {
         if (templateName in templates) {
-            return templates[templateName]
+            return Promise.resolve(templates[templateName])
         }
 
         return (async () => {
             await allPartialDownloadPromise
             if (templateName in templates) {
-                return await templates[templateName]
+                return templates[templateName]
             }
             throw new Error(`Template "${templateName}" not found`)
         })()

@@ -1,8 +1,6 @@
 (() => {
     document.getElement('delete-avatar-button', 'button').addEventListener('click', () => {
-        fetch(`/api/user/avatar`, {
-            method: 'DELETE',
-        })
+        API.delete(`/api/user/avatar`)
             .then(() => {
                 window.location.reload()
             })
@@ -41,17 +39,14 @@
             })
     })
 
-    window.invalidateToken = function (token) {
-        fetch(`/api/loggedin/${encodeURIComponent(token)}`, {
-            method: 'DELETE'
-        })
-            .finally(() => {
+    window['invalidateToken'] = function (token) {
+        API.delete(`/api/loggedin/${encodeURIComponent(token)}`)
+            .then(() => {
                 window.location.reload()
             })
     }
 
-    fetch('/api/loggedin')
-        .then(v => v.json())
+    API.get('/api/loggedin')
         .then(v => {
             for (const i of v) {
                 document.getElement('loggedin-container').appendChild(document.fromHTML(Handlebars.compile(`

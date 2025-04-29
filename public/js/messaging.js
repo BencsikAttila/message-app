@@ -9,8 +9,13 @@
             ...message,
             createdAt: new Date(message.createdUtc * 1000).toLocaleTimeString(),
         })
-        messagesContainer.appendChild(document.fromHTML(html))
-        messagesContainer.scrollTo(0, messagesContainer.scrollHeight)
+        const existing = document.getElementById(`message-${message.id}`)
+        if (existing) {
+            existing.outerHTML = html
+        } else {
+            messagesContainer.appendChild(document.fromHTML(html))
+            messagesContainer.scrollTo(0, messagesContainer.scrollHeight)
+        }
     }
 
     wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
@@ -35,14 +40,8 @@
     function sendMessage() {
         const messageContent = document.getElement('chat-input', 'input').value
 
-        fetch(`/api/channels/${window.ENV.channel.id}/messages`, {
-            method: "POST",
-            body: JSON.stringify({
-                content: messageContent
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
+        API.post(`/api/channels/${window.ENV.channel.id}/messages`, {
+            content: messageContent
         })
 
         document.getElement('chat-input', 'input').value = ''
@@ -59,20 +58,19 @@
     })
 
     window['deleteMessage'] = (id) => {
-        fetch(`/api/channels/${window.ENV.channel.id}/messages/${id}`, { method: 'DELETE' })
+        API.delete(`/api/channels/${window.ENV.channel.id}/messages/${id}`)
             .then(() => {
-                
+
             })
             .catch(console.error)
     }
 
-    fetch(`/api/channels/${window.ENV.channel.id}/messages`, { method: 'GET' })
-        .then(res => res.json())
-        .then(res => {
-            messagesContainer.innerHTML = ''
-            for (const message of res) {
-                appendMessage(message)
-            }
-        })
-        .catch(console.error)
+    // API.get(`/api/channels/${window.ENV.channel.id}/messages`)
+    //     .then(res => {
+    //         messagesContainer.innerHTML = ''
+    //         for (const message of res) {
+    //             appendMessage(message)
+    //         }
+    //     })
+    //     .catch(console.error)
 })()

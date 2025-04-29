@@ -246,9 +246,16 @@ module.exports = (router, app) => {
 
     router.get('/hbs/partials', async (req, res) => {
         const files = fs.readdirSync(path.join(__dirname, '..', '..', 'public', 'partials'))
+        const partials = {}
+        for (const v of files) {
+            const name = path.join(__dirname, '..', '..', 'public', 'partials', v)
+            if (fs.existsSync(name)) {
+                partials[v.replace('.handlebars', '')] = fs.readFileSync(name, 'utf8')
+            }
+        }
         res
             .status(200)
-            .json(files.map(v => v.replace('.handlebars', '')))
+            .json(partials)
             .end()
     })
 

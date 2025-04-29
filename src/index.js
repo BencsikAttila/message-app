@@ -2,6 +2,7 @@ const path = require('path')
 const express = require('express')
 const expressHandlebars = require('express-handlebars')
 const expressWs = require('express-ws')
+const expressMinify = require('express-minify')
 const App = require('./utils')
 const DB = require('./db/interface')
 const expressApp = express()
@@ -27,30 +28,7 @@ function create(config) {
     const wss = expressWs(expressApp)
     expressApp.engine('handlebars', expressHandlebars.engine({
         partialsDir: path.join(__dirname, '..', 'public', 'partials'),
-        helpers: {
-            'JSON': function (obj) {
-                return JSON.stringify(obj)
-            },
-            'eq': function (arg1, arg2, options) {
-                return (arg1 == arg2) ? options.fn(this) : options.inverse(this)
-            },
-            'switch': function (value, options) {
-                this.switch_value = value
-                this.switch_break = false
-                return options.fn(this)
-            },
-            'case': function (value, options) {
-                if (value == this.switch_value) {
-                    this.switch_break = true
-                    return options.fn(this)
-                }
-            },
-            'default': function (options) {
-                if (this.switch_break == false) {
-                    return options.fn(this)
-                }
-            },
-        },
+        helpers: require('../public/js/hbs-helpers'),
     }))
     expressApp.set('view engine', 'handlebars')
     expressApp.set('views', path.join(__dirname, '..', 'public', 'views'))
@@ -59,6 +37,7 @@ function create(config) {
     expressApp.use(express.json())
     expressApp.use(express.urlencoded({ extended: false }))
     expressApp.use(require('connect-busboy')())
+    expressApp.use(expressMinify({}))
 
     const router = express.Router(({ mergeParams: true }))
     const app = new App(config ? DB.createSqliteDB(true) : DB.createSqliteDB(false), expressApp, wss)

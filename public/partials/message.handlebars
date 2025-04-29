@@ -1,8 +1,8 @@
-<div class="message" id="message-{{id}}">
+<div class="message{{#if loading}} message-loading{{/if}}" id="message-{{id}}">
     <div class="message-header">
         <span class="message-author">
             {{> useravatar id=senderId size=24 }}
-            <span>{{senderNickname}}</span>
+            <span class="link" onclick="window.openUser?.('{{senderId}}')">{{senderNickname}}</span>
         </span>
         <span class="message-time">at {{createdAt}}</span>
         <div style="flex: 1;"></div>

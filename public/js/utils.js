@@ -64,7 +64,7 @@ globalThis['API'] = {
             } catch (_error) {
                 error = _error
             }
-    
+
             if (res.ok) {
                 resolve(res)
                 return
@@ -72,7 +72,7 @@ globalThis['API'] = {
 
             if (!error) error = new Error(`HTTP ${res.status} ${res.statusText}`)
 
-            if (res.headers.get('content-type').startsWith('application/json')) {
+            if (res.headers.get('content-type')?.startsWith('application/json')) {
                 res.json()
                     .then(v => {
                         if ('error' in v) {
@@ -82,7 +82,7 @@ globalThis['API'] = {
                         }
                     })
                     .catch(v => {
-                        reject(new AggregateError([ error, v ]))
+                        reject(new AggregateError([error, v]))
                     })
             } else {
                 reject(error)
@@ -97,7 +97,7 @@ globalThis['API'] = {
         return new Promise((resolve, reject) => {
             this.fetch(route)
                 .then(res => {
-                    if (res.headers.get('content-type').startsWith('application/json')) {
+                    if (res.headers.get('content-type')?.startsWith('application/json')) {
                         res.json()
                             .then(resolve)
                             .catch(reject)
@@ -116,14 +116,14 @@ globalThis['API'] = {
     post(route, body) {
         return new Promise(async (resolve, reject) => {
             this.fetch(route, {
-                body: JSON.stringify(body),
                 method: 'POST',
-                headers: {
+                body: body ? JSON.stringify(body) : undefined,
+                headers: body ? {
                     'content-type': "application/json; charset=UTF-8"
-                },
+                } : undefined,
             })
                 .then(res => {
-                    if (res.headers.get('content-type').startsWith('application/json')) {
+                    if (res.headers.get('content-type')?.startsWith('application/json')) {
                         res.json()
                             .then(resolve)
                             .catch(reject)
@@ -144,7 +144,7 @@ globalThis['API'] = {
                 method: 'DELETE',
             })
                 .then(res => {
-                    if (res.headers.get('content-type').startsWith('application/json')) {
+                    if (res.headers.get('content-type')?.startsWith('application/json')) {
                         res.json()
                             .then(resolve)
                             .catch(reject)

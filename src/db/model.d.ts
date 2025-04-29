@@ -6,7 +6,7 @@ type VARCHAR = string
 type tables = {
     messages: {
         id: UUID,
-        content: INT,
+        content: string,
         createdUtc: INT,
         channelId: UUID,
         senderId: UUID,

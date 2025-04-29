@@ -139,6 +139,32 @@ module.exports = (router, app) => {
         }
     })
 
+    router.get('/api/users/:userId', app.auth.middleware, async (req, res) => {
+        try {
+            const sqlUser = await app.getUser(req.params.userId)
+            if (!sqlUser) {
+                res
+                    .status(404)
+                    .end()
+                return
+            }
+
+            res
+                .status(200)
+                .json({
+                    ...sqlUser,
+                    password: undefined,
+                })
+                .end()
+        } catch (error) {
+            console.error(error)
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
+        }
+    })
+
     router.get('/users/:userId/avatar.webp', app.auth.middleware, async (req, res) => {
         try {
             const sqlUser = await app.getUser(req.params.userId)

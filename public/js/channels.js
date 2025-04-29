@@ -12,14 +12,8 @@
     })
 
     document.getElement('new-channel-button-create', 'button').addEventListener('click', () => {
-        fetch('/api/channels', {
-            method: 'POST',
-            body: JSON.stringify({
-                name: document.getElement('new-channel-button-name-input', 'input').value,
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
+        API.post('/api/channels', {
+            name: document.getElement('new-channel-button-name-input', 'input').value,
         })
             .then(() => {
                 window.location.reload()
@@ -28,8 +22,7 @@
     })
 
     function refreshList() {
-        fetch('/api/channels', { method: 'GET' })
-            .then(res => res.json())
+        API.get('/api/channels')
             .then(async v => {
                 channelsContainer.innerHTML = ''
                 channelsHeader.style.display = v.length ? null : 'none'
@@ -49,8 +42,7 @@
 
     if (window.ENV.channel?.id) {
         const membersContainer = document.getElement('users-container', 'div')
-        fetch(`/api/channels/${window.ENV.channel?.id}/users`)
-            .then(v => v.json())
+        API.get(`/api/channels/${window.ENV.channel?.id}/users`)
             .then(async v => {
                 membersContainer.innerHTML = ''
                 for (const user of v) {
@@ -82,9 +74,9 @@
         }
     })
 
-    window['leaveChannel'] = function() {
-        fetch(`/api/channels/${window.ENV.channel?.id}/leave`, { method: 'POST' })
-            .then(v => {
+    window['leaveChannel'] = function () {
+        API.post(`/api/channels/${window.ENV.channel?.id}/leave`)
+            .then(() => {
                 window.location.replace(`${window.location.origin}/`)
             })
             .catch(console.error)

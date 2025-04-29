@@ -18,7 +18,7 @@
                     addFriendButton.addEventListener('click', () => {
                         addFriendButton.disabled = true
                         API.post(`/api/friends/${user.id}`)
-                            .finally(() => {
+                            .then(() => {
                                 window.location.reload()
                             })
                     })
@@ -27,14 +27,14 @@
             })
     })
 
-    window.acceptFriend = (id) => {
+    window['acceptFriend'] = (id) => {
         API.post(`/api/friends/${id}`)
             .finally(() => {
                 window.location.reload()
             })
     }
 
-    window.cancelFriend = (id) => {
+    window['cancelFriend'] = (id) => {
         API.delete(`/api/friends/${id}`)
             .finally(() => {
                 window.location.reload()
