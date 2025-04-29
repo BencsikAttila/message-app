@@ -18,9 +18,13 @@ const _ = describe('Bundles', function () {
       channel2.id,
       channel3.id,
     ])
+
+    assert.equal('Test bundle 1', bundle.name)
+
     await channel1.leave()
     await channel2.leave()
     await channel3.leave()
+
     await bundle.leave()
     await assert.rejects(client.getBundle(bundle.id))
   })

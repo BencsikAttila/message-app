@@ -151,45 +151,22 @@ class Client {
     }
 
     /**
+     * @param {'GET' | 'POST' | 'DELETE'} method
      * @param {string} path
+     * @param {object} [body=null]
+     * @private
      */
-    get(path) {
+    fetch(method, path, body = null) {
         return new Promise((resolve, reject) => {
             fetch(`${this.#origin}${path}`, {
-                method: 'GET',
+                method: method,
+                body: body ? JSON.stringify(body) : undefined,
                 headers: {
-                    'Authorization': this.#token,
-                },
-            })
-                .then(v => {
-                    if (v.headers.get('content-type')?.startsWith('application/json')) {
-                        return v.json()
-                    } else {
-                        resolve(null)
-                    }
-                })
-                .then(v => {
-                    if ('error' in v) {
-                        reject(v.error)
-                    } else {
-                        resolve(v)
-                    }
-                })
-                .catch(reject)
-        })
-    }
+                    ...(body ? {
+                        'Content-type': 'application/json; charset=UTF-8',
+                    } : {
 
-    /**
-     * @param {string} path
-     * @param {any} body
-     */
-    post(path, body) {
-        return new Promise((resolve, reject) => {
-            fetch(`${this.#origin}${path}`, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: {
-                    'Content-type': 'application/json; charset=UTF-8',
+                    }),
                     'Authorization': this.#token,
                 },
             })
@@ -220,27 +197,23 @@ class Client {
     /**
      * @param {string} path
      */
+    get(path) {
+        return this.fetch('GET', path)
+    }
+
+    /**
+     * @param {string} path
+     * @param {object} body
+     */
+    post(path, body) {
+        return this.fetch('POST', path, body)
+    }
+
+    /**
+     * @param {string} path
+     */
     delete(path) {
-        return new Promise((resolve, reject) => {
-            fetch(`${this.#origin}${path}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': this.#token,
-                },
-            })
-                .then(v => {
-                    console.log(v.headers.get('content-type'))
-                    return v.json()
-                })
-                .then(v => {
-                    if ('error' in v) {
-                        reject(v.error)
-                    } else {
-                        resolve(v)
-                    }
-                })
-                .catch(reject)
-        })
+        return this.fetch('DELETE', path)
     }
 
     /**

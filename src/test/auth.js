@@ -16,11 +16,11 @@ describe('Auth', function () {
   })
 
   it('Login to nonexistent account', async function () {
-    await assert.rejects(() => client.login('Test user 2', 'passwd2'))
+    await assert.rejects(client.login('Test user 2', 'passwd2'))
   })
 
   it('Login with invalid password', async function () {
     await client.register('Test user 3', 'passwd3')
-    await assert.rejects(() => client.login('Test user 3', 'passwd3__'))
+    await assert.rejects(client.login('Test user 3', 'passwd3__'))
   })
 })

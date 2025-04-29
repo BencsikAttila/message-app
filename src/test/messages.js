@@ -8,21 +8,18 @@ before(() => {
   client = new Client('http://localhost:6789')
 })
 
-const _ = describe('Channels', function () {
+const _ = describe('Messages', function () {
   it('Create & Delete', async function () {
     const channel = await client.createChannel('Test channel 1')
+    const message = await channel.send('test message')
 
-    assert.equal('Test channel 1', channel.name)
+    assert.equal('test message', message.content)
 
-    await assert.doesNotReject(client.getChannel(channel.id))
-
-    await channel.leave()
-
-    await assert.rejects(client.getChannel(channel.id))
+    await message.delete()
   })
 })
 _.beforeAll(async () => {
-  await client.register(`Test user : Channels`, 'passwd')
+  await client.register(`Test user : Messages`, 'passwd')
 })
 _.afterAll(async () => {
   await client.logout()
