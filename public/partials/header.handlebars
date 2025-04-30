@@ -18,7 +18,13 @@
             <button onclick="window.leaveChannel()">Leave Channel</button>
             <button id="new-channel-invitation-button">Invitations</button>
             <dialog id="new-invitation-dialog">
-                <button autofocus id="new-invitation-button-x">Close</button>
+                <div class="dialog-header">
+                    <div class="dialog-title">
+                        Invitations
+                    </div>
+                    <button autofocus id="new-invitation-button-x" class="close-button"><i class="fa fa-remove"></i></button>
+                </div>
+
                 <div>
                     <div id="invitations-container">
 

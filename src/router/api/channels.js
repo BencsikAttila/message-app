@@ -61,16 +61,16 @@ module.exports = (router, app) => {
             }
 
             /** @type {ReadonlyArray<import('../../db/model').default['users']>} */
-            const sqlUsers1 = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', req.params.channelId)
+            const usersInChannel = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', req.params.channelId)
             /** @type {ReadonlyArray<import('../../db/model').default['users']>} */
-            const sqlUsers2 = await database.queryRaw('SELECT users.* FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId JOIN users ON users.id = bundleUser.userId WHERE bundleChannel.channelId = ?', [req.params.channelId])
+            const usersInBundle = await database.queryRaw('SELECT users.* FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId JOIN users ON users.id = bundleUser.userId WHERE bundleChannel.channelId = ?', [req.params.channelId])
 
-            const _sqlUsers = {}
-            for (const v of sqlUsers1) _sqlUsers[v.id] = v
-            for (const v of sqlUsers2) _sqlUsers[v.id] = v
+            const usersTemp = {}
+            for (const v of usersInChannel) usersTemp[v.id] = v
+            for (const v of usersInBundle) usersTemp[v.id] = v
 
             /** @type {ReadonlyArray<import('../../db/model').default['users']>} */
-            const sqlUsers = Object.values(_sqlUsers)
+            const users = Object.values(usersTemp)
 
             /** @type {Array<import('ws').WebSocket>} */
             const wsClients = []
@@ -80,7 +80,7 @@ module.exports = (router, app) => {
 
             res
                 .status(200)
-                .json(sqlUsers.map(v => ({
+                .json(users.map(v => ({
                     ...v,
                     password: undefined,
                     // @ts-ignore

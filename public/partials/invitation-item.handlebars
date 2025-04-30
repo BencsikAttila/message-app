@@ -1,6 +1,7 @@
 <div class="invitation-item">
     <div>Expires at {{expiresAt}}</div>
     <div>Used {{usages}} times</div>
+    <a target="_blank" href="/invitations/{{id}}/use"><i class="fa fa fa-share-square-o"></i></a>
     <button onclick="navigator.clipboard.writeText(`${window.location.origin}/invitations/{{id}}/use`)">Copy to Clipboard</button>
     <button onclick="window.deleteInvitation('{{id}}')">
         Delete

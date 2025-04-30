@@ -38,7 +38,7 @@
             .catch(console.error)
     }
 
-    refreshList()
+    // refreshList()
 
     if (window.ENV.channel?.id) {
         const membersContainer = document.getElement('users-container', 'div')

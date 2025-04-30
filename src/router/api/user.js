@@ -279,7 +279,7 @@ module.exports = (router, app) => {
         }
     })
 
-    router.get('/api/users/search', app.auth.middleware, async (req, res) => {
+    router.get('/api/user/search', app.auth.middleware, async (req, res) => {
         if (!req.query['nickname']) {
             res
                 .status(400)

@@ -39,8 +39,8 @@ module.exports = (router, app) => {
                 return
             }
 
-            const res1 = await database.update('friends', `verified = 1`, `friends.user1_id = ? AND friends.user2_id = ?`, [req.params.userId, req.credentials.id])
-            if (res1) {
+            const updateResult = await database.update('friends', `verified = 1`, `friends.user1_id = ? AND friends.user2_id = ?`, [req.params.userId, req.credentials.id])
+            if (updateResult) {
                 res
                     .status(201)
                     .json({ message: 'Friend request verified' })
@@ -51,9 +51,9 @@ module.exports = (router, app) => {
             /**
              * @type {ReadonlyArray<import('../../db/model').default['friends']>}
              */
-            const res2 = await database.queryRaw(`SELECT * FROM friends WHERE friends.user1_id = ? AND friends.user2_id = ? LIMIT 1`, [req.credentials.id, req.params.userId])
+            const friendRequestsOut = await database.queryRaw(`SELECT * FROM friends WHERE friends.user1_id = ? AND friends.user2_id = ? LIMIT 1`, [req.credentials.id, req.params.userId])
 
-            if (res2.length) {
+            if (friendRequestsOut.length) {
                 res
                     .status(400)
                     .json({ error: 'Friend request already sent' })
@@ -61,13 +61,13 @@ module.exports = (router, app) => {
                 return
             }
 
-            const res3 = await database.insert('friends', {
+            const insertResult = await database.insert('friends', {
                 user1_id: req.credentials.id,
                 user2_id: req.params.userId,
                 verified: 0,
             })
 
-            if (!res3.changes) {
+            if (!insertResult.changes) {
                 res
                     .status(500)
                     .json({ error: 'Failed to sent the friend request' })
@@ -216,12 +216,12 @@ module.exports = (router, app) => {
 
     router.delete('/api/friends/:userId', app.auth.middleware, async (req, res) => {
         try {
-            const res1 = (
+            const deleted = (
                 (await database.delete('friends', `friends.user1_id = ? AND friends.user2_id = ?`, [req.credentials.id, req.params.userId]))
                 ||
                 (await database.delete('friends', `friends.user2_id = ? AND friends.user1_id = ?`, [req.credentials.id, req.params.userId]))
             )
-            if (!res1) {
+            if (!deleted) {
                 res
                     .status(500)
                     .json({ message: 'Failed to remove friend' })

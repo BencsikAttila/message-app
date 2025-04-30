@@ -85,12 +85,14 @@ module.exports = (router, app) => {
     router.get('/friends', app.auth.middleware, async (req, res) => {
         const user = await app.getUser(req.credentials.id)
         const friends = await app.getFriends(req.credentials.id)
+        const channels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ? AND channels.friendChannel = 0', req.credentials.id)
 
         res.render('friends', {
             user: {
                 ...user,
                 password: undefined,
             },
+            channels: channels,
             friends: [...friends.incoming, ...friends.outgoing]
                 .filter(v => v.verified)
                 .map(v => ({
@@ -138,9 +140,9 @@ module.exports = (router, app) => {
             return
         }
 
-        const sqlChannels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
+        const channels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
 
-        const sqlUsers = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
+        const users = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
 
         /** @type {Array<import('ws').WebSocket>} */
         const wsClients = []
@@ -148,7 +150,7 @@ module.exports = (router, app) => {
             wsClients.push(wsClient)
         }
 
-        const sqlMessages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
+        const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
 
         res.render('channel', {
             user: {
@@ -158,19 +160,17 @@ module.exports = (router, app) => {
             channel: {
                 ...channel,
             },
-            members: sqlUsers.map(v => ({
+            members: users.map(v => ({
                 ...v,
                 password: undefined,
                 // @ts-ignore
                 isOnline: wsClients.some(_v => _v.user?.id === v.id),
             })),
-            messages: sqlMessages.map(v => ({
+            messages: messages.map(v => ({
                 ...v,
                 createdAt: new Date(v.createdUtc * 1000).toLocaleTimeString(),
             })),
-            channels: sqlChannels.map(v => ({
-                ...v,
-            })),
+            channels: channels.filter(v => !v.friendChannel),
         })
     })
 
@@ -259,6 +259,9 @@ module.exports = (router, app) => {
             .end()
     })
 
+    router.use('/css', express.static(path.join(__dirname, '..', 'node_modules', 'fontawesome-free', 'css')))
+    router.use('/webfonts', express.static(path.join(__dirname, '..', 'node_modules', 'fontawesome-free', 'webfonts')))
+    router.use('/js', express.static(path.join(__dirname, '..', 'node_modules', 'fontawesome-free', 'js')))
     router.use(express.static(path.join(__dirname, '..', '..', 'public')))
     router.use(express.static(path.join(__dirname, '..', 'node_modules', 'handlebars', 'dist')))
 

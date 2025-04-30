@@ -16,26 +16,51 @@
     <div class="new-channel fake-channel-button-container">
         <button id="new-channel-button" class="fake-channel-button">New Channel</button>
         <dialog id="new-channel-dialog">
-            <button autofocus id="new-channel-button-x">Close</button>
+            <div class="dialog-header">
+                <div class="dialog-title">
+                    New Channel
+                </div>
+                <button autofocus id="new-channel-button-x" class="close-button"><i class="fa fa-remove"></i></button>
+            </div>
+
             <div>
-                <input type="text" id="new-channel-button-name-input" placeholder="Channel Name">
-                <button id="new-channel-button-create">Create</button>
+                <div style="margin: 4px;">
+                    <div style="font-size: 0.9em; color: var(--text)">Name:</div>
+                    <input type="text" id="new-channel-button-name-input">
+                </div>
+                <div style="margin: 4px;">
+                    <button id="new-channel-button-create">Create</button>
+                </div>
             </div>
         </dialog>
     </div>
     <div class="new-bundle fake-channel-button-container">
         <button id="new-bundle-button" class="fake-channel-button">New Bundle</button>
         <dialog id="new-bundle-dialog">
-            <button autofocus id="new-bundle-button-x">Close</button>
+            <div class="dialog-header">
+                <div class="dialog-title">
+                    New Bundle
+                </div>
+                <button autofocus id="new-bundle-button-x" class="close-button"><i class="fa fa-remove"></i></button>
+            </div>
+
             <div>
-                <input id="new-bundle-name">
-                <select id="new-bundle-select">
+                <div style="margin: 4px;">
+                    <div style="font-size: 0.9em; color: var(--text)">Channels:</div>
+                    <select id="new-bundle-select">
 
-                </select>
-                <button id="new-bundle-button-add-channel">Add</button>
-                <button id="new-bundle-button-create">Create</button>
-                <div id="current-bundle-channels">
+                    </select>
+                    <button id="new-bundle-button-add-channel">Add</button>
+                    <div id="current-bundle-channels">
 
+                    </div>
+                </div>
+                <div style="margin: 4px;">
+                    <div style="font-size: 0.9em; color: var(--text)">Name:</div>
+                    <input id="new-bundle-name">
+                </div>
+                <div style="margin: 4px;">
+                    <button id="new-bundle-button-create">Create</button>
                 </div>
             </div>
         </dialog>

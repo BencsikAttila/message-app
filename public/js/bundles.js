@@ -77,7 +77,7 @@
             const element = currentBundleChannelsContainer.appendChild(document.fromHTML(Handlebars.compile(`
                 <div class="new-bundle-channel-item">
                     {{name}}
-                    <button>Remove</button>
+                    <button class="remove-button"><i class="fa fa-remove"></i></button>
                 </div>
             `)(channels[item])))
             element.querySelector('button').addEventListener('click', () => {

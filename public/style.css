@@ -394,3 +394,49 @@ dialog ::backdrop {
 .message-loading {
     opacity: .8;
 }
+
+.friend-search-item {
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    margin: 4px 0px;
+    padding: 4px 8px;
+    color: var(--text);
+    background-color: var(--button-background);
+}
+
+.remove-button {
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    float: right;
+    margin: 1px;
+}
+
+.close-button {
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0px;
+    font-size: 24px;
+}
+
+.remove-button:focus-visible,
+.close-button:focus-visible {
+    color: var(--highlight);
+}
+
+button > i {
+    font-size: 16px;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+}
+
+.dialog-title {
+    color: var(--text);
+    flex: 1;
+    font-weight: bold;
+    margin-right: 8px;
+}

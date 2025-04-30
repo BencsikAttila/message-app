@@ -68,3 +68,8 @@ a {
 }
 
 /*#endregion*/
+
+hr {
+    border: none;
+    border-top: 2px solid var(--base3);
+}

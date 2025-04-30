@@ -5,11 +5,11 @@
 
     searchButton.addEventListener('click', () => {
         usersContainer.innerHTML = ''
-        API.get(`/api/users/search?nickname=${encodeURIComponent(searchInput.value)}`)
+        API.get(`/api/user/search?nickname=${encodeURIComponent(searchInput.value)}`)
             .then(users => {
                 for (const user of users) {
                     const element = document.fromHTML(Handlebars.compile(`
-                        <div>
+                        <div class="friend-search-item">
                             <span>{{nickname}}</span>
                             <button>Add friend</button>
                         </div>

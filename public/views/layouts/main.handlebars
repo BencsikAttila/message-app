@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Message App</title>
+    <title>Snakker</title>
+    <link rel="icon" type="image/png" href="/icon16.png">
     <link rel="stylesheet" href="/themes/{{#switch user.theme}}{{#case 1}}default{{/case}}{{#case 2}}google{{/case}}{{#case 3}}rosepine{{/case}}{{#default}}default{{/default}}{{/switch}}.css" id="theme-link">
     <link rel="stylesheet" href="/base.css">
     <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script>
         window.ENV = {
             {{#if user}}'user': {{{JSON user}}},{{/if}}
