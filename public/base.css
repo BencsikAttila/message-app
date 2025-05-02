@@ -8,6 +8,10 @@ html, body {
     color: var(--text);
 }
 
+dialog {
+    color: var(--text);
+}
+
 body {
     margin: 0px;
 }

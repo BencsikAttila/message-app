@@ -16,7 +16,7 @@ export interface ErrorEvent extends GenericEvent<'error'> {
 
 export interface MessageCreatedEvent extends GenericEvent<'message_created'> {
     id: string
-    content: number
+    content: string
     createdUtc: number
     channel: string
     user: {

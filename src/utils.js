@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+
 module.exports = class App {
     /** @readonly @type {import('./db/interface').DB} */ database
     /** @readonly @type {import('express').Application} */ express
@@ -87,11 +90,28 @@ module.exports = class App {
      * }>}
      */
     async getFriends(id) {
-        const incoming = await this.database.queryRaw(`SELECT users.*, verified FROM friends JOIN users ON friends.user1_id = users.id AND friends.user2_id = ?`, [ id ])
-        const outgoing = await this.database.queryRaw(`SELECT users.*, verified FROM friends JOIN users ON friends.user2_id = users.id AND friends.user1_id = ?`, [ id ])
+        const incoming = await this.database.queryRaw(`SELECT users.*, verified FROM friends JOIN users ON friends.user1_id = users.id AND friends.user2_id = ?`, [id])
+        const outgoing = await this.database.queryRaw(`SELECT users.*, verified FROM friends JOIN users ON friends.user2_id = users.id AND friends.user1_id = ?`, [id])
         return {
             incoming,
             outgoing,
         }
+    }
+
+    /**
+     * @param {string} id
+     * @returns {Promise<number>}
+     */
+    async deleteMessage(id) {
+        const attachments = await this.database.queryRaw('SELECT * FROM messageAttachments WHERE messageAttachments.messageId = ?', [id])
+        for (const attachment of attachments) {
+            for (const file of fs.readdirSync(path.join(this.database.localPath, 'attachments'))) {
+                if (file === attachment.id || file.startsWith(attachment.id + path.extname(file))) {
+                    fs.rmSync(path.join(this.database.localPath, 'attachments', file))
+                }
+            }
+        }
+        await this.database.delete('messageAttachments', 'messageAttachments.messageId = ?', [id])
+        return await this.database.delete('messages', 'messages.id = ?', [id])
     }
 }

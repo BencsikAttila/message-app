@@ -7,9 +7,14 @@ type tables = {
     messages: {
         id: UUID,
         content: string,
+        attachmentCount: INT,
         createdUtc: INT,
         channelId: UUID,
         senderId: UUID,
+    },
+    messageAttachments: {
+        id: UUID,
+        messageId: UUID,
     },
     channels: {
         id: UUID,
@@ -22,6 +27,7 @@ type tables = {
         username: VARCHAR,
         nickname: VARCHAR,
         password: VARCHAR,
+        lastChannelId?: UUID,
     },
     userChannel: {
         userId: UUID
@@ -53,5 +59,7 @@ type tables = {
         channel?: UUID
     },
 }
+
+export type TableNames = keyof tables
 
 export default tables

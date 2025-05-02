@@ -50,6 +50,7 @@ body {
     display: flex;
     flex: 1 1;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 /*#endregion*/
@@ -99,6 +100,29 @@ body {
 .chat-input-container {
     display: flex;
     flex: 0 0 40px;
+    flex-direction: column;
+}
+
+.chat-input-container > div:nth-child(1) {
+    display: flex;
+    flex-direction: row;
+}
+
+.chat-input-container > div:nth-child(2) {
+    display: flex;
+    flex-direction: row;
+    margin: 8px;
+}
+
+#chat-input-attachments-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#chat-input-attachments-container > div {
+    flex-shrink: 0;
+    margin: 4px;
 }
 
 #chat-input {
@@ -110,6 +134,28 @@ body {
     flex: 1 1 100%;
     margin: 8px;
     padding: 4px;
+}
+
+#chat-input-attachments-container > div {
+    height: fit-content;
+}
+
+#chat-input-attachments-container > div:not(:last-of-type) {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    padding: 4px;
+}
+
+#chat-input-attachments-container > div:not(:last-of-type) img {
+    max-width: 64px;
+    border-radius: var(--border-radius);
+    margin: 4px;
+}
+
+#chat-input-attachments-container > div:not(:last-of-type) span {
+    color: var(--text-dark);
 }
 
 #chat-send {
@@ -129,10 +175,6 @@ body {
     border-radius: var(--border-radius);
 }
 
-.message-header {
-    border-bottom: 2px solid var(--base3);
-}
-
 .message-time {
     font-size: 0.75em;
     color: var(--text-dark);
@@ -142,6 +184,7 @@ body {
 .message-header {
     display: flex;
     align-items: end;
+    border-bottom: 2px solid var(--base3);
 }
 
 .message-author {
@@ -439,4 +482,21 @@ button > i {
     flex: 1;
     font-weight: bold;
     margin-right: 8px;
+}
+
+.message-attachments {
+    border-top: 2px solid var(--base3);
+    padding-top: 4px;
+    overflow-x: scroll;
+    display: flex;
+    padding-bottom: 0px;
+}
+
+.message-attachment {
+    margin: 4px;
+}
+
+.message-attachment > img {
+    border-radius: var(--border-radius);
+    display: inline-block;
 }

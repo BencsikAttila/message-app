@@ -1,8 +1,12 @@
 const fs = require('fs')
 const init = require('./init')
+const path = require('path')
+
+const localPath = path.join(__dirname, '..', '..', 'database')
 
 /**
  * @typedef {{
+ *   readonly localPath: string
  *   query<Table extends keyof import('./model').default>(table: Table): Promise<ReadonlyArray<import('./model').default[Table]>>
  *   queryRaw(query: string, params: any): Promise<ReadonlyArray<any>>
  *   insert<Table extends keyof import('./model').default>(table: Table, values: import('./model').default[Table]): Promise<Readonly<{ changes: number; lastId: number; }>>
@@ -86,6 +90,7 @@ function createMysqlDB() {
     })
 
     return {
+        localPath: localPath,
         query(table) {
             return new Promise((resolve, reject) => {
                 db.query(`SELECT * FROM ${table};`, (error, rows) => {
@@ -148,7 +153,7 @@ function createMysqlDB() {
 function createSqliteDB(inMemory = false) {
     const sqlite = require('sqlite3')
     const path = require('path')
-    const filename = path.join(__dirname, '..', '..', 'database', 'db.sqlite')
+    const filename = path.join(localPath, 'db.sqlite')
 
     if (!fs.existsSync(path.dirname(filename))) {
         fs.mkdirSync(path.dirname(filename), { recursive: true })
@@ -170,6 +175,7 @@ function createSqliteDB(inMemory = false) {
     })
 
     return {
+        localPath: localPath,
         query(table) {
             return new Promise((resolve, reject) => {
                 db.prepare(`SELECT * FROM ${table};`)

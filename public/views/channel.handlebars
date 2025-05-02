@@ -9,8 +9,15 @@
             {{/each}}
         </div>
         <div class="chat-input-container">
-            <input type="text" placeholder="Message" id="chat-input">
-            <button id="chat-send">Send</button>
+            <div>
+                <input type="text" placeholder="Message" id="chat-input">
+                <button id="chat-send">Send</button>
+            </div>
+            <div>
+                <input type="file" id="chat-input-attachment" style="display:none">
+                <div id="chat-input-attachments-container"></div>
+                <div id="chat-input-attachments-container-internal"></div>
+            </div>
         </div>
     </div>
     <div class="right-side-bar" id="right-side-bar">

@@ -122,7 +122,10 @@ module.exports = (router, app) => {
         const bundlesWithChannel = (await database.queryRaw(`SELECT COUNT(*) FROM bundleChannel WHERE bundleChannel.channelId = ?`, [req.params.channelId]))
         if (!(usersInChannel[0][Object.keys(usersInChannel[0])[0]]) && !(bundlesWithChannel[0][Object.keys(bundlesWithChannel[0])[0]])) {
             await database.delete('channels', 'channels.id = ?', [req.params.channelId])
-            await database.delete('messages', 'messages.channelId = ?', [req.params.channelId])
+            const messagesInChannel = await database.queryRaw(`SELECT * FROM messages WHERE messages.channelId = ?`, [req.params.channelId])
+            for (const message of messagesInChannel) {
+                await app.deleteMessage(message.id)
+            }
         }
 
         res

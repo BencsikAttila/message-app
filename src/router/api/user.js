@@ -122,7 +122,17 @@ module.exports = (router, app) => {
     router.patch('/api/user', app.auth.middleware, async (req, res) => {
         try {
             if ('nickname' in req.body) {
-                await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [req.body['nickname'], req.credentials.id])
+                let newNickname = String(req.body['nickname']).trim()
+                if (!newNickname) {
+                    res
+                        .status(400)
+                        .json({
+                            error: `Nickname is empty`
+                        })
+                        .end()
+                    return
+                }
+                await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [newNickname, req.credentials.id])
             }
             if ('theme' in req.body) {
                 await database.queryRaw('UPDATE users SET theme = ? WHERE users.id = ?', [req.body['theme'], req.credentials.id])
@@ -177,7 +187,7 @@ module.exports = (router, app) => {
 
             const size = Number.parseInt(req.query['size'] + '')
 
-            const filePath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.params.userId}.webp`)
+            const filePath = path.join(database.localPath, 'avatars', `${req.params.userId}.webp`)
             if (!fs.existsSync(filePath)) {
                 if (req.query['nodefault']) {
                     res
@@ -225,8 +235,8 @@ module.exports = (router, app) => {
         try {
             req.pipe(req.busboy)
             req.busboy.on('file', (fieldname, file, filename) => {
-                if (!fs.existsSync(path.join(__dirname, '..', '..', 'database', 'images', 'avatars'))) {
-                    fs.mkdirSync(path.join(__dirname, '..', '..', 'database', 'images', 'avatars'), { recursive: true })
+                if (!fs.existsSync(path.join(database.localPath, 'avatars'))) {
+                    fs.mkdirSync(path.join(database.localPath, 'avatars'), { recursive: true })
                 }
                 const chunks = []
                 file.on('data', chunk => chunks.push(chunk))
@@ -234,7 +244,7 @@ module.exports = (router, app) => {
                     const buffer = Buffer.concat(chunks)
                     sharp(buffer)
                         .resize(128, 128)
-                        .toFile(path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.user.id}.webp`), (error, info) => {
+                        .toFile(path.join(database.localPath, 'avatars', `${req.user.id}.webp`), (error, info) => {
                             if (error) {
                                 console.error(error)
                                 res
@@ -262,7 +272,7 @@ module.exports = (router, app) => {
 
     router.delete('/api/user/avatar', app.auth.middleware, async (req, res) => {
         try {
-            const filepath = path.join(__dirname, '..', '..', 'database', 'images', 'avatars', `${req.user.id}.webp`)
+            const filepath = path.join(database.localPath, 'avatars', `${req.user.id}.webp`)
             if (fs.existsSync(filepath)) {
                 fs.rmSync(filepath)
             }

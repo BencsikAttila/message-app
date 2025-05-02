@@ -22,6 +22,18 @@
                 return options.fn(this)
             }
         },
+        'format': function (value) {
+            return value
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/(\b(https?|ftp|file):\/\/[\-A-Z0-9+&@#\/%?=~_|!:,.;]*[\-A-Z09+&@#\/%=~_|])/img, '<a href="$1" target="_blank">$1</a>')
+                .replace(/\*\*(.+)\*\*/img, '<b>$1</b>')
+                .replace(/\*(.+)\*/img, '<i>$1</i>')
+                .replace(/__(.+)__/img, '<u>$1</u>')
+        },
     }
 
     try {

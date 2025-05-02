@@ -8,13 +8,20 @@
         <div style="flex: 1;"></div>
         <div class="message-dropdown">
             <div class="dropdown-content">
-                <button onclick="window.editMessage('{{id}}')">Edit</button>
+                <!--<button onclick="window.editMessage('{{id}}')">Edit</button>-->
                 <button onclick="window.deleteMessage('{{id}}')">Delete</button>
             </div>
             <span>...</span>
         </div>
     </div>
     <div class="message-content">
-        {{content}}
+        {{#format content}}{{/format}}
     </div>
+    {{#if attachmentCount}}
+    <div class="message-attachments">
+        {{#each attachments}}
+        <div class="message-attachment" id="attachment-{{this}}"></div>
+        {{/each}}
+    </div>
+    {{/if}}
 </div>

@@ -54,6 +54,7 @@ globalThis['API'] = {
     /**
      * @param {string | URL | globalThis.Request} input
      * @param {RequestInit} [init]
+     * @returns {Promise<Response>}
      */
     fetch(input, init) {
         return new Promise(async (resolve, reject) => {

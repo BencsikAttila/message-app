@@ -10,6 +10,7 @@ module.exports = () => {
     users.addColumn('nickname', 'TEXT')
     users.addColumn('password', 'VARCHAR', 64)
     users.addColumn('theme', 'INT').setNullable()
+    users.addColumn('lastChannelId', 'UUID').setNullable()
 
     const channels = table('channels')
     channels.addId()
@@ -20,9 +21,14 @@ module.exports = () => {
     const messages = table('messages')
     messages.addId()
     messages.addColumn('content', 'TEXT')
+    messages.addColumn('attachmentCount', 'INT')
     messages.addColumn('createdUtc', 'BIGINT')
     messages.addColumn('channelId', 'UUID').referenceTo('channels', 'id')
     messages.addColumn('senderId', 'UUID').referenceTo('users', 'id')
+
+    const messageAttachments = table('messageAttachments')
+    messageAttachments.addId()
+    messageAttachments.addColumn('messageId', 'UUID').referenceTo('messages', 'id')
 
     const userChannel = table('userChannel')
     userChannel.addColumn('userId', 'UUID').referenceTo('users', 'id')
@@ -57,6 +63,7 @@ module.exports = () => {
         users,
         channels,
         messages,
+        messageAttachments,
         userChannel,
         invitations,
         bundles,

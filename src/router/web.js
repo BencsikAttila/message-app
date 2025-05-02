@@ -73,13 +73,19 @@ module.exports = (router, app) => {
 
     router.get('/', app.auth.middleware, async (req, res) => {
         const user = await app.getUser(req.credentials.id)
+        const channels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ? AND channels.friendChannel = 0', req.credentials.id)
 
-        res.render('home', {
-            user: {
-                ...user,
-                password: undefined,
-            },
-        })
+        if (user.lastChannelId && (await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.userId = ? AND userChannel.channelId = ?', [req.credentials.id, user.lastChannelId])).length) {
+            res.redirect(`/channels/${user.lastChannelId}`)
+        } else {
+            res.render('home', {
+                user: {
+                    ...user,
+                    password: undefined,
+                },
+                channels: channels,
+            })
+        }
     })
 
     router.get('/friends', app.auth.middleware, async (req, res) => {
@@ -140,6 +146,8 @@ module.exports = (router, app) => {
             return
         }
 
+        await database.update('users', 'lastChannelId = ?', 'users.id = ?', [req.params.id, req.credentials.id])
+
         const channels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ?', req.credentials.id)
 
         const users = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
@@ -151,6 +159,11 @@ module.exports = (router, app) => {
         }
 
         const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
+
+        for (const message of messages) {
+            const attachments = await database.queryRaw(`SELECT * FROM messageAttachments WHERE messageAttachments.messageId = ?`, [message.id])
+            message.attachments = attachments.map(v => v.id)
+        }
 
         res.render('channel', {
             user: {
