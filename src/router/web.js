@@ -121,11 +121,14 @@ module.exports = (router, app) => {
     })
 
     router.get('/account', app.auth.middleware, async (req, res) => {
+        const channels = await database.queryRaw('SELECT channels.* FROM channels JOIN userChannel ON channels.id = userChannel.channelId WHERE userChannel.userId = ? AND channels.friendChannel = 0', req.credentials.id)
+
         res.render('account', {
             user: {
                 ...req.user,
                 password: undefined,
             },
+            channels: channels,
         })
     })
 
@@ -152,11 +155,7 @@ module.exports = (router, app) => {
 
         const users = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
 
-        /** @type {Array<import('ws').WebSocket>} */
-        const wsClients = []
-        for (const wsClient of app.wss.getWss().clients.values()) {
-            wsClients.push(wsClient)
-        }
+        const wsClients = app.wss.getWss().clients.values()
 
         const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
 
@@ -176,7 +175,6 @@ module.exports = (router, app) => {
             members: users.map(v => ({
                 ...v,
                 password: undefined,
-                // @ts-ignore
                 isOnline: wsClients.some(_v => _v.user?.id === v.id),
             })),
             messages: messages.map(v => ({
@@ -184,6 +182,7 @@ module.exports = (router, app) => {
                 createdAt: new Date(v.createdUtc * 1000).toLocaleTimeString(),
             })),
             channels: channels.filter(v => !v.friendChannel),
+            ongoingCall: channel.id in require('../call-server').channels,
         })
     })
 

@@ -8,6 +8,8 @@
             <div style="margin-bottom: 16px;">
                 <label for="account-nickname-input">Nickname:</label>
                 <input type="string" id="account-nickname-input" value="{{user.nickname}}">
+            </div>
+            <div style="margin-bottom: 16px;">
                 <label for="account-theme-input">Theme:</label>
                 <select id="account-theme-input" value="{{user.theme}}">
                     <option value="1" {{#eq user.theme 1}}selected{{/eq}}>Default White</option>
@@ -17,10 +19,12 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <span>Avatar:</span>
-                {{> useravatar id=user.id size=32 }}
                 <label for="account-avatar-input" class="file-input-label">Upload Avatar</label>
                 <input type="file" id="account-avatar-input" style="display: none;">
                 <button id="delete-avatar-button">Remove Avatar</button>
+                <div>
+                    {{> useravatar id=user.id }}
+                </div>
             </div>
             <button id="update-nickname-button">Save</button>
         </section>

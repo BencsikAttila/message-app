@@ -6,4 +6,7 @@
     "javascript.referencesCodeLens.showOnAllFunctions": true,
     "javascript.validate.enable": true,
     "mochaExplorer.files": "src/test/**/*.js",
+    "files.exclude": {
+        "client/**": true
+    }
 }

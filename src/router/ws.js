@@ -34,6 +34,8 @@ module.exports = (router, app) => {
                         })))
                     }
 
+                    require('../call-server')(ws, app)
+
                     ws.addEventListener('close', e => {
                         if (userOnlineTimers[user.id]) clearTimeout(userOnlineTimers[user.id])
                         userOnlineTimers[user.id] = setTimeout(() => {

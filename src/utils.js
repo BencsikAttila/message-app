@@ -4,7 +4,15 @@ const path = require('path')
 module.exports = class App {
     /** @readonly @type {import('./db/interface').DB} */ database
     /** @readonly @type {import('express').Application} */ express
-    /** @readonly @type {import('express-ws').Instance} */ wss
+    /**
+     * @readonly @type {(Exclude<'getWss', import('express-ws').Instance>) & {
+     *  getWss(): Exclude<'clients', import('ws').Server> & {
+     *    clients: Set<import('ws').WebSocket & {
+     *      user: import('./db/model').default['users']
+     *    }>
+     *  }
+     * }}
+     */ wss
     /** @readonly @type {ReturnType<import('./auth')>} */ auth
     /** @readonly @type {import('http').Server} */ server
 
@@ -16,6 +24,7 @@ module.exports = class App {
     constructor(database, express, wss) {
         this.database = database
         this.express = express
+        // @ts-ignore
         this.wss = wss
         this.auth = require('./auth')(this)
     }
@@ -30,6 +39,19 @@ module.exports = class App {
             return null
         }
         return res[0]
+    }
+
+    /**
+     * @param {string} userId
+     * @param {string} channelId
+     */
+    async usersInChannel(userId, channelId) {
+        const channels = await this.database.queryRaw('SELECT userChannel.userId FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [channelId, userId])
+        const bundles = await this.database.queryRaw('SELECT bundleUser.userId FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId WHERE bundleUser.userId = ? AND bundleChannel.channelId = ? LIMIT 1', [userId, channelId])
+        return [
+            ...channels,
+            ...bundles,
+        ].map(v => v.userId)
     }
 
     /**

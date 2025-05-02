@@ -7,3 +7,9 @@ namespace Express {
         user: import('./db/model').default['users']
     }
 }
+
+namespace expressWs {
+    interface Instance {
+        getWss2(): number
+    }
+}

@@ -3,6 +3,17 @@
 <div class="main-container">
     {{> channel-list }}
     <div class="main">
+        <div id="unjoined-call-container" {{#if ongoingCall}}{{else}}style="display: none;"{{/if}}>
+            <h1>Ongoing Video Call</h1>
+            <button onclick="window.startCall()">Join</button>
+        </div>
+        <div id="call-container" style="display: none;">
+            <div id="call-peers-container">
+            </div>
+            <div id="call-controls">
+                <button onclick="window.endCall()">Leave</button>
+            </div>
+        </div>
         <div class="chat-messages-container" id="chat-messages-container">
             {{#each messages}}
             {{>message this}}
@@ -41,3 +52,4 @@
 <script src="/js/invitations.js"></script>
 <script src="/js/bundles.js"></script>
 <script src="/js/users.js"></script>
+<script src="/js/call.js"></script>

@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "module": "CommonJS",
-        "moduleResolution": "Classic",
+        "module": "ESNext",
+        "moduleResolution": "classic",
         "target": "ESNext",
         "checkJs": true
     }

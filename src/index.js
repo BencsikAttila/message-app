@@ -44,6 +44,7 @@ function create(config) {
     require('./router/api')(router, app)
     require('./router/web')(router, app)
     require('./router/ws')(router, app)
+    require('./router/push')(router, app)
     expressApp.use(router)
 
     // @ts-ignore

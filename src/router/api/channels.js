@@ -72,18 +72,13 @@ module.exports = (router, app) => {
             /** @type {ReadonlyArray<import('../../db/model').default['users']>} */
             const users = Object.values(usersTemp)
 
-            /** @type {Array<import('ws').WebSocket>} */
-            const wsClients = []
-            for (const wsClient of app.wss.getWss().clients.values()) {
-                wsClients.push(wsClient)
-            }
+            const wsClients = app.wss.getWss().clients.values()
 
             res
                 .status(200)
                 .json(users.map(v => ({
                     ...v,
                     password: undefined,
-                    // @ts-ignore
                     isOnline: v.id === req.credentials.id ? true : wsClients.some(_v => _v.user?.id === v.id),
                 })))
                 .end()

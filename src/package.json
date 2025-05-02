@@ -17,12 +17,14 @@
     "sharp": "^0.33.5",
     "sqlite3": "^5.1.7",
     "uuid": "^11.1.0",
+    "web-push": "^3.6.7",
     "ws": "^8.18.0"
   },
   "scripts": {
     "start": "node ./index.js",
     "test": "mocha",
-    "populate": "node ./test/populate.js"
+    "populate": "node ./test/populate.js",
+    "generate-push-keys": "node_modules/web-push/src/cli.js generate-vapid-keys"
   },
   "devDependencies": {
     "mocha": "^11.1.0"

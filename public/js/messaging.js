@@ -188,6 +188,8 @@
             .catch(console.error)
     }
 
+    messagesContainer.scrollTo(0, messagesContainer.scrollHeight)
+
     // API.get(`/api/channels/${window.ENV.channel.id}/messages`)
     //     .then(res => {
     //         messagesContainer.innerHTML = ''

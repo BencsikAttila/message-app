@@ -1,0 +1,14 @@
+{
+    "name": "Snakker",
+    "description": "A simple messaging app",
+    "default_locale": "en",
+    "start_url": "/",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "icon512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
