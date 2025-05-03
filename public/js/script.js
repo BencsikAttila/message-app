@@ -30,29 +30,6 @@ document.getElement('button-toggle-right-side-bar', 'button')
     })
 
 const wsClient = new WebSocketClient()
-wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
-    // TODO: better message type routing,
-    switch (e.message.type) {
-        case 'error': {
-            switch (e.message.source) {
-                case 'sql':
-                case null: {
-                    console.error(e.message.error)
-                    break
-                }
-                default: {
-                    console.error('Unknown error')
-                    break
-                }
-            }
-            break
-        }
-
-        default: {
-            break
-        }
-    }
-})
 wsClient.addEventListener('open', (e) => {
     document.getElement('icon-status', 'span').title = 'Connected'
     document.getElement('icon-status', 'span').classList.add('connected')

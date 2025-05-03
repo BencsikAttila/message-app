@@ -67,4 +67,11 @@ class WebSocketClient extends EventTarget {
             }
         })
     }
+
+    /**
+     * @param {object} data
+     */
+    send(data) {
+        this.#websocket.send(JSON.stringify(data))
+    }
 }

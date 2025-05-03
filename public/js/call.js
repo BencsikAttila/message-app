@@ -10,17 +10,8 @@
         { urls: 'stun:stun.l.google.com:19302' }
     ]
 
-    /**
-     * @param {HTMLAudioElement | HTMLVideoElement} element
-     * @param {MediaStream} stream
-     */
-    function attachMediaStream(element, stream) {
-        console.warn('DEPRECATED, attachMediaStream will soon be removed.')
-        element.srcObject = stream
-    }
-
-    /** @type {WebSocket} */
-    let ws = null
+    /** @type {boolean} */
+    let isInCall = false
     /** @type {MediaStream | null} */
     let localMediaStream = null
     /** @type {Record<string, RTCPeerConnection>} */
@@ -73,7 +64,7 @@
             refreshMuteIcon()
         })
         refreshMuteIcon()
-        attachMediaStream(media, stream)
+        media.srcObject = stream
         return media
     }
 
@@ -109,49 +100,48 @@
         })
     }
 
+    function cleanup() {
+        callPeersContainer.innerHTML = ''
+
+        for (const peer_id in peers) {
+            peers[peer_id].close()
+        }
+
+        for (const track of localMediaStream.getTracks()) {
+            track.stop()
+        }
+
+        document.getElement('call-container').style.display = 'none'
+
+        peers = {}
+        localMediaStream = null
+        isInCall = false
+    }
+
     /**
      * @param {{ video: boolean; audio: boolean; }} options 
      */
     window['startCall'] = async (options) => {
         await setupLocalMedia(options)
 
-        if (ws) { return }
-        ws = new WebSocket(`ws://${window.location.host}/`)
+        document.getElement('call-container').style.display = ''
+        document.getElement('unjoined-call-container').style.display = 'none'
 
-        ws.addEventListener('open', () => {
-            console.log('Connected to signaling server')
-            document.getElement('call-container').style.display = ''
-            document.getElement('unjoined-call-container').style.display = 'none'
-
-            ws.send(JSON.stringify({
-                type: 'join',
-                channel: currentChannel,
-                userdata: {},
-            }))
+        wsClient.send({
+            type: 'join',
+            channel: currentChannel,
         })
 
-        ws.addEventListener('close', e => {
+        isInCall = true
+
+        wsClient.addEventListener('close', (/** @type {CloseEvent} */ e) => {
             console.log('Disconnected from signaling server', e.code, e.reason)
-
-            callPeersContainer.innerHTML = ''
-
-            for (const peer_id in peers) {
-                peers[peer_id].close()
-            }
-
-            for (const track of localMediaStream.getTracks()) {
-                track.stop()
-            }
-
-            document.getElement('call-container').style.display = 'none'
-
-            peers = {}
-            localMediaStream = null
-            ws = null
+            cleanup()
         })
 
-        ws.addEventListener('message', e => {
-            const m = JSON.parse(e.data)
+        wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
+            /** @type {any} */
+            const m = e.message
             switch (m.type) {
                 /** 
                 * When we join a group, our signaling server will send out 'addPeer' events to each pair
@@ -160,6 +150,7 @@
                 * connections in the network). 
                 */
                 case 'addPeer': {
+                    isInCall = true
                     console.log('Signaling server said to add peer', m)
                     const peer_id = m.peer_id
                     if (peer_id in peers) {
@@ -178,14 +169,14 @@
                     peer_connection.addEventListener('icecandidate', e => {
                         if (!e.candidate) return
 
-                        ws.send(JSON.stringify({
+                        wsClient.send({
                             type: 'relayICECandidate',
                             peer_id: peer_id,
                             ice_candidate: {
                                 sdpMLineIndex: e.candidate.sdpMLineIndex,
                                 candidate: e.candidate.candidate
                             }
-                        }))
+                        })
                     })
 
                     peer_connection.addEventListener('track', e => {
@@ -215,11 +206,11 @@
                                 console.log('Local offer description is: ', local_description)
                                 peer_connection.setLocalDescription(local_description)
                                     .then(() => {
-                                        ws.send(JSON.stringify({
+                                        wsClient.send({
                                             type: 'relaySessionDescription',
                                             peer_id: peer_id,
                                             session_description: local_description
-                                        }))
+                                        })
                                         console.log('Offer setLocalDescription succeeded')
                                     })
                                     .catch(error => {
@@ -241,6 +232,7 @@
                  * 'offer'), then the answerer sends one back (with type 'answer').  
                  */
                 case 'sessionDescription': {
+                    isInCall = true
                     console.log('Remote description received: ', m)
                     const peer_id = m.peer_id
                     const peer = peers[peer_id]
@@ -258,11 +250,11 @@
                                         console.log('Answer description is: ', local_description)
                                         peer.setLocalDescription(local_description)
                                             .then(function () {
-                                                ws.send(JSON.stringify({
+                                                wsClient.send({
                                                     type: 'relaySessionDescription',
                                                     peer_id: peer_id,
                                                     session_description: local_description
-                                                }))
+                                                })
                                                 console.log('Answer setLocalDescription succeeded')
                                             })
                                             .catch(function () {
@@ -287,6 +279,7 @@
                  * can begin trying to find the best path to one another on the net.
                  */
                 case 'iceCandidate': {
+                    isInCall = true
                     console.log(`Received ICE candidate`)
                     peers[m.peer_id].addIceCandidate(new RTCIceCandidate(m.ice_candidate))
                     break
@@ -314,11 +307,11 @@
     }
 
     window['endCall'] = () => {
-        ws.send(JSON.stringify({
+        wsClient.send({
             type: 'part',
             channel: currentChannel,
-        }))
-        ws.close(1000, 'User left from call')
+        })
+        cleanup()
     }
 
     wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
@@ -339,7 +332,7 @@
     })
 
     window.addEventListener('beforeunload', e => {
-        if (ws?.readyState === ws.OPEN) {
+        if (isInCall) {
             if (!prompt(`Do you want to leave the call?`)) {
                 e.preventDefault()
                 e.returnValue = true
