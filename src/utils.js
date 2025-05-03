@@ -5,28 +5,33 @@ module.exports = class App {
     /** @readonly @type {import('./db/interface').DB} */ database
     /** @readonly @type {import('express').Application} */ express
     /**
-     * @readonly @type {(Exclude<'getWss', import('express-ws').Instance>) & {
-     *  getWss(): Exclude<'clients', import('ws').Server> & {
-     *    clients: Set<import('ws').WebSocket & {
-     *      user: import('./db/model').default['users']
-     *    }>
-     *  }
+     * @readonly @type {{
+     *   get clients(): ReadonlyArray<import('ws').WebSocket>
      * }}
-     */ wss
+    */
+   ws
     /** @readonly @type {ReturnType<import('./auth')>} */ auth
-    /** @readonly @type {import('http').Server} */ server
+    /** @readonly @type {() => void} */ close
 
     /**
      * @param {import('./db/interface').DB} database
      * @param {import('express').Application} express
      * @param {import('express-ws').Instance} wss
+     * @param {import('express-ws').Instance} wsss
      */
-    constructor(database, express, wss) {
+    constructor(database, express, wss, wsss) {
         this.database = database
         this.express = express
-        // @ts-ignore
-        this.wss = wss
+        this.ws = {
+            get clients() {
+                return [
+                    ...wss.getWss().clients.values(),
+                    ...wsss.getWss().clients.values(),
+                ]
+            }
+        }
         this.auth = require('./auth')(this)
+        this.close = () => { throw new Error('Not implemented') }
     }
 
     /**

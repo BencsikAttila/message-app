@@ -91,7 +91,7 @@ module.exports = (router, app) => {
 
             const usersInChannel = await app.usersInChannel(req.credentials.id, req.params.channelId)
 
-            for (const client of app.wss.getWss().clients.values()) {
+            for (const client of app.ws.clients) {
                 if (!usersInChannel.includes(client.user?.id)) continue
                 client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageCreatedEvent} */({
                     type: 'message_created',
@@ -362,7 +362,7 @@ module.exports = (router, app) => {
                 return
             }
 
-            for (const client of app.wss.getWss().clients.values()) {
+            for (const client of app.ws.clients) {
                 client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageDeletedEvent} */({
                     type: 'message_deleted',
                     id: req.params['messageId'],

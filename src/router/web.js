@@ -155,8 +155,6 @@ module.exports = (router, app) => {
 
         const users = await database.queryRaw('SELECT users.* FROM users JOIN userChannel ON users.id = userChannel.userId WHERE userChannel.channelId = ?', channel.id)
 
-        const wsClients = app.wss.getWss().clients.values()
-
         const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', channel.id)
 
         for (const message of messages) {
@@ -175,7 +173,7 @@ module.exports = (router, app) => {
             members: users.map(v => ({
                 ...v,
                 password: undefined,
-                isOnline: wsClients.some(_v => _v.user?.id === v.id),
+                isOnline: app.ws.clients.some(_v => _v.user?.id === v.id),
             })),
             messages: messages.map(v => ({
                 ...v,

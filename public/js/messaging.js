@@ -117,16 +117,9 @@
                     })
             }
         }
-
-        const finalElement = attachmentsContainer.appendChild(document.fromHTML(Handlebars.compile(`
-            <div>
-                <button>Add Attachment</button>
-            </div>
-        `)()))
-        finalElement.querySelector('button').addEventListener('click', () => {
-            inputAttachment.click()
-        })
     }
+
+    document.getElement('chat-add-attachment', 'button').addEventListener('click', () => inputAttachment.click())
 
     function refreshMessageAttachments() {
         const messageElements = document.getElementsByClassName('message')

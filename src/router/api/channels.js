@@ -72,14 +72,12 @@ module.exports = (router, app) => {
             /** @type {ReadonlyArray<import('../../db/model').default['users']>} */
             const users = Object.values(usersTemp)
 
-            const wsClients = app.wss.getWss().clients.values()
-
             res
                 .status(200)
                 .json(users.map(v => ({
                     ...v,
                     password: undefined,
-                    isOnline: v.id === req.credentials.id ? true : wsClients.some(_v => _v.user?.id === v.id),
+                    isOnline: v.id === req.credentials.id ? true : app.ws.clients.some(_v => _v.user?.id === v.id),
                 })))
                 .end()
         } catch (error) {

@@ -5,6 +5,10 @@ const expressWs = require('express-ws')
 const expressMinify = require('express-minify')
 const App = require('./utils')
 const DB = require('./db/interface')
+const http = require('http')
+const https = require('https')
+const fs = require('fs')
+
 const expressApp = express()
 
 /**
@@ -23,9 +27,6 @@ function create(config) {
         if (res.error) throw res.error
     }
 
-    const port = 6789
-
-    const wss = expressWs(expressApp)
     expressApp.engine('handlebars', expressHandlebars.engine({
         partialsDir: path.join(__dirname, '..', 'public', 'partials'),
         helpers: require('../public/js/hbs-helpers'),
@@ -39,22 +40,37 @@ function create(config) {
     expressApp.use(require('connect-busboy')())
     expressApp.use(expressMinify({}))
 
+    const httpServer = http.createServer(expressApp)
+    const httpsServer = https.createServer({
+        key: fs.readFileSync(path.join(__dirname, "ssl-key.pem")),
+        cert: fs.readFileSync(path.join(__dirname, "ssl.pem")),
+    }, expressApp)
+
+    const wss = expressWs(expressApp, httpServer)
+    const wsss = expressWs(expressApp, httpsServer)
+
     const router = express.Router(({ mergeParams: true }))
-    const app = new App(config ? DB.createSqliteDB(true) : DB.createSqliteDB(false), expressApp, wss)
+    const app = new App(config ? DB.createSqliteDB(true) : DB.createSqliteDB(false), expressApp, wss, wsss)
     require('./router/api')(router, app)
     require('./router/web')(router, app)
     require('./router/ws')(router, app)
     require('./router/push')(router, app)
     expressApp.use(router)
 
-    // @ts-ignore
-    app.server = expressApp.listen(port, '0.0.0.0', () => {
-        console.log(`Listening on http://localhost:${port}`)
-    })
+    httpServer.addListener('close', () => console.log(`HTTP server closed`))
+    httpsServer.addListener('close', () => console.log(`HTTPS server closed`))
 
-    app.server.addListener('close', () => {
-        console.log(`Closed`)
-    })
+    httpServer.addListener('listening', () => console.log(`HTTP server listening`, httpServer.address()))
+    httpsServer.addListener('listening', () => console.log(`HTTPS server listening`, httpsServer.address()))
+
+    // @ts-ignore
+    app.close = () => {
+        httpServer.close()
+        httpsServer.close()
+    }
+
+    httpServer.listen(8080, '0.0.0.0')
+    httpsServer.listen(8443, '0.0.0.0')
 
     return app
 }

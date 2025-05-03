@@ -48,7 +48,7 @@ module.exports = (ws, app) => {
 
         if (Object.keys(channels[channel]).length === 0) {
             delete channels[channel]
-            for (const ws of app.wss.getWss().clients.values()) {
+            for (const ws of app.ws.clients) {
                 if (!ws.user) continue
                 if (!(await app.checkChannelPermissions(ws.user.id, channel))) continue
                 ws.send(JSON.stringify({
@@ -80,7 +80,7 @@ module.exports = (ws, app) => {
                 }
 
                 if (!(channel in channels)) {
-                    for (const ws of app.wss.getWss().clients.values()) {
+                    for (const ws of app.ws.clients) {
                         if (!ws.user) continue
                         if (!(await app.checkChannelPermissions(ws.user.id, channel))) continue
                         ws.send(JSON.stringify({

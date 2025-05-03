@@ -27,7 +27,7 @@ class WebSocketClient extends EventTarget {
     connect() {
         console.log(`[WS] Connecting ...`)
         const _self = this
-        this.#websocket = new WebSocket(`ws://${window.location.host}/`)
+        this.#websocket = new WebSocket(`${{ 'http:': 'ws:', 'https:': 'wss:' }[window.location.protocol] ?? 'ws:'}//${window.location.host}/`)
         this.#websocket.addEventListener('close', e => {
             this.dispatchEvent(new CloseEvent(e.type, {
                 bubbles: e.bubbles,

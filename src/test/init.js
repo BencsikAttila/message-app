@@ -21,5 +21,5 @@ before(() => {
 })
 
 after(() => {
-  app.server.close()
+  app.close()
 })

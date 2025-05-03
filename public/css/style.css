@@ -113,6 +113,12 @@ body {
     flex-direction: row;
 }
 
+.chat-input-container > div:nth-child(1) > button {
+    flex: 0 0;
+    margin: 8px;
+    padding: 4px;
+}
+
 .chat-input-container > div:nth-child(2) {
     display: flex;
     flex-direction: row;
@@ -161,12 +167,6 @@ body {
 
 #chat-input-attachments-container > div:not(:last-of-type) span {
     color: var(--text-dark);
-}
-
-#chat-send {
-    flex: 0 0;
-    margin: 8px;
-    padding: 4px;
 }
 
 /*#endregion*/
