@@ -1,0 +1,40 @@
+.dialog-header {
+    display: flex;
+    align-items: center;
+}
+
+.dialog-title {
+    color: var(--text);
+    flex: 1;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.dialog-header>.close-button {
+    margin-left: 32px;
+}
+
+.close-button {
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0px;
+    font-size: 1.5em;
+    color: var(--text-dark);
+}
+
+.close-button:focus-visible {
+    color: var(--highlight);
+}
+
+dialog {
+    background-color: var(--base1);
+    border: 2px solid var(--base2);
+    box-shadow: 0px 0px 10px #000;
+    border-radius: var(--border-radius);
+}
+
+dialog ::backdrop {
+    background-color: #000;
+    opacity: 0.40;
+}

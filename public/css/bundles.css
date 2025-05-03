@@ -1,0 +1,35 @@
+
+.new-bundle-channel-item {
+    margin: 6px;
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    color: var(--text);
+}
+
+.bundle-item.collapsed>.bundle-dropdown {
+    display: none;
+}
+
+.bundle-item {
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    margin: 4px;
+    padding: 4px 8px;
+    color: var(--text);
+    background-color: var(--button-background);
+}
+
+.bundle-item>span {
+    display: block;
+    flex: 1 1 100%;
+    cursor: pointer;
+}
+
+.bundle-item>span:hover,
+.bundle-item>span:active {
+    color: var(--highlight);
+}
+
+.bundle-item .x {
+    float: right;
+}

@@ -38,7 +38,7 @@ function create(config) {
     expressApp.use(express.json())
     expressApp.use(express.urlencoded({ extended: false }))
     expressApp.use(require('connect-busboy')())
-    expressApp.use(expressMinify({}))
+    // expressApp.use(expressMinify({}))
 
     const httpServer = http.createServer(expressApp)
     const httpsServer = https.createServer({

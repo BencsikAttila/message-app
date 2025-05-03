@@ -1,8 +1,12 @@
+<style>
+    @import url('/css/views/account.css');
+</style>
+
 {{> header title="Account"}}
 
 <div class="main-container">
     {{> channel-list }}
-    <div class="main">
+    <div id="main">
         <section>
             <h1>Account</h1>
             <div style="margin-bottom: 16px;">
@@ -49,12 +53,12 @@
 <script src="/handlebars.min.js"></script>
 <script>
     (function () {
-        var revive    = Handlebars.template,
-            templates = Handlebars.templates = Handlebars.templates || {};
+        var revive = Handlebars.template,
+            templates = Handlebars.templates = Handlebars.templates || {}
 
-        {{#templates}}
-        templates['{{{name}}}'] = revive({{{template}}});
-        {{/templates}}
+        { { #templates } }
+        templates['{{{name}}}'] = revive({{{ template }}});
+    { {/templates } }
     }());
 </script>
 <script src="/js/hbs.js"></script>

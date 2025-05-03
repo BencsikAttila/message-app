@@ -12,20 +12,29 @@
         </a>
     </div>
     <div class="top-bar-center">
-        {{#if title}}
-        <span>{{title}}</span>
-        {{else}}
-        {{#if channel}}
-        <span>{{channel.name}}</span>
-        {{else}}
-        <span>???</span>
-        {{/if}}
-        {{/if}}
+        <span>
+            {{#if title}}
+            {{title}}
+            {{else}}
+            {{#if channel}}
+            {{channel.name}}
+            {{else}}
+            ???
+            {{/if}}
+            {{/if}}
+        </span>
     </div>
     <div class="top-bar-right">
         {{#if channel}}
-        <button onclick="window.startCall()" title="Start Video Call"><i class="fa fa-2x fa-phone"></i></button>
-        <button onclick="document.getElementById('leave-channel-dialog').showModal()" title="Leave channel"><i class="fa fa-2x fa-sign-out"></i></button>
+        <button onclick="window.startCall({ audio: true, video: true })" title="Start Video Call">
+            <i class="fa fa-2x fa-video-camera"></i>
+        </button>
+        <button onclick="window.startCall({ audio: true, video: false })" title="Start Voice Call">
+            <i class="fa fa-2x fa-phone"></i>
+        </button>
+        <button onclick="document.getElementById('leave-channel-dialog').showModal()" title="Leave channel">
+            <i class="fa fa-2x fa-sign-out"></i>
+        </button>
         <dialog id="leave-channel-dialog">
             <div class="dialog-header">
                 <div class="dialog-title">
@@ -45,7 +54,9 @@
                 <div class="dialog-title">
                     Invitations
                 </div>
-                <button autofocus id="new-invitation-button-x" class="close-button"><i class="fa fa-remove"></i></button>
+                <button autofocus id="new-invitation-button-x" class="close-button">
+                    <i class="fa fa-remove"></i>
+                </button>
             </div>
 
             <div>

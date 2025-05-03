@@ -1,11 +1,14 @@
+<style>
+    @import url('/css/views/channel.css');
+</style>
+
 {{> header }}
 
 <div class="main-container">
     {{> channel-list }}
-    <div class="main">
+    <div id="main">
         <div id="unjoined-call-container" {{#if ongoingCall}}{{else}}style="display: none;"{{/if}}>
-            <h1>Ongoing Video Call</h1>
-            <button onclick="window.startCall()">Join</button>
+            <h1 style="color: var(--highlight)">Ongoing Call</h1>
         </div>
         <div id="call-container" style="display: none;">
             <div id="call-peers-container">

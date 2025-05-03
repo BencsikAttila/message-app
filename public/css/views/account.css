@@ -1,0 +1,21 @@
+@import url('/css/bundles.css');
+@import url('/css/channels.css');
+@import url('/css/dialog.css');
+@import url('/css/header.css');
+@import url('/css/user.css');
+
+#main section {
+    margin: 32px 32px 0 32px;
+    border: 2px solid var(--base3);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+}
+
+#main section h1 {
+    margin-top: 4px;
+}
+
+#main section h2 {
+    font-size: 1.2em;
+}

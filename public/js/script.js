@@ -5,6 +5,13 @@ document.getElement('button-toggle-left-side-bar', 'button')
             .classList.toggle('side-bar-shown')
         document.getElement('right-side-bar')
             .classList.remove('side-bar-shown')
+
+        if (document.getElement('left-side-bar').classList.contains('side-bar-shown') ||
+            document.getElement('right-side-bar').classList.contains('side-bar-shown')) {
+            document.getElement('main').classList.add('main-hidden')
+        } else {
+            document.getElement('main').classList.remove('main-hidden')
+        }
     })
 
 document.getElement('button-toggle-right-side-bar', 'button')
@@ -13,6 +20,13 @@ document.getElement('button-toggle-right-side-bar', 'button')
             .classList.toggle('side-bar-shown')
         document.getElement('left-side-bar')
             .classList.remove('side-bar-shown')
+
+        if (document.getElement('left-side-bar').classList.contains('side-bar-shown') ||
+            document.getElement('right-side-bar').classList.contains('side-bar-shown')) {
+            document.getElement('main').classList.add('main-hidden')
+        } else {
+            document.getElement('main').classList.remove('main-hidden')
+        }
     })
 
 const wsClient = new WebSocketClient()

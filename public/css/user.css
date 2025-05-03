@@ -1,0 +1,88 @@
+.friend-search-item {
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    margin: 4px 0px;
+    padding: 4px 8px;
+    color: var(--text);
+    background-color: var(--button-background);
+}
+
+.user-avatar-stack {
+    display: inline-block;
+}
+
+.user-avatar {
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.empty-avatar {
+    display: none;
+}
+
+#icon-status {
+    border-width: 4px;
+    border-style: solid;
+    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    transform: translate(-75%, 150%);
+}
+
+#icon-status.loading {
+    border-color: #b3b3b3;
+    border-bottom-color: transparent;
+    animation: icon-status-rotation 1s linear infinite;
+}
+
+#icon-status.connected {
+    background-color: var(--status-online);
+    border-color: var(--status-online);
+}
+
+@keyframes icon-status-rotation {
+    0% {
+        transform: translate(-75%, 150%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-75%, 150%) rotate(360deg);
+    }
+}
+
+.user-item {
+    margin: 4px 0px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    flex: 1 1 100%;
+    background-color: var(--button-background);
+    display: flex;
+    align-items: center;
+}
+
+.user-nickname {
+    margin: 4px;
+}
+
+.user-avatar-stack>.user-status {
+    position: absolute;
+    transform: translate(-75%, 200%);
+    outline: 2px solid var(--button-background);
+}
+
+.user-status {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.user-status-online {
+    background-color: var(--status-online);
+}
+
+.user-status-offline {
+    background-color: var(--status-offline);
+}

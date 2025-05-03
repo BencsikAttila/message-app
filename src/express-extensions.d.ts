@@ -8,8 +8,6 @@ namespace Express {
     }
 }
 
-namespace expressWs {
-    interface Instance {
-        getWss2(): number
-    }
+type ManagedWebSocket = import('ws').WebSocket & {
+    user: import('./db/model').default['users']
 }

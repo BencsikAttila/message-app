@@ -1,0 +1,9 @@
+.invitation-item {
+    margin: 4px 0px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    flex: 1 1 100%;
+    background-color: var(--button-background);
+}

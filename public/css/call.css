@@ -1,0 +1,109 @@
+
+#call-peers-container {
+    display: flex;
+    overflow: auto;
+}
+
+#call-controls {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.call-peer {
+    margin: 16px;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--base3);
+    aspect-ratio: 3 / 2;
+    display: flex;
+    flex-direction: column;
+    flex: 0.5;
+}
+
+@media screen and (max-width: 700px) {
+    .call-peer {
+        flex: 1;
+    }
+}
+
+.call-peer>video {
+    max-width: 100%;
+    max-height: 100%;
+    flex: 1;
+}
+
+.call-peer>.peer-nomedia {
+    background-color: var(--base1);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    flex: 1;
+}
+
+.call-peer-controls-wrapper {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.call-peer-controls {
+    position: absolute;
+    transform: translateY(calc(-100% - 8px));
+    opacity: .5;
+    background-color: var(--base2);
+    transition-duration: 200ms;
+    border-radius: var(--border-radius);
+}
+
+.call-peer-controls button {
+    margin: 8px;
+}
+
+.call-peer-details-wrapper {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.call-peer-details {
+    position: absolute;
+    transform: translateY(8px);
+    background-color: var(--base2);
+    padding: 2px 8px;
+    border-radius: var(--border-radius);
+}
+
+.call-peer:hover .call-peer-controls {
+    position: absolute;
+    opacity: 1;
+    transform: translateY(calc(-100% - 16px));
+}
+
+#unjoined-call-container {
+    flex: 0 0 content;
+    background-color: var(--base2);
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+}
+
+#unjoined-call-container h1 {
+    margin: 4px;
+    font-size: 1.1em;
+}
+
+#unjoined-call-container button {
+    padding-left: 24px;
+    padding-right: 24px;
+    margin-left: 16px;
+}
+
+#call-container {
+    flex: 1 0 content;
+    max-height: 50%;
+    background-color: var(--base2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}

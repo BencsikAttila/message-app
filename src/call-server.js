@@ -3,16 +3,16 @@
 const uuid = require('uuid')
 
 /**
- * @type {Record<any, any>}
+ * @type {Record<string, Record<string, ManagedWebSocket>>}
  */
 const channels = {}
 /**
- * @type {Record<string, import('ws').WebSocket>}
+ * @type {Record<string, ManagedWebSocket>}
  */
 const sockets = {}
 
 /**
- * @param {import('ws').WebSocket} ws
+ * @param {ManagedWebSocket} ws
  * @param {import('./utils')} app
  */
 module.exports = (ws, app) => {
@@ -68,6 +68,7 @@ module.exports = (ws, app) => {
     })
 
     ws.addEventListener('message', async e => {
+        // @ts-ignore
         const m = JSON.parse(e.data)
         switch (m.type) {
             case 'join': {
@@ -94,11 +95,19 @@ module.exports = (ws, app) => {
                     channels[channel][id].send(JSON.stringify({
                         type: 'addPeer',
                         peer_id: wsId,
+                        user: {
+                            id: ws.user.id,
+                            nickname: ws.user.nickname,
+                        },
                         should_create_offer: false,
                     }))
                     ws.send(JSON.stringify({
                         type: 'addPeer',
                         peer_id: id,
+                        user: {
+                            id: ws.user.id,
+                            nickname: ws.user.nickname,
+                        },
                         should_create_offer: true,
                     }))
                 }

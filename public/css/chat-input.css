@@ -1,0 +1,71 @@
+.chat-messages-container {
+    flex: 1 1 100%;
+    overflow-y: auto;
+}
+
+.chat-input-container {
+    display: flex;
+    flex: 0 0 40px;
+    flex-direction: column;
+}
+
+.chat-input-container>div:nth-child(1) {
+    display: flex;
+    flex-direction: row;
+}
+
+.chat-input-container>div:nth-child(1)>button {
+    flex: 0 0;
+    margin: 8px;
+    padding: 4px;
+}
+
+.chat-input-container>div:nth-child(2) {
+    display: flex;
+    flex-direction: row;
+    margin: 8px;
+}
+
+#chat-input-attachments-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#chat-input-attachments-container>div {
+    flex-shrink: 0;
+    margin: 4px;
+}
+
+#chat-input {
+    flex: 1 1 100%;
+    margin: 8px;
+}
+
+#chat-input {
+    flex: 1 1 100%;
+    margin: 8px;
+    padding: 4px;
+}
+
+#chat-input-attachments-container>div {
+    height: fit-content;
+}
+
+#chat-input-attachments-container>div:not(:last-of-type) {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--base3);
+    border-radius: var(--border-radius);
+    padding: 4px;
+}
+
+#chat-input-attachments-container>div:not(:last-of-type) img {
+    max-width: 64px;
+    border-radius: var(--border-radius);
+    margin: 4px;
+}
+
+#chat-input-attachments-container>div:not(:last-of-type) span {
+    color: var(--text-dark);
+}

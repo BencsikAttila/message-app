@@ -1,0 +1,46 @@
+
+.fake-channel-button-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.fake-channel-button {
+    margin: 4px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    flex: 1 1 100%;
+    cursor: pointer;
+    background-color: var(--button-background);
+}
+
+.fake-channel-button:hover,
+.fake-channel-button:active {
+    background-color: var(--base3);
+    border: 2px solid var(--highlight);
+    color: var(--highlight);
+}
+
+.channel {
+    margin: 4px;
+    border: 2px solid var(--base3);
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+    background-color: var(--button-background);
+}
+
+.channel:active,
+.channel:hover {
+    background-color: var(--base3);
+    border: 2px solid var(--highlight);
+    color: var(--highlight);
+}
+
+.channel.selected {
+    background-color: var(--base3);
+    color: var(--highlight);
+}

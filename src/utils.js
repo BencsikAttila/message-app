@@ -6,7 +6,7 @@ module.exports = class App {
     /** @readonly @type {import('express').Application} */ express
     /**
      * @readonly @type {{
-     *   get clients(): ReadonlyArray<import('ws').WebSocket>
+     *   get clients(): ReadonlyArray<ManagedWebSocket>
      * }}
     */
    ws
@@ -23,6 +23,7 @@ module.exports = class App {
         this.database = database
         this.express = express
         this.ws = {
+            // @ts-ignore
             get clients() {
                 return [
                     ...wss.getWss().clients.values(),

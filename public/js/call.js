@@ -3,9 +3,7 @@
 (() => {
     const callPeersContainer = document.getElement('call-peers-container', 'div')
 
-    const USE_AUDIO = true
-    const USE_VIDEO = true
-    const DEFAULT_CHANNEL = window.ENV.channel?.id ?? 'global'
+    const currentChannel = window.ENV.channel?.id ?? 'global'
 
     /** https://gist.github.com/zziuni/3741933 **/
     const ICE_SERVERS = [
@@ -30,38 +28,59 @@
 
     /**
      * @param {string} id
+     * @param {MediaStream} stream
+     * @param {any} user
      */
-    function createMediaElement(id) {
+    function createMediaElement(id, stream, user) {
         const element = document.fromHTML(Handlebars.compile(`
             <div class="call-peer" id="call-peer-{{id}}">
+                <div class="call-peer-details-wrapper">
+                    <div class="call-peer-details">
+                        <span>{{user.nickname}}</span>
+                    </div>
+                </div>
+                {{#if video}}
                 <video autoplay {{#if local}}muted=true{{/if}}></video>
+                {{else}}
+                <div class="peer-nomedia" style="background-image: url(/users/{{user.id}}/avatar.webp)">
+                    <audio autoplay {{#if local}}muted=true{{/if}}></audio>
+                </div>
+                {{/if}}
                 <div class="call-peer-controls-wrapper">
                     <div class="call-peer-controls">
-                        <label for="peer-mute-{{id}}" class="button"></label>
-                        <input id="peer-mute-{{id}}" type=checkbox style="display:none">
+                        {{#if local}}
+                        {{else}}
+                        <button class="call-peer-mute-button"></button>
+                        {{/if}}
                     </div>
                 </div>
             </div>
         `)({
             id: id,
             local: id === 'local',
+            video: !!stream.getVideoTracks()[0],
+            user: user,
         }))
         callPeersContainer.append(element)
-        const video = element.querySelector('video')
-        const muteCheck = element.querySelector('input')
-        const muteLabel = element.querySelector('label')
+        /** @type {HTMLVideoElement | HTMLAudioElement} */
+        const media = element.querySelector('video') ?? element.querySelector('audio')
+        const buteButton = element.querySelector('button.call-peer-mute-button')
         const refreshMuteIcon = () => {
-            muteLabel.innerHTML = `<i class="fa ${video.muted ? 'fa-microphone-slash' : 'fa-microphone'}"></i>`
+            if (buteButton) buteButton.innerHTML = `<i class="fa ${media.muted ? 'fa-microphone-slash' : 'fa-microphone'}"></i>`
         }
-        muteCheck?.addEventListener('change', e => {
-            video.muted = muteCheck.checked
+        buteButton?.addEventListener('click', () => {
+            media.muted = !media.muted
             refreshMuteIcon()
         })
         refreshMuteIcon()
-        return video
+        attachMediaStream(media, stream)
+        return media
     }
 
-    function setupLocalMedia() {
+    /**
+     * @param {{ video: boolean; audio: boolean; }} param0 
+     */
+    function setupLocalMedia({ video, audio }) {
         return new Promise((resolve, reject) => {
             if (localMediaStream != null) {
                 resolve()
@@ -71,40 +90,44 @@
             // @ts-ignore
             navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia)
 
-            navigator.mediaDevices.getUserMedia({ video: USE_VIDEO, audio: USE_AUDIO })
+            navigator.mediaDevices.getUserMedia({ video: video, audio: audio })
                 .then((stream) => {
                     console.log('Access granted to audio/video', stream.id)
                     localMediaStream = stream
-                    const local_media = createMediaElement('local')
-                    attachMediaStream(local_media, stream)
-
+                    createMediaElement('local', stream, window.ENV.user)
                     resolve()
                 })
                 .catch(error => {
                     console.error(error)
-                    alert('You chose not to provide access to the camera/microphone, demo will not work.')
+                    if (video) {
+                        alert('You have to give microphone and camera access for video call to work.')
+                    } else {
+                        alert('You have to give microphone access for audio call to work.')
+                    }
                     reject(error)
                 })
         })
     }
 
-    window['startCall'] = () => {
+    /**
+     * @param {{ video: boolean; audio: boolean; }} options 
+     */
+    window['startCall'] = async (options) => {
+        await setupLocalMedia(options)
+
         if (ws) { return }
         ws = new WebSocket(`ws://${window.location.host}/`)
 
         ws.addEventListener('open', () => {
             console.log('Connected to signaling server')
-            setupLocalMedia()
-                .then(() => {
-                    document.getElement('call-container').style.display = ''
-                    document.getElement('unjoined-call-container').style.display = 'none'
+            document.getElement('call-container').style.display = ''
+            document.getElement('unjoined-call-container').style.display = 'none'
 
-                    ws.send(JSON.stringify({
-                        type: 'join',
-                        channel: DEFAULT_CHANNEL,
-                        userdata: {},
-                    }))
-                })
+            ws.send(JSON.stringify({
+                type: 'join',
+                channel: currentChannel,
+                userdata: {},
+            }))
         })
 
         ws.addEventListener('close', e => {
@@ -137,40 +160,43 @@
                 * connections in the network). 
                 */
                 case 'addPeer': {
-                    const config = m
-                    console.log('Signaling server said to add peer', config)
-                    const peer_id = config.peer_id
+                    console.log('Signaling server said to add peer', m)
+                    const peer_id = m.peer_id
                     if (peer_id in peers) {
                         /* This could happen if the user joins multiple channels where the other peer is also in. */
                         console.log('Already connected to peer', peer_id)
                         return
                     }
+
+                    const user = m.user
+
                     const peer_connection = new RTCPeerConnection({
                         iceServers: ICE_SERVERS
                     })
                     peers[peer_id] = peer_connection
 
-                    peer_connection.onicecandidate = function (event) {
-                        if (event.candidate) {
-                            ws.send(JSON.stringify({
-                                type: 'relayICECandidate',
-                                peer_id: peer_id,
-                                ice_candidate: {
-                                    sdpMLineIndex: event.candidate.sdpMLineIndex,
-                                    candidate: event.candidate.candidate
-                                }
-                            }))
-                        }
-                    }
-                    peer_connection.ontrack = function (event) {
-                        console.log('ontrack', event)
+                    peer_connection.addEventListener('icecandidate', e => {
+                        if (!e.candidate) return
+
+                        ws.send(JSON.stringify({
+                            type: 'relayICECandidate',
+                            peer_id: peer_id,
+                            ice_candidate: {
+                                sdpMLineIndex: e.candidate.sdpMLineIndex,
+                                candidate: e.candidate.candidate
+                            }
+                        }))
+                    })
+
+                    peer_connection.addEventListener('track', e => {
+                        console.log('ontrack', e.track)
                         if (document.getElementById(`call-peer-${peer_id}`)) {
                             console.warn(`Multiple tracks received`)
                             return
                         }
-                        const remote_media = createMediaElement(peer_id)
-                        attachMediaStream(remote_media, event.streams[0])
-                    }
+
+                        createMediaElement(peer_id, e.streams[0], user)
+                    })
 
                     /* Add our local stream */
                     localMediaStream
@@ -182,7 +208,7 @@
                         * The other user will get a 'sessionDescription' event and will
                         * create an offer, then send back an answer 'sessionDescription' to us
                         */
-                    if (config.should_create_offer) {
+                    if (m.should_create_offer) {
                         console.log('Creating RTC offer to ', peer_id)
                         peer_connection.createOffer()
                             .then(local_description => {
@@ -290,22 +316,33 @@
     window['endCall'] = () => {
         ws.send(JSON.stringify({
             type: 'part',
-            channel: DEFAULT_CHANNEL,
+            channel: currentChannel,
         }))
         ws.close(1000, 'User left from call')
     }
 
     wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
         switch (e.message.type) {
+            // @ts-ignore
             case 'unjoined_call_started': {
                 if (document.getElement('call-container').style.display === 'none') {
                     document.getElement('unjoined-call-container').style.display = ''
                 }
                 break
             }
+            // @ts-ignore
             case 'unjoined_call_ended': {
                 document.getElement('unjoined-call-container').style.display = 'none'
                 break
+            }
+        }
+    })
+
+    window.addEventListener('beforeunload', e => {
+        if (ws?.readyState === ws.OPEN) {
+            if (!prompt(`Do you want to leave the call?`)) {
+                e.preventDefault()
+                e.returnValue = true
             }
         }
     })
