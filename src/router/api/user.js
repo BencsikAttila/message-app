@@ -161,10 +161,7 @@ module.exports = (router, app) => {
 
             res
                 .status(200)
-                .json({
-                    ...sqlUser,
-                    password: undefined,
-                })
+                .json(app.mapUser(sqlUser, req.credentials.id))
                 .end()
         } catch (error) {
             console.error(error)
@@ -309,10 +306,7 @@ module.exports = (router, app) => {
             .slice(0, 20)
         res
             .status(200)
-            .json(users.map(v => ({
-                ...v,
-                password: undefined,
-            })))
+            .json(users.map(v => app.mapUser(v, req.credentials.id)))
             .end()
     })
 

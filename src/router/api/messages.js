@@ -89,8 +89,9 @@ module.exports = (router, app) => {
         try {
             await database.insert('messages', newMessage)
 
-            const usersInChannel = await app.usersInChannel(req.credentials.id, req.params.channelId)
+            const usersInChannel = await app.usersInChannel(req.params.channelId)
 
+            const notificationSent = new Set()
             for (const client of app.ws.clients) {
                 if (!usersInChannel.includes(client.user?.id)) continue
                 client.send(JSON.stringify(/** @type {import('../../websocket-messages').MessageCreatedEvent} */({
@@ -105,6 +106,7 @@ module.exports = (router, app) => {
                     senderNickname: req.user.nickname,
                     attachments: new Array(newMessage.attachmentCount).map(() => null),
                 })))
+                notificationSent.add(client.user.id)
             }
 
             require('../push').send({
@@ -112,7 +114,7 @@ module.exports = (router, app) => {
                 body: newMessage.content,
                 icon: `/users/${req.user.id}/avatar.webp?size=128`,
                 url: `/channels/${newMessage.channelId}`,
-            }, v => usersInChannel.includes(v))
+            }, v => usersInChannel.includes(v) && !notificationSent.has(v))
 
             res
                 .status(201)

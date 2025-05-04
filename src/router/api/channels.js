@@ -74,11 +74,7 @@ module.exports = (router, app) => {
 
             res
                 .status(200)
-                .json(users.map(v => ({
-                    ...v,
-                    password: undefined,
-                    isOnline: v.id === req.credentials.id ? true : app.ws.clients.some(_v => _v.user?.id === v.id),
-                })))
+                .json(users.map(v => app.mapUser(v, req.credentials.id)))
                 .end()
         } catch (error) {
             console.error(error)

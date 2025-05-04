@@ -36,6 +36,25 @@ module.exports = class App {
     }
 
     /**
+     * @template {{ id: string }} T
+     * @param {T} user
+     * @param {string} [localUser=undefined]
+     * @returns {T & {
+     *   password: undefined
+     *   lastChannelId: undefined
+     *   isOnline: boolean
+     * }}
+     */
+    mapUser(user, localUser = undefined) {
+        return {
+            ...user,
+            password: undefined,
+            lastChannelId: undefined,
+            isOnline: user.id === localUser || this.ws.clients.some(v => v.user?.id === user.id),
+        }
+    }
+
+    /**
      * @param {string} id
      * @returns {Promise<import('./db/model').default['channels']>}
      */
@@ -48,12 +67,11 @@ module.exports = class App {
     }
 
     /**
-     * @param {string} userId
      * @param {string} channelId
      */
-    async usersInChannel(userId, channelId) {
-        const channels = await this.database.queryRaw('SELECT userChannel.userId FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [channelId, userId])
-        const bundles = await this.database.queryRaw('SELECT bundleUser.userId FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId WHERE bundleUser.userId = ? AND bundleChannel.channelId = ? LIMIT 1', [userId, channelId])
+    async usersInChannel(channelId) {
+        const channels = await this.database.queryRaw('SELECT userChannel.userId FROM userChannel WHERE userChannel.channelId = ?', [channelId])
+        const bundles = await this.database.queryRaw('SELECT bundleUser.userId FROM bundleUser JOIN bundles ON bundles.id = bundleUser.bundleId JOIN bundleChannel ON bundles.id = bundleChannel.bundleId WHERE bundleChannel.channelId = ?', [channelId])
         return [
             ...channels,
             ...bundles,

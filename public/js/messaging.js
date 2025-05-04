@@ -27,22 +27,46 @@
     }
 
     wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
-        // TODO: better message type routing,
-        switch (e.message.type) {
+        const m = e.message
+        switch (m.type) {
             case 'message_created': {
-                if (e.message.channel === window.ENV.channel.id) {
-                    appendMessage(e.message)
+                if (m.channel === window.ENV.channel.id) {
+                    appendMessage(m)
+                }
+
+                if (m.channel !== window.ENV.channel.id || !document.hasFocus()) {
+                    const notification = new Notification(m.user.nickname, {
+                        body: m.content,
+                        icon: `/users/${m.user.id}/avatar.webp?size=128`,
+                    })
+
+                    if (m.channel !== window.ENV.channel.id) {
+                        notification?.addEventListener('click', () => {
+                            window.focus()
+                            window.location.replace(`/channels/${m.channel}`)
+                        })
+                    }
                 }
                 break
             }
             case 'message_deleted': {
-                document.getElementById(`message-${e.message.id}`)?.remove()
+                document.getElementById(`message-${m.id}`)?.remove()
                 break
             }
             default: {
                 break
             }
         }
+    })
+
+    wsClient.addEventListener('open', () => {
+        API.get(`/api/channels/${window.ENV.channel.id}/messages`)
+            .then(res => {
+                for (const message of res) {
+                    appendMessage(message)
+                }
+            })
+            .catch(console.error)
     })
 
     function sendMessage() {
@@ -142,7 +166,12 @@
                             attachmentElement.innerHTML = `
                                 <img defer src="/api/channels/${window.ENV.channel.id}/messages/${messageId}/attachments/${attachmentId}">
                             `
+                        } else if (contentType?.startsWith('video/')) {
+                            attachmentElement.innerHTML = `
+                                <video defer src="/api/channels/${window.ENV.channel.id}/messages/${messageId}/attachments/${attachmentId}" />
+                            `
                         } else {
+                            console.log(`Unknown attachment type ${contentType}`)
                             attachmentElement.innerHTML = `
                                 <a href="/api/channels/${window.ENV.channel.id}/messages/${messageId}/attachments/${attachmentId}" target="_blank">Download</a>
                             `
@@ -182,13 +211,4 @@
     }
 
     messagesContainer.scrollTo(0, messagesContainer.scrollHeight)
-
-    // API.get(`/api/channels/${window.ENV.channel.id}/messages`)
-    //     .then(res => {
-    //         messagesContainer.innerHTML = ''
-    //         for (const message of res) {
-    //             appendMessage(message)
-    //         }
-    //     })
-    //     .catch(console.error)
 })()

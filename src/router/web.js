@@ -101,22 +101,13 @@ module.exports = (router, app) => {
             channels: channels,
             friends: [...friends.incoming, ...friends.outgoing]
                 .filter(v => v.verified)
-                .map(v => ({
-                    ...v,
-                    password: undefined,
-                })),
+                .map(v => app.mapUser(v, req.credentials.id)),
             friendRequests: friends.incoming
                 .filter(v => !v.verified)
-                .map(v => ({
-                    ...v,
-                    password: undefined,
-                })),
+                .map(v => app.mapUser(v, req.credentials.id)),
             sentFriendRequests: friends.outgoing
                 .filter(v => !v.verified)
-                .map(v => ({
-                    ...v,
-                    password: undefined,
-                })),
+                .map(v => app.mapUser(v, req.credentials.id)),
         })
     })
 
@@ -170,11 +161,7 @@ module.exports = (router, app) => {
             channel: {
                 ...channel,
             },
-            members: users.map(v => ({
-                ...v,
-                password: undefined,
-                isOnline: app.ws.clients.some(_v => _v.user?.id === v.id),
-            })),
+            members: users.map(v => app.mapUser(v, req.credentials.id)),
             messages: messages.map(v => ({
                 ...v,
                 createdAt: new Date(v.createdUtc * 1000).toLocaleTimeString(),

@@ -15,10 +15,7 @@ module.exports = (router, app) => {
 
             res
                 .status(200)
-                .json([...friends.incoming, ...friends.outgoing].map(v => ({
-                    ...v,
-                    password: undefined,
-                })))
+                .json([...friends.incoming, ...friends.outgoing].map(v => app.mapUser(v, req.credentials.id)))
                 .end()
         } catch (error) {
             console.error(error)

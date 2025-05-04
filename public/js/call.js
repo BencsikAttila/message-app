@@ -14,7 +14,7 @@
     let isInCall = false
     /** @type {MediaStream | null} */
     let localMediaStream = null
-    /** @type {Record<string, RTCPeerConnection>} */
+    /** @type {Record<string, { rtc: RTCPeerConnection; user: { nickname: string; id: string; } }>} */
     let peers = {}
 
     /**
@@ -104,7 +104,7 @@
         callPeersContainer.innerHTML = ''
 
         for (const peer_id in peers) {
-            peers[peer_id].close()
+            peers[peer_id].rtc.close()
         }
 
         for (const track of localMediaStream.getTracks()) {
@@ -140,7 +140,6 @@
         })
 
         wsClient.addEventListener('message', (/** @type {WebSocketMessageEvent} */ e) => {
-            /** @type {any} */
             const m = e.message
             switch (m.type) {
                 /** 
@@ -151,27 +150,28 @@
                 */
                 case 'addPeer': {
                     isInCall = true
-                    console.log('Signaling server said to add peer', m)
-                    const peer_id = m.peer_id
-                    if (peer_id in peers) {
+
+                    console.log(`[RTC ${m.user.nickname}] Peer joined`, m)
+                    if (m.peer_id in peers) {
                         /* This could happen if the user joins multiple channels where the other peer is also in. */
-                        console.log('Already connected to peer', peer_id)
+                        console.log(`[RTC ${m.user.nickname}] Peer already joined`)
                         return
                     }
 
-                    const user = m.user
-
-                    const peer_connection = new RTCPeerConnection({
+                    const peerConnection = new RTCPeerConnection({
                         iceServers: ICE_SERVERS
                     })
-                    peers[peer_id] = peer_connection
+                    peers[m.peer_id] = {
+                        rtc: peerConnection,
+                        user: m.user,
+                    }
 
-                    peer_connection.addEventListener('icecandidate', e => {
+                    peerConnection.addEventListener('icecandidate', e => {
                         if (!e.candidate) return
 
                         wsClient.send({
                             type: 'relayICECandidate',
-                            peer_id: peer_id,
+                            peer_id: m.peer_id,
                             ice_candidate: {
                                 sdpMLineIndex: e.candidate.sdpMLineIndex,
                                 candidate: e.candidate.candidate
@@ -179,47 +179,43 @@
                         })
                     })
 
-                    peer_connection.addEventListener('track', e => {
-                        console.log('ontrack', e.track)
-                        if (document.getElementById(`call-peer-${peer_id}`)) {
-                            console.warn(`Multiple tracks received`)
+                    peerConnection.addEventListener('track', e => {
+                        console.log(`[RTC ${m.user.nickname}] Received new ${e.track.kind} track`, e.track)
+                        if (document.getElementById(`call-peer-${m.peer_id}`)) {
+                            console.warn(`[RTC ${m.user.nickname}] Multiple tracks received`)
                             return
                         }
 
-                        createMediaElement(peer_id, e.streams[0], user)
+                        createMediaElement(m.peer_id, e.streams[0], m.user)
                     })
 
-                    /* Add our local stream */
                     localMediaStream
                         .getTracks()
-                        .forEach((track) => peer_connection.addTrack(track, localMediaStream))
+                        .forEach((track) => {
+                            console.log(`[RTC ${m.user.nickname}] Adding ${track.kind} track`)
+                            peerConnection.addTrack(track, localMediaStream)
+                        })
 
-                    /* Only one side of the peer connection should create the
-                        * offer, the signaling server picks one to be the offerer. 
-                        * The other user will get a 'sessionDescription' event and will
-                        * create an offer, then send back an answer 'sessionDescription' to us
-                        */
                     if (m.should_create_offer) {
-                        console.log('Creating RTC offer to ', peer_id)
-                        peer_connection.createOffer()
-                            .then(local_description => {
-                                console.log('Local offer description is: ', local_description)
-                                peer_connection.setLocalDescription(local_description)
+                        console.log(`[RTC ${m.user.nickname}] Creating RTC offer ...`)
+                        peerConnection.createOffer()
+                            .then(localDescription => {
+                                console.log(`[RTC ${m.user.nickname}] Local offer description is`, localDescription)
+                                peerConnection.setLocalDescription(localDescription)
                                     .then(() => {
                                         wsClient.send({
                                             type: 'relaySessionDescription',
-                                            peer_id: peer_id,
-                                            session_description: local_description
+                                            peer_id: m.peer_id,
+                                            session_description: localDescription
                                         })
-                                        console.log('Offer setLocalDescription succeeded')
+                                        console.log(`[RTC ${m.user.nickname}] The local description set, realying ...`)
                                     })
                                     .catch(error => {
-                                        console.error(error)
-                                        alert('Offer setLocalDescription failed!')
+                                        console.error(`[RTC ${m.user.nickname}] Failed to set the local description`, error)
                                     })
                             })
                             .catch(error => {
-                                console.error('Error sending offer: ', error)
+                                console.error(`[RTC ${m.user.nickname}] Failed to send offer`, error)
                             })
                     }
                     break
@@ -233,42 +229,37 @@
                  */
                 case 'sessionDescription': {
                     isInCall = true
-                    console.log('Remote description received: ', m)
-                    const peer_id = m.peer_id
-                    const peer = peers[peer_id]
-                    const remote_description = m.session_description
 
-                    const desc = new RTCSessionDescription(remote_description)
-                    console.log('Description Object: ', desc)
-                    peer.setRemoteDescription(desc)
-                        .then(function () {
-                            console.log('setRemoteDescription succeeded')
-                            if (remote_description.type == 'offer') {
-                                console.log('Creating answer')
-                                peer.createAnswer()
-                                    .then(function (local_description) {
-                                        console.log('Answer description is: ', local_description)
-                                        peer.setLocalDescription(local_description)
-                                            .then(function () {
+                    const desc = new RTCSessionDescription(m.session_description)
+                    console.log(`[RTC ${peers[m.peer_id].user.nickname}] Session description is`, desc, m)
+                    peers[m.peer_id].rtc.setRemoteDescription(desc)
+                        .then(() => {
+                            console.log(`[RTC ${peers[m.peer_id].user.nickname}] The remote description set`)
+                            if (m.session_description.type == 'offer') {
+                                console.log(`[RTC ${peers[m.peer_id].user.nickname}] Creating answer`)
+                                peers[m.peer_id].rtc.createAnswer()
+                                    .then(localDescription => {
+                                        console.log(`[RTC ${peers[m.peer_id].user.nickname}] Answer description is`, localDescription)
+                                        peers[m.peer_id].rtc.setLocalDescription(localDescription)
+                                            .then(() => {
                                                 wsClient.send({
                                                     type: 'relaySessionDescription',
-                                                    peer_id: peer_id,
-                                                    session_description: local_description
+                                                    peer_id: m.peer_id,
+                                                    session_description: localDescription
                                                 })
-                                                console.log('Answer setLocalDescription succeeded')
+                                                console.log(`[RTC ${peers[m.peer_id].user.nickname}] The local description set, relaying ...`)
                                             })
-                                            .catch(function () {
-                                                alert('Answer setLocalDescription failed!')
+                                            .catch(error => {
+                                                console.error(`[RTC ${peers[m.peer_id].user.nickname}] Failed to set the local description`, error)
                                             })
                                     })
-                                    .catch(function (error) {
-                                        console.error('Error creating answer: ', error)
-                                        console.log(peer)
+                                    .catch(error => {
+                                        console.error(`[RTC ${peers[m.peer_id].user.nickname}] Failed to create answer`, error)
                                     })
                             }
                         })
-                        .catch(function (error) {
-                            console.error('setRemoteDescription error: ', error)
+                        .catch(error => {
+                            console.error(`[RTC ${peers[m.peer_id].user.nickname}] Failed to set the remote description`, error)
                         })
 
                     break
@@ -280,8 +271,8 @@
                  */
                 case 'iceCandidate': {
                     isInCall = true
-                    console.log(`Received ICE candidate`)
-                    peers[m.peer_id].addIceCandidate(new RTCIceCandidate(m.ice_candidate))
+                    console.log(`[RTC ${peers[m.peer_id]?.user.nickname}] Received ICE candidate`, m.ice_candidate)
+                    peers[m.peer_id].rtc.addIceCandidate(new RTCIceCandidate(m.ice_candidate))
                     break
                 }
 
@@ -296,9 +287,9 @@
                  * all the peer sessions.
                  */
                 case 'removePeer': {
-                    console.log('Server said to remove peer', m)
+                    console.log(`[RTC ${peers[m.peer_id]?.user.nickname}] Server said to remove peer`)
                     document.getElementById(`call-peer-${m.peer_id}`)?.remove()
-                    peers[m.peer_id]?.close()
+                    peers[m.peer_id]?.rtc.close()
                     delete peers[m.peer_id]
                     break
                 }

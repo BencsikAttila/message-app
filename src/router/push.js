@@ -16,18 +16,11 @@ webpush.setVapidDetails('mailto:test@gmail.com', 'BIoQKYC3mm4IiU3_gEs4yxd5UKKtgi
  * @param {import('../utils')} app
  */
 const v = (router, app) => {
-
     router.post('/push/register', app.auth.middleware, async (req, res) => {
         subscriptions.push({
             subscription: req.body,
             userId: req.credentials.id,
         })
-        res
-            .status(200)
-            .end()
-    })
-
-    router.post('/push/send', async (req, res) => {
         res
             .status(200)
             .end()

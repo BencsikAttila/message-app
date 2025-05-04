@@ -16,7 +16,6 @@ const sockets = {}
  * @param {import('./utils')} app
  */
 module.exports = (ws, app) => {
-    console.log('connection accepted')
     const wsId = uuid.v4()
     const wsChannels = {}
     sockets[wsId] = ws
@@ -61,14 +60,14 @@ module.exports = (ws, app) => {
 
     ws.addEventListener('close', async () => {
         for (const channel in wsChannels) {
+            console.log('Disconnected')
             await leave(channel)
         }
-        console.log('Disconnected')
         delete sockets[wsId]
     })
 
     ws.addEventListener('message', async e => {
-        // @ts-ignore
+        /** @type {import('./websocket-messages').WebSocketMessage} */ // @ts-ignore
         const m = JSON.parse(e.data)
         switch (m.type) {
             case 'join': {
@@ -104,10 +103,7 @@ module.exports = (ws, app) => {
                     ws.send(JSON.stringify({
                         type: 'addPeer',
                         peer_id: id,
-                        user: {
-                            id: ws.user.id,
-                            nickname: ws.user.nickname,
-                        },
+                        user: channels[channel][id].user,
                         should_create_offer: true,
                     }))
                 }
@@ -121,30 +117,29 @@ module.exports = (ws, app) => {
                 break
             }
             case 'relayICECandidate': {
-                const peer_id = m.peer_id
-                const ice_candidate = m.ice_candidate
-                console.log(`Relaying ICE candidate to ${peer_id}`, ice_candidate)
+                const peerId = m.peer_id
+                const iceCandidate = m.ice_candidate
+                console.log(`Relaying ICE candidate to ${peerId}`, iceCandidate)
 
-                if (peer_id in sockets) {
-                    sockets[peer_id].send(JSON.stringify({
+                if (peerId in sockets) {
+                    sockets[peerId].send(JSON.stringify({
                         type: 'iceCandidate',
                         peer_id: wsId,
-                        ice_candidate: ice_candidate,
+                        ice_candidate: iceCandidate,
                     }))
                 }
                 break
             }
             case 'relaySessionDescription': {
-                const config = m
-                const peer_id = config.peer_id
-                const session_description = config.session_description
-                console.log(`Relaying session description to ${peer_id}`, session_description)
+                const peerId = m.peer_id
+                const sessionDescription = m.session_description
+                console.log(`Relaying session description to ${peerId}`, sessionDescription)
 
-                if (peer_id in sockets) {
-                    sockets[peer_id].send(JSON.stringify({
+                if (peerId in sockets) {
+                    sockets[peerId].send(JSON.stringify({
                         type: 'sessionDescription',
                         peer_id: wsId,
-                        session_description: session_description,
+                        session_description: sessionDescription,
                     }))
                 }
                 break
