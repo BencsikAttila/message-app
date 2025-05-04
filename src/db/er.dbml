@@ -1,0 +1,84 @@
+Table users {
+  id uuid [primary key]
+  username text [not null]
+  nickname text [not null]
+  password varchar(64) [not null]
+  theme int
+  lastChannelId uuid
+}
+
+Table channels {
+  id uuid [primary key]
+  name text [not null]
+  ownerId uuid [not null]
+  friendChannel int [not null]
+}
+
+Table messages {
+  id uuid [primary key]
+  content text [not null]
+  attachmentCount int [not null]
+  createdUtc bigint [not null]
+  channelId uuid [not null]
+  senderId uuid [not null]
+}
+
+Table messageAttachments {
+  id uuid [primary key]
+  messageId uuid [not null]
+}
+
+Table userChannel {
+  userId uuid [not null]
+  channelId uuid [not null]
+}
+
+Table invitations {
+  id uuid [primary key]
+  userId uuid [not null]
+  channelId uuid [not null]
+  expiresAt bigint [not null]
+  usages int [not null]
+}
+
+Table bundles {
+  id uuid [primary key]
+  name text [not null]
+}
+
+Table bundleChannel {
+  channelId uuid [not null]
+  bundleId uuid [not null]
+}
+
+Table bundleUser {
+  userId uuid [not null]
+  bundleId uuid [not null]
+}
+
+Table friends {
+  user1_id uuid [not null]
+  user2_id uuid [not null]
+  verified int [not null]
+  channelId uuid
+}
+
+Ref channel_owner: channels.ownerId > users.id
+
+Ref channel_message: messages.channelId > channels.id
+Ref message_sender: messages.senderId > users.id
+
+Ref message_attachment: messageAttachments.messageId > messages.id
+
+Ref invitation_user: invitations.userId > users.id
+Ref invitation_channel: invitations.channelId > channels.id
+
+Ref bundle_channel: bundleChannel.channelId > channels.id
+Ref bundle_bundle: bundleChannel.bundleId > bundles.id
+
+Ref bundle_bundle: bundleUser.bundleId > bundles.id
+Ref bundle_user: bundleUser.userId > users.id
+
+Ref friends_user1: friends.user1_id > users.id
+Ref friends_user2: friends.user2_id > users.id
+Ref friends_channel: friends.channelId > channels.id
