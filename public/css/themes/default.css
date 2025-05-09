@@ -69,3 +69,21 @@
     inherits: false;
     initial-value: #686868;
 }
+
+@property --success {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #22bb43;
+}
+
+@property --warning {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #ffc14d;
+}
+
+@property --error {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #f12828;
+}

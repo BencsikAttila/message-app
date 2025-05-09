@@ -78,6 +78,12 @@ module.exports = (app) => {
          * @param {string} password
          */
         async create(database, username, password) {
+            if (!username.trim() || !password) {
+                return {
+                    error: 'Username and password is required'
+                }
+            }
+
             const user = (await database.queryRaw(`SELECT * FROM users WHERE users.username = ?`, username))[0]
             if (user) {
                 return {

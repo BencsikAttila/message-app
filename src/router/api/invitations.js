@@ -13,7 +13,7 @@ module.exports = (router, app) => {
         try {
             const result = await (() => {
                 if (req.query['for']) {
-                    return database.queryRaw('SELECT * FROM invitations WHERE invitations.userId = ? AND invitations.channelId = ?', [req.credentials.id, req.query['for'] + ''])
+                    return database.queryRaw('SELECT * FROM invitations WHERE invitations.userId = ? AND invitations.targetId = ?', [req.credentials.id, req.query['for'] + ''])
                 } else {
                     return database.queryRaw('SELECT * FROM invitations WHERE invitations.userId = ?', req.credentials.id)
                 }
@@ -35,7 +35,7 @@ module.exports = (router, app) => {
         try {
             const newInvitation = {
                 id: uuid.v4(),
-                channelId: req.body.for,
+                targetId: req.body.for,
                 usages: 0,
                 userId: req.credentials.id,
                 expiresAt: 0,
@@ -82,7 +82,7 @@ module.exports = (router, app) => {
                     .end()
                 return
             }
-            const channel = await app.getChannel(sqlInvitation.channelId)
+            const channel = await app.getChannel(sqlInvitation.targetId)
             if (channel) {
                 const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [channel.id, req.credentials.id])
                 if (sqlUserChannels.length) {
@@ -106,7 +106,7 @@ module.exports = (router, app) => {
                 return
             }
 
-            const bundle = await app.getBundle(sqlInvitation.channelId)
+            const bundle = await app.getBundle(sqlInvitation.targetId)
             if (bundle) {
                 const sqlUserBundles = await database.queryRaw('SELECT * FROM bundleUser WHERE bundleUser.bundleId = ? AND bundleUser.userId = ? LIMIT 1', [bundle.id, req.credentials.id])
                 if (sqlUserBundles.length) {

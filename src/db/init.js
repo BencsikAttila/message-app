@@ -37,7 +37,7 @@ module.exports = () => {
     const invitations = table('invitations')
     invitations.addId()
     invitations.addColumn('userId', 'UUID').referenceTo('users', 'id')
-    invitations.addColumn('channelId', 'UUID').referenceTo('channels', 'id')
+    invitations.addColumn('targetId', 'UUID').referenceTo('channels', 'id')
     invitations.addColumn('expiresAt', 'BIGINT')
     invitations.addColumn('usages', 'INT')
 

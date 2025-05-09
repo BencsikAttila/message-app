@@ -36,7 +36,7 @@ type tables = {
     invitations: {
         id: UUID
         userId: UUID
-        channelId: UUID
+        targetId: UUID
         expiresAt: INT
         usages: INT
     },

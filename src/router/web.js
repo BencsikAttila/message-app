@@ -24,11 +24,9 @@ module.exports = (router, app) => {
 
         if (authResult.error) {
             res
-                .status(401)
-                .render('login', {
-                    error: authResult.error,
-                    redirect: redirect,
-                })
+                .status(303)
+                .header('Location', `/register?error=${encodeURIComponent(authResult.error)}`)
+                .end()
             return
         }
 
@@ -42,21 +40,18 @@ module.exports = (router, app) => {
     router.post('/register', async (req, res) => {
         const { username, password, redirect } = req.body
 
-        const authRes = await app.auth.create(database, username, password)
+        const authResult = await app.auth.create(database, username, password)
 
-        if (authRes.error) {
+        if (authResult.error) {
             res
-                .status(401)
-                .json({
-                    error: authRes.error,
-                    redirect: redirect,
-                })
+                .status(303)
+                .header('Location', `/register?error=${encodeURIComponent(authResult.error)}`)
                 .end()
             return
         }
 
         res
-            .cookie('token', authRes.token, { path: '/', maxAge: 1000 * 60 })
+            .cookie('token', authResult.token, { path: '/', maxAge: 1000 * 60 })
             .header('Location', '/')
             .status(303)
             .end()
@@ -181,7 +176,7 @@ module.exports = (router, app) => {
                 return
             }
 
-            const sqlChannels = await app.getChannel(sqlInvitation.channelId)
+            const sqlChannels = await app.getChannel(sqlInvitation.targetId)
             if (sqlChannels) {
                 const sqlUserChannels = await database.queryRaw('SELECT * FROM userChannel WHERE userChannel.channelId = ? AND userChannel.userId = ? LIMIT 1', [sqlChannels.id, req.credentials.id])
                 if (sqlUserChannels.length) {
@@ -205,7 +200,7 @@ module.exports = (router, app) => {
                 return
             }
 
-            const sqlBundles = await app.getBundle(sqlInvitation.channelId)
+            const sqlBundles = await app.getBundle(sqlInvitation.targetId)
             if (sqlBundles) {
                 const sqlUserBundles = await database.queryRaw('SELECT * FROM bundleUser WHERE bundleUser.bundleId = ? AND bundleUser.userId = ? LIMIT 1', [sqlBundles.id, req.credentials.id])
                 if (sqlUserBundles.length) {

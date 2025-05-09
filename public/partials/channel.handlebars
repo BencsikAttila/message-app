@@ -1,3 +1,3 @@
-<a class="channel{{#if isSelected}} selected{{/if}}" href="/channels/{{id}}">
+<a class="channel{{#if isSelected}} selected{{/if}}" href="/channels/{{id}}" draggable="true" ondragstart="window.channelOnDragStart(event, '{{id}}', {{#if bundle}}'{{bundle}}'{{else}}null{{/if}})" ondragend="window.channelOnDragEnd(event, '{{id}}', {{#if bundle}}'{{bundle}}'{{else}}null{{/if}})">
     {{name}}
 </a>

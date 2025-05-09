@@ -184,3 +184,33 @@ i.fa {
     width: 1em;
     text-align: center;
 }
+
+meter {
+    border-radius: var(--border-radius);
+    width: calc(100% - 8px);
+    height: 0.5em;
+}
+
+meter::-webkit-meter-bar {
+    background: none;
+    background-color: var(--base2);
+    box-shadow: none;
+    border: 2px solid var(--base3);
+    height: 0.5em;
+    margin: 4px;
+}
+
+meter::-webkit-meter-optimum-value {
+    box-shadow: none;
+    background: var(--success);
+}
+
+meter::-webkit-meter-suboptimum-value {
+    box-shadow: none;
+    background: var(--warning);
+}
+
+meter::-webkit-meter-even-less-good-value {
+    box-shadow: none;
+    background: var(--error);
+}

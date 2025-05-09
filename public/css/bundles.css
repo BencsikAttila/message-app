@@ -33,3 +33,7 @@
 .bundle-item .x {
     float: right;
 }
+
+.bundle-item.dropping {
+    outline: 3px solid var(--highlight);
+}

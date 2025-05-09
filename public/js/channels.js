@@ -16,7 +16,9 @@
             name: document.getElement('new-channel-button-name-input', 'input').value,
         })
             .then(() => {
-                window.location.reload()
+                newChannelDialog.close()
+                document.getElement('new-channel-button-name-input', 'input').value = ''
+                refreshList()
             })
             .catch(console.error)
     })
@@ -37,8 +39,14 @@
             })
             .catch(console.error)
     }
+    window['refreshChannelsList'] = refreshList
 
-    // refreshList()
+    refreshList()
+
+    window['channelOnDragStart'] = (e, id, bundleId) => {
+        e.dataTransfer.setData("text/plain", id)
+        e.dataTransfer.effectAllowed = "move"
+    }
 
     if (window.ENV.channel?.id) {
         const membersContainer = document.getElement('users-container', 'div')

@@ -175,10 +175,9 @@ module.exports = (router, app) => {
             const sqlBundles = await database.queryRaw(`
                 SELECT bundles.*
                 FROM bundles
-                JOIN bundleChannel ON bundles.id = bundleChannel.bundleId
                 JOIN bundleUser ON bundles.id = bundleUser.bundleId
                 WHERE bundleUser.userId = ?
-                AND channels.id = ?
+                AND bundles.id = ?
             `, [req.credentials.id, req.params.bundleId])
             if (!sqlBundles.length) {
                 res
@@ -197,6 +196,23 @@ module.exports = (router, app) => {
                 return
             }
 
+            const sqlChannels = await database.queryRaw(`
+                SELECT channels.*
+                FROM channels
+                JOIN bundleChannel ON channels.id = bundleChannel.channelId
+                AND bundleChannel.bundleId = ?
+                WHERE bundleChannel.channelId = ?
+                LIMIT 1
+            `, [req.params.bundleId, req.body.id])
+
+            if (sqlChannels.length) {
+                res
+                    .status(404)
+                    .json({ error: 'Channel already in the bundle' })
+                    .end()
+                return
+            }
+
             await database.insert('bundleChannel', {
                 bundleId: req.params.bundleId,
                 channelId: req.body.id,
@@ -204,6 +220,58 @@ module.exports = (router, app) => {
 
             res
                 .status(201)
+                .end()
+        } catch (error) {
+            console.error(error)
+            res
+                .status(500)
+                .json(jsonUtils.map(error))
+                .end()
+        }
+    })
+
+    router.delete('/api/bundles/:bundleId/channels', app.auth.middleware, async (req, res) => {
+        try {
+            const sqlBundles = await database.queryRaw(`
+                SELECT bundles.*
+                FROM bundles
+                JOIN bundleChannel ON bundles.id = bundleChannel.bundleId
+                JOIN bundleUser ON bundles.id = bundleUser.bundleId
+                WHERE bundleUser.userId = ?
+                AND bundles.id = ?
+            `, [req.credentials.id, req.params.bundleId])
+            if (!sqlBundles.length) {
+                res
+                    .status(404)
+                    .json({ error: 'Bundle not found' })
+                    .end()
+                return
+            }
+
+            const channel = await app.getChannel(req.body.id)
+            if (!channel) {
+                res
+                    .status(404)
+                    .json({ error: 'Channel not found' })
+                    .end()
+                return
+            }
+
+            const deleteResult = await database.delete('bundleChannel', `
+                bundleChannel.bundleId = ? AND
+                bundleChannel.channelId = ?
+            `, [req.params.bundleId, req.body.id])
+
+            if (!deleteResult) {
+                res
+                    .status(500)
+                    .json({ error: 'Failed to remove the channel from the bundle' })
+                    .end()
+                return
+            }
+
+            res
+                .status(200)
                 .end()
         } catch (error) {
             console.error(error)

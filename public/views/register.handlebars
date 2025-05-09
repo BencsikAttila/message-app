@@ -32,15 +32,33 @@
     <form method="post" action="/register">
         <input type="text" name="username" id="username" placeholder="Username" required>
         <input type="password" name="password" id="password" placeholder="Password" required>
-        <input type="password" id="password-again" placeholder="Password again" required oninput="
-            const password = document.getElementById('password')
-            const passwordAgain = document.getElementById('password-again')
-            if (password.value !== passwordAgain.value) {
-                passwordAgain.setCustomValidity('The passwords mismatch')
-            } else {
-                passwordAgain.setCustomValidity('')
-            }
-        ">
+        <input type="password" id="password-again" placeholder="Password again" required>
+        <meter min="0" max="100" low="40" high="80" optimum="100" id="password-strength"></meter>
+        <script>
+            (() => {
+                document.getElementById('password').addEventListener('input', () => {
+                    const password = document.getElementById('password').value
+                    let score = 0
+                    const maxScore = 5
+                    if (/[0-9]+/g.test(password)) score++
+                    if (/[a-z]+/g.test(password)) score++
+                    if (/[A-Z]+/g.test(password)) score++
+                    if (/[^\w\s]+/g.test(password)) score++
+                    if (password.length > 16) score++
+                    document.getElementById('password-strength').value = Math.round((score * 100) / maxScore).toString()
+                })
+
+                document.getElementById('password-again').addEventListener('input', () => {
+                    const password = document.getElementById('password')
+                    const passwordAgain = document.getElementById('password-again')
+                    if (password.value !== passwordAgain.value) {
+                        passwordAgain.setCustomValidity('The passwords mismatch')
+                    } else {
+                        passwordAgain.setCustomValidity('')
+                    }
+                })
+            })()
+        </script>
         <input type="hidden" name="redirect" id="redirect" value="{{redirect}}">
         <span style="color: #c44242; font-weight: bold;" id="label-error">{{error}}</span>
         <script>

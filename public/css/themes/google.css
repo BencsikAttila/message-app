@@ -70,6 +70,24 @@
     initial-value: #686868;
 }
 
+@property --success {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #239962;
+}
+
+@property --warning {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #f9ab00;
+}
+
+@property --error {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #d93025;
+}
+
 * {
     scrollbar-color: var(--input-background) var(--base1);
 }
