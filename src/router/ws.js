@@ -9,6 +9,9 @@ module.exports = (router, app) => {
     const userOnlineTimers = {}
 
     router.ws('/', async (ws, req, next) => {
+        ws.on('open', () => console.log(`[WS] Connected`))
+        ws.on('close', (code, reason) => console.log(`[WS] Disconnected`, code, reason))
+
         const token = req.header('Authorization')?.replace('Bearer ', '') ?? req.cookies?.['token']
         // @ts-ignore
         ws.token = token
@@ -34,6 +37,7 @@ module.exports = (router, app) => {
                         })))
                     }
 
+                    // @ts-ignore
                     require('../call-server')(ws, app)
 
                     ws.addEventListener('close', e => {

@@ -25,7 +25,7 @@ module.exports = (router, app) => {
         if (authResult.error) {
             res
                 .status(303)
-                .header('Location', `/register?error=${encodeURIComponent(authResult.error)}`)
+                .header('Location', `/login?error=${encodeURIComponent(authResult.error)}`)
                 .end()
             return
         }

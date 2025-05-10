@@ -188,6 +188,14 @@ module.exports = (app) => {
             }
         },
         /** @readonly */ exparationTimeSec,
+        /**
+         * @param {import("crypto").BinaryLike} value
+         * @returns {Promise<string>}
+         */
+        async encrypt(value) {
+            await _task
+            return createHash('sha256').update(value).digest('base64')
+        }
     }
     return auth
 }

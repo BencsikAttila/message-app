@@ -134,9 +134,26 @@ module.exports = (router, app) => {
                 }
                 await database.queryRaw('UPDATE users SET nickname = ? WHERE users.id = ?', [newNickname, req.credentials.id])
             }
+
+            if ('password' in req.body) {
+                let newPassword = String(req.body['password']).trim()
+                if (!newPassword) {
+                    res
+                        .status(400)
+                        .json({
+                            error: `Password is empty`
+                        })
+                        .end()
+                    return
+                }
+                const encryptedPassword = await app.auth.encrypt(newPassword)
+                await database.queryRaw('UPDATE users SET password = ? WHERE users.id = ?', [encryptedPassword, req.credentials.id])
+            }
+
             if ('theme' in req.body) {
                 await database.queryRaw('UPDATE users SET theme = ? WHERE users.id = ?', [req.body['theme'], req.credentials.id])
             }
+
             res
                 .status(200)
                 .end()

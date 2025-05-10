@@ -15,11 +15,20 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label for="account-theme-input">Theme:</label>
+                <br>
                 <select id="account-theme-input" value="{{user.theme}}">
                     <option value="1" {{#eq user.theme 1}}selected{{/eq}}>Default White</option>
                     <option value="2" {{#eq user.theme 2}}selected{{/eq}}>Dark Google</option>
                     <option value="3" {{#eq user.theme 3}}selected{{/eq}}>Rosé Pine</option>
                 </select>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label for="account-password-input">Password:</label>
+                <div style="display: inline-block;">
+                    <input type="password" name="password" id="account-password-input" placeholder="Password">
+                    <input type="password" id="account-password-input-again" placeholder="Password again">
+                    <meter min="0" max="100" low="40" high="80" optimum="100" id="password-strength" style="width: 180px; margin: 2px 0px;"></meter>
+                </div>
             </div>
             <div style="margin-bottom: 16px;">
                 <span>Avatar:</span>
@@ -56,9 +65,9 @@
         var revive = Handlebars.template,
             templates = Handlebars.templates = Handlebars.templates || {}
 
-        { { #templates } }
-        templates['{{{name}}}'] = revive({{{ template }}});
-    { {/templates } }
+        {{#templates}}
+        templates['{{{name}}}'] = revive({{{template}}});
+        {{/templates}}
     }());
 </script>
 <script src="/js/hbs.js"></script>
@@ -69,3 +78,11 @@
 <script src="/js/channels.js"></script>
 <script src="/js/bundles.js"></script>
 <script src="/js/account.js"></script>
+<script src="/js/password.js"></script>
+<script>
+    window['registerPasswordInputs'](
+        document.getElementById('account-password-input'),
+        document.getElementById('account-password-input-again'),
+        document.getElementById('password-strength')
+    )
+</script>
