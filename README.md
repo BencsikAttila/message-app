@@ -1,6 +1,6 @@
 # Snakker
 
-[HU](README_HU.md)
+[🇭🇺 HU](README_HU.md)
 
 A simple message app for the school finals
 
