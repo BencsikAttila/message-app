@@ -1,6 +1,6 @@
 # Snakker
 
-[EN](README.md)
+[🇺🇸 EN](README.md)
 
 Egyszerű üzenetelő alkalmazás az iskolai vizsgaremekhez
 
