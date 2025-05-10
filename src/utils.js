@@ -17,7 +17,7 @@ module.exports = class App {
      * @param {import('./db/interface').DB} database
      * @param {import('express').Application} express
      * @param {import('express-ws').Instance} wss
-     * @param {import('express-ws').Instance} wsss
+     * @param {import('express-ws').Instance | null} wsss
      */
     constructor(database, express, wss, wsss) {
         this.database = database
@@ -27,7 +27,7 @@ module.exports = class App {
             get clients() {
                 return [
                     ...wss.getWss().clients.values(),
-                    ...wsss.getWss().clients.values(),
+                    ...(wsss?.getWss().clients.values() ?? []),
                 ]
             }
         }

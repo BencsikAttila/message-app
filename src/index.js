@@ -38,39 +38,51 @@ function create(config) {
     expressApp.use(express.json())
     expressApp.use(express.urlencoded({ extended: false }))
     expressApp.use(require('connect-busboy')())
-    // expressApp.use(expressMinify({}))
+    expressApp.use(expressMinify({}))
 
     const httpServer = http.createServer(expressApp)
-    const httpsServer = https.createServer({
-        key: fs.readFileSync(path.join(__dirname, "ssl-key.pem")),
-        cert: fs.readFileSync(path.join(__dirname, "ssl.pem")),
-    }, expressApp)
-
+    httpServer.addListener('close', () => console.log(`HTTP server closed`))
+    httpServer.addListener('listening', () => console.log(`HTTP server listening`, httpServer.address()))
+    httpServer.listen(8080, '0.0.0.0')
     const wss = expressWs(expressApp, httpServer)
-    const wsss = expressWs(expressApp, httpsServer)
+    
+    let httpsServer = null
+    let wsss = null
+
+    const keyPath = path.join(__dirname, "ssl-key.pem")
+    const certPath = path.join(__dirname, "ssl.pem")
+    if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+        httpsServer = https.createServer({
+            key: fs.readFileSync(path.join(__dirname, "ssl-key.pem")),
+            cert: fs.readFileSync(path.join(__dirname, "ssl.pem")),
+        }, expressApp)
+        httpsServer.addListener('close', () => console.log(`HTTPS server closed`))
+        httpsServer.addListener('listening', () => console.log(`HTTPS server listening`, httpsServer.address()))
+        httpsServer.listen(8443, '0.0.0.0')
+        wsss = expressWs(expressApp, httpsServer)
+    }
 
     const router = express.Router(({ mergeParams: true }))
-    const app = new App(config ? DB.createSqliteDB(true) : DB.createSqliteDB(false), expressApp, wss, wsss)
+    let database = null
+    if (process.env.DATABASE_IN_MEMORY) {
+        database = DB.createSqliteDB(true)
+    } else if (process.env.DATABASE_HOST) {
+        database = DB.createMysqlDB()
+    } else {
+        database = DB.createSqliteDB(false)
+    }
+    const app = new App(database, expressApp, wss, wsss)
     require('./router/api')(router, app)
     require('./router/web')(router, app)
     require('./router/ws')(router, app)
     require('./router/push')(router, app)
     expressApp.use(router)
 
-    httpServer.addListener('close', () => console.log(`HTTP server closed`))
-    httpsServer.addListener('close', () => console.log(`HTTPS server closed`))
-
-    httpServer.addListener('listening', () => console.log(`HTTP server listening`, httpServer.address()))
-    httpsServer.addListener('listening', () => console.log(`HTTPS server listening`, httpsServer.address()))
-
     // @ts-ignore
     app.close = () => {
-        httpServer.close()
-        httpsServer.close()
+        httpServer?.close()
+        httpsServer?.close()
     }
-
-    httpServer.listen(8080, '0.0.0.0')
-    httpsServer.listen(8443, '0.0.0.0')
 
     return app
 }
