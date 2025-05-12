@@ -21,7 +21,7 @@
             method: 'PATCH',
             body: JSON.stringify({
                 nickname: nicknameInput.value,
-                password: passwordInput.value,
+                password: passwordInput.value ? passwordInput.value : undefined,
                 theme: themeInput.value,
             }),
             headers: {

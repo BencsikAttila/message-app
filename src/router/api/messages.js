@@ -345,7 +345,8 @@ module.exports = (router, app) => {
             return
         }
 
-        if (!(await database.queryRaw(`SELECT messages.id FROM messages WHERE messages.senderId = ? AND messages.id = ? LIMIT 1`, [req.credentials.id, req.params.messageId]))) {
+        const messagePermissions = (await database.queryRaw(`SELECT messages.senderId FROM messages WHERE messages.id = ? LIMIT 1`, [req.params.messageId]))
+        if (messagePermissions[0]?.senderId !== req.credentials.id) {
             res
                 .status(400)
                 .json({ error: 'No permissions' })
