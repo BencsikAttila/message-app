@@ -12,6 +12,7 @@
             <div style="margin-bottom: 16px;">
                 <label for="account-nickname-input">Nickname:</label>
                 <input type="string" id="account-nickname-input" value="{{user.nickname}}">
+                <p style="font-size: 0.8em; color: var(--text-dark)">A bejelentkezéshez használt név mindig "{{user.username}}"</p>
             </div>
             <div style="margin-bottom: 16px;">
                 <label for="account-theme-input">Theme:</label>
@@ -38,6 +39,8 @@
                 <div>
                     {{> useravatar id=user.id }}
                 </div>
+            </div>
+            <div style="margin-bottom: 16px; color: var(--error);" id="error-text">
             </div>
             <button id="update-nickname-button">Save</button>
         </section>

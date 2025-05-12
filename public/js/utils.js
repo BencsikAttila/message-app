@@ -77,7 +77,9 @@ globalThis['API'] = {
                 res.json()
                     .then(v => {
                         if ('error' in v) {
-                            reject(new Error(v.error))
+                            let _error = new Error(v.error)
+                            _error.name = 'APIError'
+                            reject(_error)
                         } else {
                             reject(error)
                         }
