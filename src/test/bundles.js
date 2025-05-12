@@ -5,7 +5,7 @@ const assert = require('assert')
 let client = null
 
 before(() => {
-  client = new Client('http://localhost:6789')
+  client = new Client('http://localhost:8080')
 })
 
 const _ = describe('Bundles', function () {

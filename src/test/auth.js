@@ -5,7 +5,7 @@ const Client = require('../../public/js/client')
 let client = null
 
 before(() => {
-  client = new Client('http://localhost:6789')
+  client = new Client('http://localhost:8080')
 })
 
 describe('Auth', function () {

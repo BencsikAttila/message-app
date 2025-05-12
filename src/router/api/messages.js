@@ -30,7 +30,7 @@ module.exports = (router, app) => {
                 return
             }
 
-            const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', req.params.channelId)
+            const messages = await database.queryRaw('SELECT messages.*, users.id as senderId, users.nickname as senderNickname FROM messages JOIN users ON users.id = messages.senderId WHERE messages.channelId = ?', req.params.channelId)
 
             for (const message of messages) {
                 const attachments = await database.queryRaw(`SELECT * FROM messageAttachments WHERE messageAttachments.messageId = ?`, [message.id])

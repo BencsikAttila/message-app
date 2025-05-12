@@ -37,7 +37,6 @@ Table invitations {
   id uuid [primary key]
   userId uuid [not null]
   targetId uuid [not null]
-  expiresAt bigint [not null]
   usages int [not null]
 }
 

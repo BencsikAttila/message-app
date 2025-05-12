@@ -50,3 +50,12 @@ npm i
 npm run start
 ```
 5. You can access the app at http://localhost:8080/, and if you configured, at https://localhost:8443/ too.
+
+## Tests
+
+The tests are found in the `./src/test` directory and you can run them using the `test` npm script.
+
+## Initial database
+
+You can generate initial users with some basic messages with the `populate` npm script.
+The following users will be created: `User 1`, `User 2` and `User 3` and all of them has the password `passwd`.

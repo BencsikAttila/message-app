@@ -64,7 +64,7 @@ function create(config) {
 
     const router = express.Router(({ mergeParams: true }))
     let database = null
-    if (process.env.DATABASE_IN_MEMORY) {
+    if (process.env.DATABASE_IN_MEMORY || config.inMemoryDatabase) {
         database = DB.createSqliteDB(true)
     } else if (process.env.DATABASE_HOST) {
         database = DB.createMysqlDB()

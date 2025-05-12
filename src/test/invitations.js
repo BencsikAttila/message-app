@@ -7,8 +7,8 @@ let client1 = null
 let client2 = null
 
 before(() => {
-  client1 = new Client('http://localhost:6789')
-  client2 = new Client('http://localhost:6789')
+  client1 = new Client('http://localhost:8080')
+  client2 = new Client('http://localhost:8080')
 })
 
 const _ = describe('Messages', function () {

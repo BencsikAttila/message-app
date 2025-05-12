@@ -50,3 +50,12 @@ npm i
 npm run start
 ```
 5. Az alkalmazás a http://localhost:8080/ címen érhető el, és ha beállítottad, a https://localhost:8443/ címen is.
+
+## Tesztek
+
+A tesztek a `./src/test` könyvtárban találhatóak, és a `test` npm scripttel futtathatod.
+
+## Kezdeti adatbázis
+
+Generálhatsz kezdeti felhasználókat néhány üzenettel együtt a `populate` npm scripttel.
+A következő felhasználók lesznek létrehozva: `User 1`, `User 2` és `User 3` és mindegyiknek a jelszava `passwd`.
